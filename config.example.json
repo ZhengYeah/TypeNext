@@ -1,0 +1,30 @@
+{
+  "provider": "ollama",
+  "endpoint": "http://127.0.0.1:11434",
+  "model": "qwen3:4b",
+  "automatic_suggestions": false,
+  "accept_with_tab": false,
+  "disable_thinking": true,
+  "debounce_ms": 750,
+  "prefix_characters": 1000,
+  "suffix_characters": 200,
+  "max_tokens": 64,
+  "max_suggestion_characters": 320,
+  "timeout_seconds": 45,
+  "allowed_apps": [
+    "notepad.exe",
+    "winword.exe",
+    "typora.exe",
+    "wechat.exe",
+    "weixin.exe"
+  ],
+  "api_key_environment_variable": "TYPENEXT_API_KEY",
+  "suggest_hotkey": "Ctrl+Shift+F9",
+  "accept_hotkey": "Ctrl+Shift+F10",
+  "pause_hotkey": "Ctrl+Shift+F11",
+  "allow_remote_api": false,
+  "allow_automatic_remote_requests": false,
+  "token_parameter": "max_tokens",
+  "send_temperature": true,
+  "reasoning_effort": ""
+}

@@ -1,0 +1,29 @@
+name: Windows build and core tests
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: Test and build Windows x64
+        shell: pwsh
+        run: ./scripts/Build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TypeNext-windows-x64
+          path: |
+            TypeNext.exe
+            README.md
+            QUICKSTART.html
+            API_SETUP.md
+            config.example.json
+            CHANGELOG.md
+            docs/
+            LICENSE
+            THIRD_PARTY_GO_LICENSE.txt

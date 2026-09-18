@@ -1,0 +1,796 @@
+{"Time":"2026-09-17T12:00:44.298128046Z","Action":"start","Package":"typenext/internal/core"}
+{"Time":"2026-09-17T12:00:44.301005653Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation"}
+{"Time":"2026-09-17T12:00:44.301054036Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation","Output":"=== RUN   TestRemoteURLValidation\n"}
+{"Time":"2026-09-17T12:00:44.301163752Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com/v1/"}
+{"Time":"2026-09-17T12:00:44.301170212Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com/v1/","Output":"=== RUN   TestRemoteURLValidation/https://api.example.com/v1/\n"}
+{"Time":"2026-09-17T12:00:44.301196932Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com/v1/","Output":"--- PASS: TestRemoteURLValidation/https://api.example.com/v1/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30120187Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com/v1/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301222Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://API.EXAMPLE.COM:443/v1"}
+{"Time":"2026-09-17T12:00:44.301225175Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://API.EXAMPLE.COM:443/v1","Output":"=== RUN   TestRemoteURLValidation/https://API.EXAMPLE.COM:443/v1\n"}
+{"Time":"2026-09-17T12:00:44.301229902Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://API.EXAMPLE.COM:443/v1","Output":"--- PASS: TestRemoteURLValidation/https://API.EXAMPLE.COM:443/v1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301233087Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://API.EXAMPLE.COM:443/v1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301237113Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com:8443/chat/completions"}
+{"Time":"2026-09-17T12:00:44.301240608Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com:8443/chat/completions","Output":"=== RUN   TestRemoteURLValidation/https://api.example.com:8443/chat/completions\n"}
+{"Time":"2026-09-17T12:00:44.301247889Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com:8443/chat/completions","Output":"--- PASS: TestRemoteURLValidation/https://api.example.com:8443/chat/completions (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301251725Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://api.example.com:8443/chat/completions","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301256022Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://192.168.0.2:8443/v1"}
+{"Time":"2026-09-17T12:00:44.301259046Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://192.168.0.2:8443/v1","Output":"=== RUN   TestRemoteURLValidation/https://192.168.0.2:8443/v1\n"}
+{"Time":"2026-09-17T12:00:44.301264725Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://192.168.0.2:8443/v1","Output":"--- PASS: TestRemoteURLValidation/https://192.168.0.2:8443/v1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30126827Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://192.168.0.2:8443/v1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301271595Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://[2001:db8::1]/v1"}
+{"Time":"2026-09-17T12:00:44.30127477Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://[2001:db8::1]/v1","Output":"=== RUN   TestRemoteURLValidation/https://[2001:db8::1]/v1\n"}
+{"Time":"2026-09-17T12:00:44.301280949Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://[2001:db8::1]/v1","Output":"--- PASS: TestRemoteURLValidation/https://[2001:db8::1]/v1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301291816Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/https://[2001:db8::1]/v1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301295181Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/http://LOCALHOST:80/"}
+{"Time":"2026-09-17T12:00:44.301297895Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/http://LOCALHOST:80/","Output":"=== RUN   TestRemoteURLValidation/http://LOCALHOST:80/\n"}
+{"Time":"2026-09-17T12:00:44.301304725Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/http://LOCALHOST:80/","Output":"--- PASS: TestRemoteURLValidation/http://LOCALHOST:80/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301310114Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/http://LOCALHOST:80/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301313328Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://api.example.com"}
+{"Time":"2026-09-17T12:00:44.301317094Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://api.example.com","Output":"=== RUN   TestRemoteURLValidation/reject_http://api.example.com\n"}
+{"Time":"2026-09-17T12:00:44.301321781Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://api.example.com","Output":"--- PASS: TestRemoteURLValidation/reject_http://api.example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301324776Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://api.example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.30132745Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://192.168.1.2"}
+{"Time":"2026-09-17T12:00:44.301330094Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://192.168.1.2","Output":"=== RUN   TestRemoteURLValidation/reject_http://192.168.1.2\n"}
+{"Time":"2026-09-17T12:00:44.30133406Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://192.168.1.2","Output":"--- PASS: TestRemoteURLValidation/reject_http://192.168.1.2 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301336844Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_http://192.168.1.2","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301340319Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://user:key@api.example.com"}
+{"Time":"2026-09-17T12:00:44.301343103Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://user:key@api.example.com","Output":"=== RUN   TestRemoteURLValidation/reject_https://user:key@api.example.com\n"}
+{"Time":"2026-09-17T12:00:44.301347921Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://user:key@api.example.com","Output":"--- PASS: TestRemoteURLValidation/reject_https://user:key@api.example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301351556Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://user:key@api.example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301354951Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?key=secret"}
+{"Time":"2026-09-17T12:00:44.301358166Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?key=secret","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com?key=secret\n"}
+{"Time":"2026-09-17T12:00:44.301362473Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?key=secret","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com?key=secret (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30136757Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?key=secret","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301370515Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?"}
+{"Time":"2026-09-17T12:00:44.301373369Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com?\n"}
+{"Time":"2026-09-17T12:00:44.301377385Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com? (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301382022Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com?","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301385498Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com#key"}
+{"Time":"2026-09-17T12:00:44.301388121Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com#key","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com#key\n"}
+{"Time":"2026-09-17T12:00:44.301392077Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com#key","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com#key (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301395463Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com#key","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301399028Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:0"}
+{"Time":"2026-09-17T12:00:44.301402073Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:0","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com:0\n"}
+{"Time":"2026-09-17T12:00:44.301407541Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:0","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com:0 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301411266Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:0","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301418868Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:99999"}
+{"Time":"2026-09-17T12:00:44.301421903Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:99999","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com:99999\n"}
+{"Time":"2026-09-17T12:00:44.301425198Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:99999","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com:99999 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301428242Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:99999","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301431107Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:"}
+{"Time":"2026-09-17T12:00:44.30143349Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com:\n"}
+{"Time":"2026-09-17T12:00:44.301436975Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com: (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301441963Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301444757Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:notaport"}
+{"Time":"2026-09-17T12:00:44.301447201Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:notaport","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com:notaport\n"}
+{"Time":"2026-09-17T12:00:44.301451297Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:notaport","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com:notaport (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301454862Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com:notaport","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301458939Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https:///v1"}
+{"Time":"2026-09-17T12:00:44.301462184Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https:///v1","Output":"=== RUN   TestRemoteURLValidation/reject_https:///v1\n"}
+{"Time":"2026-09-17T12:00:44.301467061Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https:///v1","Output":"--- PASS: TestRemoteURLValidation/reject_https:///v1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301470126Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https:///v1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301474132Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://.example.com"}
+{"Time":"2026-09-17T12:00:44.301477607Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://.example.com","Output":"=== RUN   TestRemoteURLValidation/reject_https://.example.com\n"}
+{"Time":"2026-09-17T12:00:44.301481533Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://.example.com","Output":"--- PASS: TestRemoteURLValidation/reject_https://.example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301485108Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://.example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301488093Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example..com"}
+{"Time":"2026-09-17T12:00:44.301490947Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example..com","Output":"=== RUN   TestRemoteURLValidation/reject_https://example..com\n"}
+{"Time":"2026-09-17T12:00:44.301494833Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example..com","Output":"--- PASS: TestRemoteURLValidation/reject_https://example..com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301498168Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example..com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301501393Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example.com."}
+{"Time":"2026-09-17T12:00:44.301503766Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example.com.","Output":"=== RUN   TestRemoteURLValidation/reject_https://example.com.\n"}
+{"Time":"2026-09-17T12:00:44.301507111Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example.com.","Output":"--- PASS: TestRemoteURLValidation/reject_https://example.com. (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30151278Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example.com.","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301516175Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://-example.com"}
+{"Time":"2026-09-17T12:00:44.301518409Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://-example.com","Output":"=== RUN   TestRemoteURLValidation/reject_https://-example.com\n"}
+{"Time":"2026-09-17T12:00:44.301521313Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://-example.com","Output":"--- PASS: TestRemoteURLValidation/reject_https://-example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301524678Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://-example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301527973Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example-.com"}
+{"Time":"2026-09-17T12:00:44.301531498Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example-.com","Output":"=== RUN   TestRemoteURLValidation/reject_https://example-.com\n"}
+{"Time":"2026-09-17T12:00:44.301556206Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example-.com","Output":"--- PASS: TestRemoteURLValidation/reject_https://example-.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301559991Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://example-.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301563326Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[::]"}
+{"Time":"2026-09-17T12:00:44.30156585Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[::]","Output":"=== RUN   TestRemoteURLValidation/reject_https://[::]\n"}
+{"Time":"2026-09-17T12:00:44.301569376Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[::]","Output":"--- PASS: TestRemoteURLValidation/reject_https://[::] (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30157216Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[::]","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301574734Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://224.1.1.1"}
+{"Time":"2026-09-17T12:00:44.301577077Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://224.1.1.1","Output":"=== RUN   TestRemoteURLValidation/reject_https://224.1.1.1\n"}
+{"Time":"2026-09-17T12:00:44.301583747Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://224.1.1.1","Output":"--- PASS: TestRemoteURLValidation/reject_https://224.1.1.1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301586852Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://224.1.1.1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301589496Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[fe80::1%25eth0]"}
+{"Time":"2026-09-17T12:00:44.30159188Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[fe80::1%25eth0]","Output":"=== RUN   TestRemoteURLValidation/reject_https://[fe80::1%25eth0]\n"}
+{"Time":"2026-09-17T12:00:44.301595475Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[fe80::1%25eth0]","Output":"--- PASS: TestRemoteURLValidation/reject_https://[fe80::1%25eth0] (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30159848Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://[fe80::1%25eth0]","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301601564Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a/../b"}
+{"Time":"2026-09-17T12:00:44.301606442Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a/../b","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com/a/../b\n"}
+{"Time":"2026-09-17T12:00:44.30161186Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a/../b","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com/a/../b (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301615275Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a/../b","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.30161845Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1//chat"}
+{"Time":"2026-09-17T12:00:44.301623578Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1//chat","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com/v1//chat\n"}
+{"Time":"2026-09-17T12:00:44.301628675Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1//chat","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com/v1//chat (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301632341Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1//chat","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301635956Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1%2fchat"}
+{"Time":"2026-09-17T12:00:44.301638731Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1%2fchat","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com/v1%2fchat\n"}
+{"Time":"2026-09-17T12:00:44.301643057Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1%2fchat","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com/v1%2fchat (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301646763Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/v1%2fchat","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301650478Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a%00b"}
+{"Time":"2026-09-17T12:00:44.301660433Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a%00b","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com/a%00b\n"}
+{"Time":"2026-09-17T12:00:44.301663919Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a%00b","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com/a%00b (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301667153Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a%00b","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301670008Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a\\b"}
+{"Time":"2026-09-17T12:00:44.301673463Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a\\b","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com/a\\b\n"}
+{"Time":"2026-09-17T12:00:44.301677669Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a\\b","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com/a\\b (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301680694Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/a\\b","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301685031Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/_"}
+{"Time":"2026-09-17T12:00:44.301689668Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/_","Output":"=== RUN   TestRemoteURLValidation/reject_https://api.example.com/_\n"}
+{"Time":"2026-09-17T12:00:44.301693253Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/_","Output":"--- PASS: TestRemoteURLValidation/reject_https://api.example.com/_ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301696328Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://api.example.com/_","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301700083Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com"}
+{"Time":"2026-09-17T12:00:44.301706403Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com","Output":"=== RUN   TestRemoteURLValidation/reject_https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com\n"}
+{"Time":"2026-09-17T12:00:44.301712452Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com","Output":"--- PASS: TestRemoteURLValidation/reject_https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301715687Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation/reject_https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301719543Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteURLValidation","Output":"--- PASS: TestRemoteURLValidation (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301723328Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteURLValidation","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301727375Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction"}
+{"Time":"2026-09-17T12:00:44.301729778Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction","Output":"=== RUN   TestEndpointConstruction\n"}
+{"Time":"2026-09-17T12:00:44.301733023Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com"}
+{"Time":"2026-09-17T12:00:44.301735367Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com","Output":"=== RUN   TestEndpointConstruction/https://example.com\n"}
+{"Time":"2026-09-17T12:00:44.301738962Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com","Output":"--- PASS: TestEndpointConstruction/https://example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301742698Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301745181Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/"}
+{"Time":"2026-09-17T12:00:44.301747295Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/","Output":"=== RUN   TestEndpointConstruction/https://example.com/v1/\n"}
+{"Time":"2026-09-17T12:00:44.301753584Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/","Output":"--- PASS: TestEndpointConstruction/https://example.com/v1/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301756479Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301760845Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/chat/completions/"}
+{"Time":"2026-09-17T12:00:44.301763449Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/chat/completions/","Output":"=== RUN   TestEndpointConstruction/https://example.com/v1/chat/completions/\n"}
+{"Time":"2026-09-17T12:00:44.301766874Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/chat/completions/","Output":"--- PASS: TestEndpointConstruction/https://example.com/v1/chat/completions/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301769729Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/v1/chat/completions/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301772543Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/chat/completions"}
+{"Time":"2026-09-17T12:00:44.301775017Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/chat/completions","Output":"=== RUN   TestEndpointConstruction/https://example.com/chat/completions\n"}
+{"Time":"2026-09-17T12:00:44.301779754Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/chat/completions","Output":"--- PASS: TestEndpointConstruction/https://example.com/chat/completions (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301782718Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/chat/completions","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301785342Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/custom/api/v2"}
+{"Time":"2026-09-17T12:00:44.301788116Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/custom/api/v2","Output":"=== RUN   TestEndpointConstruction/https://example.com/custom/api/v2\n"}
+{"Time":"2026-09-17T12:00:44.301792072Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/custom/api/v2","Output":"--- PASS: TestEndpointConstruction/https://example.com/custom/api/v2 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301795818Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/https://example.com/custom/api/v2","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301799293Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434"}
+{"Time":"2026-09-17T12:00:44.301801807Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434","Output":"=== RUN   TestEndpointConstruction/http://localhost:11434\n"}
+{"Time":"2026-09-17T12:00:44.301805483Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434","Output":"--- PASS: TestEndpointConstruction/http://localhost:11434 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301809258Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301812603Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api"}
+{"Time":"2026-09-17T12:00:44.301814847Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api","Output":"=== RUN   TestEndpointConstruction/http://localhost:11434/api\n"}
+{"Time":"2026-09-17T12:00:44.301818242Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api","Output":"--- PASS: TestEndpointConstruction/http://localhost:11434/api (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301820936Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301826004Z","Action":"run","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api/chat/"}
+{"Time":"2026-09-17T12:00:44.301828417Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api/chat/","Output":"=== RUN   TestEndpointConstruction/http://localhost:11434/api/chat/\n"}
+{"Time":"2026-09-17T12:00:44.301831772Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api/chat/","Output":"--- PASS: TestEndpointConstruction/http://localhost:11434/api/chat/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301835037Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction/http://localhost:11434/api/chat/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301838132Z","Action":"output","Package":"typenext/internal/core","Test":"TestEndpointConstruction","Output":"--- PASS: TestEndpointConstruction (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301840906Z","Action":"pass","Package":"typenext/internal/core","Test":"TestEndpointConstruction","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.30184334Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteConsentBeforeNetworkOrKey"}
+{"Time":"2026-09-17T12:00:44.301845774Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteConsentBeforeNetworkOrKey","Output":"=== RUN   TestRemoteConsentBeforeNetworkOrKey\n"}
+{"Time":"2026-09-17T12:00:44.301849089Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteConsentBeforeNetworkOrKey","Output":"--- PASS: TestRemoteConsentBeforeNetworkOrKey (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.301851873Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteConsentBeforeNetworkOrKey","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.301854537Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteHTTPSStreamingAndAuthentication"}
+{"Time":"2026-09-17T12:00:44.30185685Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteHTTPSStreamingAndAuthentication","Output":"=== RUN   TestRemoteHTTPSStreamingAndAuthentication\n"}
+{"Time":"2026-09-17T12:00:44.306583499Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteHTTPSStreamingAndAuthentication","Output":"--- PASS: TestRemoteHTTPSStreamingAndAuthentication (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.306598441Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteHTTPSStreamingAndAuthentication","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.306602758Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteTLSCertificateRequired"}
+{"Time":"2026-09-17T12:00:44.306605372Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteTLSCertificateRequired","Output":"=== RUN   TestRemoteTLSCertificateRequired\n"}
+{"Time":"2026-09-17T12:00:44.307930175Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteTLSCertificateRequired","Output":"--- PASS: TestRemoteTLSCertificateRequired (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.307940541Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteTLSCertificateRequired","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.307944677Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteRedirectBlocked"}
+{"Time":"2026-09-17T12:00:44.307948994Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteRedirectBlocked","Output":"=== RUN   TestRemoteRedirectBlocked\n"}
+{"Time":"2026-09-17T12:00:44.30973485Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteRedirectBlocked","Output":"--- PASS: TestRemoteRedirectBlocked (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.3097545Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteRedirectBlocked","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309757644Z","Action":"run","Package":"typenext/internal/core","Test":"TestSavedKeyBindingAndPrecedence"}
+{"Time":"2026-09-17T12:00:44.309764455Z","Action":"output","Package":"typenext/internal/core","Test":"TestSavedKeyBindingAndPrecedence","Output":"=== RUN   TestSavedKeyBindingAndPrecedence\n"}
+{"Time":"2026-09-17T12:00:44.309767689Z","Action":"output","Package":"typenext/internal/core","Test":"TestSavedKeyBindingAndPrecedence","Output":"--- PASS: TestSavedKeyBindingAndPrecedence (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309771455Z","Action":"pass","Package":"typenext/internal/core","Test":"TestSavedKeyBindingAndPrecedence","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309773548Z","Action":"run","Package":"typenext/internal/core","Test":"TestKeyDecryptionFailureDoesNotFallbackOrLeak"}
+{"Time":"2026-09-17T12:00:44.309775051Z","Action":"output","Package":"typenext/internal/core","Test":"TestKeyDecryptionFailureDoesNotFallbackOrLeak","Output":"=== RUN   TestKeyDecryptionFailureDoesNotFallbackOrLeak\n"}
+{"Time":"2026-09-17T12:00:44.309778676Z","Action":"output","Package":"typenext/internal/core","Test":"TestKeyDecryptionFailureDoesNotFallbackOrLeak","Output":"--- PASS: TestKeyDecryptionFailureDoesNotFallbackOrLeak (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.30978104Z","Action":"pass","Package":"typenext/internal/core","Test":"TestKeyDecryptionFailureDoesNotFallbackOrLeak","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309783123Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry"}
+{"Time":"2026-09-17T12:00:44.309789963Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry\n"}
+{"Time":"2026-09-17T12:00:44.309792046Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/400"}
+{"Time":"2026-09-17T12:00:44.309793889Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/400","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/400\n"}
+{"Time":"2026-09-17T12:00:44.309796783Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/400","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/400 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309798686Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/400","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309800609Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/401"}
+{"Time":"2026-09-17T12:00:44.309801901Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/401","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/401\n"}
+{"Time":"2026-09-17T12:00:44.30981452Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/401","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/401 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309830605Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/401","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309833068Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/403"}
+{"Time":"2026-09-17T12:00:44.309834901Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/403","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/403\n"}
+{"Time":"2026-09-17T12:00:44.309861992Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/403","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/403 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309864416Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/403","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.30986711Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/404"}
+{"Time":"2026-09-17T12:00:44.309869383Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/404","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/404\n"}
+{"Time":"2026-09-17T12:00:44.30987412Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/404","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/404 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309886269Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/404","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309888122Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/408"}
+{"Time":"2026-09-17T12:00:44.309889874Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/408","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/408\n"}
+{"Time":"2026-09-17T12:00:44.309908142Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/408","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/408 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309910355Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/408","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309921432Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/422"}
+{"Time":"2026-09-17T12:00:44.309923064Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/422","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/422\n"}
+{"Time":"2026-09-17T12:00:44.309937096Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/422","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/422 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309948463Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/422","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309950356Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/429"}
+{"Time":"2026-09-17T12:00:44.309951708Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/429","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/429\n"}
+{"Time":"2026-09-17T12:00:44.309977647Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/429","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/429 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.3099798Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/429","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.309982705Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/500"}
+{"Time":"2026-09-17T12:00:44.309984297Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/500","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/500\n"}
+{"Time":"2026-09-17T12:00:44.309986841Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/500","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/500 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.309998038Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/500","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310000121Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/503"}
+{"Time":"2026-09-17T12:00:44.310001854Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/503","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/503\n"}
+{"Time":"2026-09-17T12:00:44.310021493Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/503","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/503 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.31003228Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/503","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310034233Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/504"}
+{"Time":"2026-09-17T12:00:44.310035765Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/504","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/504\n"}
+{"Time":"2026-09-17T12:00:44.310041413Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/504","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/504 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310058579Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/504","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310060542Z","Action":"run","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/307"}
+{"Time":"2026-09-17T12:00:44.310062185Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/307","Output":"=== RUN   TestRemoteErrorMessagesAndNoRetry/307\n"}
+{"Time":"2026-09-17T12:00:44.310083397Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/307","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry/307 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.31008539Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry/307","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310096126Z","Action":"output","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry","Output":"--- PASS: TestRemoteErrorMessagesAndNoRetry (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310098059Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRemoteErrorMessagesAndNoRetry","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310109366Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants"}
+{"Time":"2026-09-17T12:00:44.310111029Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants","Output":"=== RUN   TestCompatibleResponseVariants\n"}
+{"Time":"2026-09-17T12:00:44.310113082Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/pretty_JSON"}
+{"Time":"2026-09-17T12:00:44.310114704Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/pretty_JSON","Output":"=== RUN   TestCompatibleResponseVariants/pretty_JSON\n"}
+{"Time":"2026-09-17T12:00:44.310133893Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/pretty_JSON","Output":"--- PASS: TestCompatibleResponseVariants/pretty_JSON (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310135846Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/pretty_JSON","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310157078Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/null_delta_content"}
+{"Time":"2026-09-17T12:00:44.310158801Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/null_delta_content","Output":"=== RUN   TestCompatibleResponseVariants/null_delta_content\n"}
+{"Time":"2026-09-17T12:00:44.31018472Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/null_delta_content","Output":"--- PASS: TestCompatibleResponseVariants/null_delta_content (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310186763Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/null_delta_content","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.31019808Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/multiline_SSE"}
+{"Time":"2026-09-17T12:00:44.310199903Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/multiline_SSE","Output":"=== RUN   TestCompatibleResponseVariants/multiline_SSE\n"}
+{"Time":"2026-09-17T12:00:44.310230069Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/multiline_SSE","Output":"--- PASS: TestCompatibleResponseVariants/multiline_SSE (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310232292Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/multiline_SSE","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310245943Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/usage_chunk"}
+{"Time":"2026-09-17T12:00:44.310247595Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/usage_chunk","Output":"=== RUN   TestCompatibleResponseVariants/usage_chunk\n"}
+{"Time":"2026-09-17T12:00:44.310270891Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/usage_chunk","Output":"--- PASS: TestCompatibleResponseVariants/usage_chunk (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310273204Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/usage_chunk","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310275417Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/metadata"}
+{"Time":"2026-09-17T12:00:44.310286013Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/metadata","Output":"=== RUN   TestCompatibleResponseVariants/metadata\n"}
+{"Time":"2026-09-17T12:00:44.310312774Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/metadata","Output":"--- PASS: TestCompatibleResponseVariants/metadata (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.31032313Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/metadata","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310325243Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish_length"}
+{"Time":"2026-09-17T12:00:44.310327025Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish_length","Output":"=== RUN   TestCompatibleResponseVariants/finish_length\n"}
+{"Time":"2026-09-17T12:00:44.31034957Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish_length","Output":"--- PASS: TestCompatibleResponseVariants/finish_length (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310354016Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish_length","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310355729Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish-only_EOF"}
+{"Time":"2026-09-17T12:00:44.310357041Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish-only_EOF","Output":"=== RUN   TestCompatibleResponseVariants/finish-only_EOF\n"}
+{"Time":"2026-09-17T12:00:44.310389049Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish-only_EOF","Output":"--- PASS: TestCompatibleResponseVariants/finish-only_EOF (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310400266Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/finish-only_EOF","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.31040258Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/truncated_event"}
+{"Time":"2026-09-17T12:00:44.310404282Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/truncated_event","Output":"=== RUN   TestCompatibleResponseVariants/truncated_event\n"}
+{"Time":"2026-09-17T12:00:44.310423782Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/truncated_event","Output":"--- PASS: TestCompatibleResponseVariants/truncated_event (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310426876Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/truncated_event","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.31042906Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/broken_JSON"}
+{"Time":"2026-09-17T12:00:44.310430692Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/broken_JSON","Output":"=== RUN   TestCompatibleResponseVariants/broken_JSON\n"}
+{"Time":"2026-09-17T12:00:44.310434778Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/broken_JSON","Output":"--- PASS: TestCompatibleResponseVariants/broken_JSON (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310447117Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/broken_JSON","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310457403Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/incomplete"}
+{"Time":"2026-09-17T12:00:44.310459936Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/incomplete","Output":"=== RUN   TestCompatibleResponseVariants/incomplete\n"}
+{"Time":"2026-09-17T12:00:44.310481159Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/incomplete","Output":"--- PASS: TestCompatibleResponseVariants/incomplete (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310483342Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/incomplete","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310485115Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/server_error"}
+{"Time":"2026-09-17T12:00:44.310487188Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/server_error","Output":"=== RUN   TestCompatibleResponseVariants/server_error\n"}
+{"Time":"2026-09-17T12:00:44.310516802Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/server_error","Output":"--- PASS: TestCompatibleResponseVariants/server_error (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.31054845Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/server_error","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310550604Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/filter"}
+{"Time":"2026-09-17T12:00:44.310552296Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/filter","Output":"=== RUN   TestCompatibleResponseVariants/filter\n"}
+{"Time":"2026-09-17T12:00:44.310587129Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/filter","Output":"--- PASS: TestCompatibleResponseVariants/filter (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310589382Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/filter","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310591826Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/tool_calls"}
+{"Time":"2026-09-17T12:00:44.310602352Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/tool_calls","Output":"=== RUN   TestCompatibleResponseVariants/tool_calls\n"}
+{"Time":"2026-09-17T12:00:44.310625106Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/tool_calls","Output":"--- PASS: TestCompatibleResponseVariants/tool_calls (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310627149Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/tool_calls","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310630264Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_content"}
+{"Time":"2026-09-17T12:00:44.310631786Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_content","Output":"=== RUN   TestCompatibleResponseVariants/empty_content\n"}
+{"Time":"2026-09-17T12:00:44.310659488Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_content","Output":"--- PASS: TestCompatibleResponseVariants/empty_content (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310670054Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_content","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310672328Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/reasoning_only"}
+{"Time":"2026-09-17T12:00:44.310677105Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/reasoning_only","Output":"=== RUN   TestCompatibleResponseVariants/reasoning_only\n"}
+{"Time":"2026-09-17T12:00:44.310701642Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/reasoning_only","Output":"--- PASS: TestCompatibleResponseVariants/reasoning_only (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310718518Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/reasoning_only","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310721462Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_done"}
+{"Time":"2026-09-17T12:00:44.310723415Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_done","Output":"=== RUN   TestCompatibleResponseVariants/empty_done\n"}
+{"Time":"2026-09-17T12:00:44.310742864Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_done","Output":"--- PASS: TestCompatibleResponseVariants/empty_done (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310754071Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_done","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310756084Z","Action":"run","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_JSON"}
+{"Time":"2026-09-17T12:00:44.310757637Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_JSON","Output":"=== RUN   TestCompatibleResponseVariants/empty_JSON\n"}
+{"Time":"2026-09-17T12:00:44.310769415Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_JSON","Output":"--- PASS: TestCompatibleResponseVariants/empty_JSON (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310771518Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants/empty_JSON","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310773471Z","Action":"output","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants","Output":"--- PASS: TestCompatibleResponseVariants (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310775764Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCompatibleResponseVariants","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310777497Z","Action":"run","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider"}
+{"Time":"2026-09-17T12:00:44.310779049Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider","Output":"=== RUN   TestRequestOptionsByProvider\n"}
+{"Time":"2026-09-17T12:00:44.310782114Z","Action":"run","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.openai.com"}
+{"Time":"2026-09-17T12:00:44.310783776Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.openai.com","Output":"=== RUN   TestRequestOptionsByProvider/api.openai.com\n"}
+{"Time":"2026-09-17T12:00:44.310846721Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.openai.com","Output":"--- PASS: TestRequestOptionsByProvider/api.openai.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310859581Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.openai.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310861364Z","Action":"run","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.deepseek.com"}
+{"Time":"2026-09-17T12:00:44.310862896Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.deepseek.com","Output":"=== RUN   TestRequestOptionsByProvider/api.deepseek.com\n"}
+{"Time":"2026-09-17T12:00:44.31095175Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.deepseek.com","Output":"--- PASS: TestRequestOptionsByProvider/api.deepseek.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.310956107Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.deepseek.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.310958Z","Action":"run","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.custom.test"}
+{"Time":"2026-09-17T12:00:44.310960343Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.custom.test","Output":"=== RUN   TestRequestOptionsByProvider/api.custom.test\n"}
+{"Time":"2026-09-17T12:00:44.311012001Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.custom.test","Output":"--- PASS: TestRequestOptionsByProvider/api.custom.test (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311014515Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider/api.custom.test","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311016969Z","Action":"output","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider","Output":"--- PASS: TestRequestOptionsByProvider (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311018932Z","Action":"pass","Package":"typenext/internal/core","Test":"TestRequestOptionsByProvider","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.31102453Z","Action":"run","Package":"typenext/internal/core","Test":"TestAPIConfigMigrationAndPersistence"}
+{"Time":"2026-09-17T12:00:44.311026153Z","Action":"output","Package":"typenext/internal/core","Test":"TestAPIConfigMigrationAndPersistence","Output":"=== RUN   TestAPIConfigMigrationAndPersistence\n"}
+{"Time":"2026-09-17T12:00:44.311729877Z","Action":"output","Package":"typenext/internal/core","Test":"TestAPIConfigMigrationAndPersistence","Output":"--- PASS: TestAPIConfigMigrationAndPersistence (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311739682Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAPIConfigMigrationAndPersistence","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311742126Z","Action":"run","Package":"typenext/internal/core","Test":"TestAutomaticRemoteRequiresSeparatePermission"}
+{"Time":"2026-09-17T12:00:44.311753152Z","Action":"output","Package":"typenext/internal/core","Test":"TestAutomaticRemoteRequiresSeparatePermission","Output":"=== RUN   TestAutomaticRemoteRequiresSeparatePermission\n"}
+{"Time":"2026-09-17T12:00:44.31177107Z","Action":"output","Package":"typenext/internal/core","Test":"TestAutomaticRemoteRequiresSeparatePermission","Output":"--- PASS: TestAutomaticRemoteRequiresSeparatePermission (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311773313Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAutomaticRemoteRequiresSeparatePermission","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311775226Z","Action":"run","Package":"typenext/internal/core","Test":"TestAPIKeyValidationAndConfigBounds"}
+{"Time":"2026-09-17T12:00:44.311776968Z","Action":"output","Package":"typenext/internal/core","Test":"TestAPIKeyValidationAndConfigBounds","Output":"=== RUN   TestAPIKeyValidationAndConfigBounds\n"}
+{"Time":"2026-09-17T12:00:44.311780654Z","Action":"output","Package":"typenext/internal/core","Test":"TestAPIKeyValidationAndConfigBounds","Output":"--- PASS: TestAPIKeyValidationAndConfigBounds (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311782988Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAPIKeyValidationAndConfigBounds","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311785171Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid"}
+{"Time":"2026-09-17T12:00:44.311786944Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid","Output":"=== RUN   TestPresetsAreExplicitAndValid\n"}
+{"Time":"2026-09-17T12:00:44.311794916Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Ollama_(local)"}
+{"Time":"2026-09-17T12:00:44.311796698Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Ollama_(local)","Output":"=== RUN   TestPresetsAreExplicitAndValid/Ollama_(local)\n"}
+{"Time":"2026-09-17T12:00:44.311821005Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Ollama_(local)","Output":"--- PASS: TestPresetsAreExplicitAndValid/Ollama_(local) (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.31183751Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Ollama_(local)","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311839583Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI-compatible_(local)"}
+{"Time":"2026-09-17T12:00:44.311841396Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI-compatible_(local)","Output":"=== RUN   TestPresetsAreExplicitAndValid/OpenAI-compatible_(local)\n"}
+{"Time":"2026-09-17T12:00:44.311844731Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI-compatible_(local)","Output":"--- PASS: TestPresetsAreExplicitAndValid/OpenAI-compatible_(local) (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311846764Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI-compatible_(local)","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311848587Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI_API"}
+{"Time":"2026-09-17T12:00:44.311850239Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI_API","Output":"=== RUN   TestPresetsAreExplicitAndValid/OpenAI_API\n"}
+{"Time":"2026-09-17T12:00:44.311852242Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI_API","Output":"--- PASS: TestPresetsAreExplicitAndValid/OpenAI_API (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311854075Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenAI_API","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311855708Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/DeepSeek_API"}
+{"Time":"2026-09-17T12:00:44.31185736Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/DeepSeek_API","Output":"=== RUN   TestPresetsAreExplicitAndValid/DeepSeek_API\n"}
+{"Time":"2026-09-17T12:00:44.311860064Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/DeepSeek_API","Output":"--- PASS: TestPresetsAreExplicitAndValid/DeepSeek_API (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311861767Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/DeepSeek_API","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311863279Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenRouter_API"}
+{"Time":"2026-09-17T12:00:44.311864841Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenRouter_API","Output":"=== RUN   TestPresetsAreExplicitAndValid/OpenRouter_API\n"}
+{"Time":"2026-09-17T12:00:44.311867866Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenRouter_API","Output":"--- PASS: TestPresetsAreExplicitAndValid/OpenRouter_API (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311869508Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/OpenRouter_API","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311871772Z","Action":"run","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Custom_OpenAI-compatible_API"}
+{"Time":"2026-09-17T12:00:44.311873404Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Custom_OpenAI-compatible_API","Output":"=== RUN   TestPresetsAreExplicitAndValid/Custom_OpenAI-compatible_API\n"}
+{"Time":"2026-09-17T12:00:44.311875608Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Custom_OpenAI-compatible_API","Output":"--- PASS: TestPresetsAreExplicitAndValid/Custom_OpenAI-compatible_API (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311882538Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid/Custom_OpenAI-compatible_API","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311884621Z","Action":"output","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid","Output":"--- PASS: TestPresetsAreExplicitAndValid (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.311886404Z","Action":"pass","Package":"typenext/internal/core","Test":"TestPresetsAreExplicitAndValid","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.311888337Z","Action":"run","Package":"typenext/internal/core","Test":"TestResponseLimits"}
+{"Time":"2026-09-17T12:00:44.31189005Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits","Output":"=== RUN   TestResponseLimits\n"}
+{"Time":"2026-09-17T12:00:44.322465103Z","Action":"run","Package":"typenext/internal/core","Test":"TestResponseLimits/json_body"}
+{"Time":"2026-09-17T12:00:44.322499325Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/json_body","Output":"=== RUN   TestResponseLimits/json_body\n"}
+{"Time":"2026-09-17T12:00:44.32931309Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/json_body","Output":"--- PASS: TestResponseLimits/json_body (0.01s)\n"}
+{"Time":"2026-09-17T12:00:44.329333351Z","Action":"pass","Package":"typenext/internal/core","Test":"TestResponseLimits/json_body","Elapsed":0.01}
+{"Time":"2026-09-17T12:00:44.329373992Z","Action":"run","Package":"typenext/internal/core","Test":"TestResponseLimits/large_content"}
+{"Time":"2026-09-17T12:00:44.329376766Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/large_content","Output":"=== RUN   TestResponseLimits/large_content\n"}
+{"Time":"2026-09-17T12:00:44.329902612Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/large_content","Output":"--- PASS: TestResponseLimits/large_content (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.329910023Z","Action":"pass","Package":"typenext/internal/core","Test":"TestResponseLimits/large_content","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.329912727Z","Action":"run","Package":"typenext/internal/core","Test":"TestResponseLimits/large_event"}
+{"Time":"2026-09-17T12:00:44.32991469Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/large_event","Output":"=== RUN   TestResponseLimits/large_event\n"}
+{"Time":"2026-09-17T12:00:44.330077306Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/large_event","Output":"--- PASS: TestResponseLimits/large_event (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.330080781Z","Action":"pass","Package":"typenext/internal/core","Test":"TestResponseLimits/large_event","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.330083445Z","Action":"run","Package":"typenext/internal/core","Test":"TestResponseLimits/many_events"}
+{"Time":"2026-09-17T12:00:44.330085088Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/many_events","Output":"=== RUN   TestResponseLimits/many_events\n"}
+{"Time":"2026-09-17T12:00:44.332656948Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits/many_events","Output":"--- PASS: TestResponseLimits/many_events (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332673703Z","Action":"pass","Package":"typenext/internal/core","Test":"TestResponseLimits/many_events","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332677308Z","Action":"output","Package":"typenext/internal/core","Test":"TestResponseLimits","Output":"--- PASS: TestResponseLimits (0.02s)\n"}
+{"Time":"2026-09-17T12:00:44.332689126Z","Action":"pass","Package":"typenext/internal/core","Test":"TestResponseLimits","Elapsed":0.02}
+{"Time":"2026-09-17T12:00:44.332692311Z","Action":"run","Package":"typenext/internal/core","Test":"TestAutomaticRemoteThrottle"}
+{"Time":"2026-09-17T12:00:44.332702597Z","Action":"output","Package":"typenext/internal/core","Test":"TestAutomaticRemoteThrottle","Output":"=== RUN   TestAutomaticRemoteThrottle\n"}
+{"Time":"2026-09-17T12:00:44.332722547Z","Action":"output","Package":"typenext/internal/core","Test":"TestAutomaticRemoteThrottle","Output":"--- PASS: TestAutomaticRemoteThrottle (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332734886Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAutomaticRemoteThrottle","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332753514Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase"}
+{"Time":"2026-09-17T12:00:44.332755597Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase","Output":"=== RUN   TestLocalBase\n"}
+{"Time":"2026-09-17T12:00:44.33275753Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/http://[::1]:1234/v1/"}
+{"Time":"2026-09-17T12:00:44.332759052Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://[::1]:1234/v1/","Output":"=== RUN   TestLocalBase/http://[::1]:1234/v1/\n"}
+{"Time":"2026-09-17T12:00:44.332761025Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://[::1]:1234/v1/","Output":"--- PASS: TestLocalBase/http://[::1]:1234/v1/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332763108Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/http://[::1]:1234/v1/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332764891Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/https://127.0.0.1"}
+{"Time":"2026-09-17T12:00:44.332766283Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/https://127.0.0.1","Output":"=== RUN   TestLocalBase/https://127.0.0.1\n"}
+{"Time":"2026-09-17T12:00:44.332768386Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/https://127.0.0.1","Output":"--- PASS: TestLocalBase/https://127.0.0.1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332770029Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/https://127.0.0.1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332771741Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/http://localhost:11434"}
+{"Time":"2026-09-17T12:00:44.332773274Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://localhost:11434","Output":"=== RUN   TestLocalBase/http://localhost:11434\n"}
+{"Time":"2026-09-17T12:00:44.332775457Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://localhost:11434","Output":"--- PASS: TestLocalBase/http://localhost:11434 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.33277783Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/http://localhost:11434","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332779413Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.0.0.1:11434/"}
+{"Time":"2026-09-17T12:00:44.332780885Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.0.0.1:11434/","Output":"=== RUN   TestLocalBase/http://127.0.0.1:11434/\n"}
+{"Time":"2026-09-17T12:00:44.332782738Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.0.0.1:11434/","Output":"--- PASS: TestLocalBase/http://127.0.0.1:11434/ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332785071Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.0.0.1:11434/","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332786614Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.2.3.4:1234/v1"}
+{"Time":"2026-09-17T12:00:44.332788136Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.2.3.4:1234/v1","Output":"=== RUN   TestLocalBase/http://127.2.3.4:1234/v1\n"}
+{"Time":"2026-09-17T12:00:44.332802047Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.2.3.4:1234/v1","Output":"--- PASS: TestLocalBase/http://127.2.3.4:1234/v1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.33280393Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/http://127.2.3.4:1234/v1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332807285Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://example.com"}
+{"Time":"2026-09-17T12:00:44.332808927Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://example.com","Output":"=== RUN   TestLocalBase/reject_http://example.com\n"}
+{"Time":"2026-09-17T12:00:44.332812383Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://example.com","Output":"--- PASS: TestLocalBase/reject_http://example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332814215Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332815948Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://localhost.example.com"}
+{"Time":"2026-09-17T12:00:44.33281737Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://localhost.example.com","Output":"=== RUN   TestLocalBase/reject_http://localhost.example.com\n"}
+{"Time":"2026-09-17T12:00:44.332820134Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://localhost.example.com","Output":"--- PASS: TestLocalBase/reject_http://localhost.example.com (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332821867Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://localhost.example.com","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.33282348Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://192.168.1.2:11434"}
+{"Time":"2026-09-17T12:00:44.332825042Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://192.168.1.2:11434","Output":"=== RUN   TestLocalBase/reject_http://192.168.1.2:11434\n"}
+{"Time":"2026-09-17T12:00:44.332826935Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://192.168.1.2:11434","Output":"--- PASS: TestLocalBase/reject_http://192.168.1.2:11434 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332843159Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://192.168.1.2:11434","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332847296Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://0.0.0.0:11434"}
+{"Time":"2026-09-17T12:00:44.332848878Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://0.0.0.0:11434","Output":"=== RUN   TestLocalBase/reject_http://0.0.0.0:11434\n"}
+{"Time":"2026-09-17T12:00:44.332850751Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://0.0.0.0:11434","Output":"--- PASS: TestLocalBase/reject_http://0.0.0.0:11434 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332852764Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://0.0.0.0:11434","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332854687Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::]:11434"}
+{"Time":"2026-09-17T12:00:44.332856499Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::]:11434","Output":"=== RUN   TestLocalBase/reject_http://[::]:11434\n"}
+{"Time":"2026-09-17T12:00:44.332858282Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::]:11434","Output":"--- PASS: TestLocalBase/reject_http://[::]:11434 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332860035Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::]:11434","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332861797Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1.evil.test"}
+{"Time":"2026-09-17T12:00:44.33286342Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1.evil.test","Output":"=== RUN   TestLocalBase/reject_http://127.0.0.1.evil.test\n"}
+{"Time":"2026-09-17T12:00:44.332865503Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1.evil.test","Output":"--- PASS: TestLocalBase/reject_http://127.0.0.1.evil.test (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332868788Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1.evil.test","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332870541Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1@evil.test"}
+{"Time":"2026-09-17T12:00:44.332871833Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1@evil.test","Output":"=== RUN   TestLocalBase/reject_http://127.0.0.1@evil.test\n"}
+{"Time":"2026-09-17T12:00:44.332873886Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1@evil.test","Output":"--- PASS: TestLocalBase/reject_http://127.0.0.1@evil.test (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332875698Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1@evil.test","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332877311Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://alice:secret@127.0.0.1"}
+{"Time":"2026-09-17T12:00:44.332878793Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://alice:secret@127.0.0.1","Output":"=== RUN   TestLocalBase/reject_http://alice:secret@127.0.0.1\n"}
+{"Time":"2026-09-17T12:00:44.332880816Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://alice:secret@127.0.0.1","Output":"--- PASS: TestLocalBase/reject_http://alice:secret@127.0.0.1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332882589Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://alice:secret@127.0.0.1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332884281Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_ftp://127.0.0.1"}
+{"Time":"2026-09-17T12:00:44.332885654Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_ftp://127.0.0.1","Output":"=== RUN   TestLocalBase/reject_ftp://127.0.0.1\n"}
+{"Time":"2026-09-17T12:00:44.332887867Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_ftp://127.0.0.1","Output":"--- PASS: TestLocalBase/reject_ftp://127.0.0.1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.3328896Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_ftp://127.0.0.1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332892173Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_file:///tmp/test"}
+{"Time":"2026-09-17T12:00:44.332893716Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_file:///tmp/test","Output":"=== RUN   TestLocalBase/reject_file:///tmp/test\n"}
+{"Time":"2026-09-17T12:00:44.33289626Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_file:///tmp/test","Output":"--- PASS: TestLocalBase/reject_file:///tmp/test (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332897982Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_file:///tmp/test","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332899835Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1?token=x"}
+{"Time":"2026-09-17T12:00:44.332901277Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1?token=x","Output":"=== RUN   TestLocalBase/reject_http://127.0.0.1?token=x\n"}
+{"Time":"2026-09-17T12:00:44.3329034Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1?token=x","Output":"--- PASS: TestLocalBase/reject_http://127.0.0.1?token=x (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332905714Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1?token=x","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332907457Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1#test"}
+{"Time":"2026-09-17T12:00:44.332914988Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1#test","Output":"=== RUN   TestLocalBase/reject_http://127.0.0.1#test\n"}
+{"Time":"2026-09-17T12:00:44.332917131Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1#test","Output":"--- PASS: TestLocalBase/reject_http://127.0.0.1#test (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332918804Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://127.0.0.1#test","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332920496Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://2130706433"}
+{"Time":"2026-09-17T12:00:44.332921918Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://2130706433","Output":"=== RUN   TestLocalBase/reject_http://2130706433\n"}
+{"Time":"2026-09-17T12:00:44.332923841Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://2130706433","Output":"--- PASS: TestLocalBase/reject_http://2130706433 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332925634Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://2130706433","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332927397Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::1%25eth0]"}
+{"Time":"2026-09-17T12:00:44.332928899Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::1%25eth0]","Output":"=== RUN   TestLocalBase/reject_http://[::1%25eth0]\n"}
+{"Time":"2026-09-17T12:00:44.332931092Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::1%25eth0]","Output":"--- PASS: TestLocalBase/reject_http://[::1%25eth0] (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332933055Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_http://[::1%25eth0]","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332935319Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_"}
+{"Time":"2026-09-17T12:00:44.332936751Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_","Output":"=== RUN   TestLocalBase/reject_\n"}
+{"Time":"2026-09-17T12:00:44.332938523Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_","Output":"--- PASS: TestLocalBase/reject_ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332940186Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332941698Z","Action":"run","Package":"typenext/internal/core","Test":"TestLocalBase/reject_localhost:11434"}
+{"Time":"2026-09-17T12:00:44.332943251Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_localhost:11434","Output":"=== RUN   TestLocalBase/reject_localhost:11434\n"}
+{"Time":"2026-09-17T12:00:44.332945214Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase/reject_localhost:11434","Output":"--- PASS: TestLocalBase/reject_localhost:11434 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332947056Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase/reject_localhost:11434","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332949039Z","Action":"output","Package":"typenext/internal/core","Test":"TestLocalBase","Output":"--- PASS: TestLocalBase (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.332950642Z","Action":"pass","Package":"typenext/internal/core","Test":"TestLocalBase","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.332952254Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfiguration"}
+{"Time":"2026-09-17T12:00:44.332953536Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfiguration","Output":"=== RUN   TestConfiguration\n"}
+{"Time":"2026-09-17T12:00:44.333904314Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfiguration","Output":"--- PASS: TestConfiguration (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.333929522Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfiguration","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.333941641Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds"}
+{"Time":"2026-09-17T12:00:44.333952467Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds","Output":"=== RUN   TestConfigBounds\n"}
+{"Time":"2026-09-17T12:00:44.333965106Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/remote"}
+{"Time":"2026-09-17T12:00:44.333966859Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/remote","Output":"=== RUN   TestConfigBounds/remote\n"}
+{"Time":"2026-09-17T12:00:44.333969242Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/remote","Output":"--- PASS: TestConfigBounds/remote (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.333979999Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/remote","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.333981831Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/empty_model"}
+{"Time":"2026-09-17T12:00:44.333983544Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/empty_model","Output":"=== RUN   TestConfigBounds/empty_model\n"}
+{"Time":"2026-09-17T12:00:44.333995342Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/empty_model","Output":"--- PASS: TestConfigBounds/empty_model (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.333997405Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/empty_model","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334007891Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/cloud_model"}
+{"Time":"2026-09-17T12:00:44.334009693Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/cloud_model","Output":"=== RUN   TestConfigBounds/cloud_model\n"}
+{"Time":"2026-09-17T12:00:44.334011486Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/cloud_model","Output":"--- PASS: TestConfigBounds/cloud_model (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334023424Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/cloud_model","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334031426Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/bad_provider"}
+{"Time":"2026-09-17T12:00:44.334032848Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/bad_provider","Output":"=== RUN   TestConfigBounds/bad_provider\n"}
+{"Time":"2026-09-17T12:00:44.334034942Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/bad_provider","Output":"--- PASS: TestConfigBounds/bad_provider (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334045738Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/bad_provider","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334047471Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/small_pause"}
+{"Time":"2026-09-17T12:00:44.334048903Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/small_pause","Output":"=== RUN   TestConfigBounds/small_pause\n"}
+{"Time":"2026-09-17T12:00:44.334050986Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/small_pause","Output":"--- PASS: TestConfigBounds/small_pause (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334061782Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/small_pause","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334063915Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/large_prefix"}
+{"Time":"2026-09-17T12:00:44.334065298Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/large_prefix","Output":"=== RUN   TestConfigBounds/large_prefix\n"}
+{"Time":"2026-09-17T12:00:44.334067771Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/large_prefix","Output":"--- PASS: TestConfigBounds/large_prefix (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334080601Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/large_prefix","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334082443Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/negative_suffix"}
+{"Time":"2026-09-17T12:00:44.334083886Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/negative_suffix","Output":"=== RUN   TestConfigBounds/negative_suffix\n"}
+{"Time":"2026-09-17T12:00:44.334085939Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/negative_suffix","Output":"--- PASS: TestConfigBounds/negative_suffix (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334087742Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/negative_suffix","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334098428Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/wildcard_app"}
+{"Time":"2026-09-17T12:00:44.33409994Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/wildcard_app","Output":"=== RUN   TestConfigBounds/wildcard_app\n"}
+{"Time":"2026-09-17T12:00:44.334101923Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/wildcard_app","Output":"--- PASS: TestConfigBounds/wildcard_app (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334112749Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/wildcard_app","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334122985Z","Action":"run","Package":"typenext/internal/core","Test":"TestConfigBounds/full_app_path"}
+{"Time":"2026-09-17T12:00:44.334124798Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/full_app_path","Output":"=== RUN   TestConfigBounds/full_app_path\n"}
+{"Time":"2026-09-17T12:00:44.334127331Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds/full_app_path","Output":"--- PASS: TestConfigBounds/full_app_path (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334137557Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds/full_app_path","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334140411Z","Action":"output","Package":"typenext/internal/core","Test":"TestConfigBounds","Output":"--- PASS: TestConfigBounds (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334150697Z","Action":"pass","Package":"typenext/internal/core","Test":"TestConfigBounds","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334152389Z","Action":"run","Package":"typenext/internal/core","Test":"TestAllowlist"}
+{"Time":"2026-09-17T12:00:44.334161904Z","Action":"output","Package":"typenext/internal/core","Test":"TestAllowlist","Output":"=== RUN   TestAllowlist\n"}
+{"Time":"2026-09-17T12:00:44.334164157Z","Action":"output","Package":"typenext/internal/core","Test":"TestAllowlist","Output":"--- PASS: TestAllowlist (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.33416613Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAllowlist","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334180722Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning"}
+{"Time":"2026-09-17T12:00:44.334182375Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning","Output":"=== RUN   TestTextCleaning\n"}
+{"Time":"2026-09-17T12:00:44.334193842Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/leading_whitespace"}
+{"Time":"2026-09-17T12:00:44.334203867Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/leading_whitespace","Output":"=== RUN   TestTextCleaning/leading_whitespace\n"}
+{"Time":"2026-09-17T12:00:44.334206Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/leading_whitespace","Output":"--- PASS: TestTextCleaning/leading_whitespace (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334216817Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/leading_whitespace","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334228955Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/Chinese"}
+{"Time":"2026-09-17T12:00:44.334230778Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/Chinese","Output":"=== RUN   TestTextCleaning/Chinese\n"}
+{"Time":"2026-09-17T12:00:44.334242165Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/Chinese","Output":"--- PASS: TestTextCleaning/Chinese (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334252941Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/Chinese","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334263898Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/reasoning"}
+{"Time":"2026-09-17T12:00:44.33426548Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/reasoning","Output":"=== RUN   TestTextCleaning/reasoning\n"}
+{"Time":"2026-09-17T12:00:44.334267664Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/reasoning","Output":"--- PASS: TestTextCleaning/reasoning (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334269336Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/reasoning","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334271359Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/incomplete_reasoning"}
+{"Time":"2026-09-17T12:00:44.334272821Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/incomplete_reasoning","Output":"=== RUN   TestTextCleaning/incomplete_reasoning\n"}
+{"Time":"2026-09-17T12:00:44.334274824Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/incomplete_reasoning","Output":"--- PASS: TestTextCleaning/incomplete_reasoning (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334276677Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/incomplete_reasoning","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.33427848Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/prefix_echo"}
+{"Time":"2026-09-17T12:00:44.334279972Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/prefix_echo","Output":"=== RUN   TestTextCleaning/prefix_echo\n"}
+{"Time":"2026-09-17T12:00:44.334282045Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/prefix_echo","Output":"--- PASS: TestTextCleaning/prefix_echo (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334283948Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/prefix_echo","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334285591Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/suffix_echo"}
+{"Time":"2026-09-17T12:00:44.334287103Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/suffix_echo","Output":"=== RUN   TestTextCleaning/suffix_echo\n"}
+{"Time":"2026-09-17T12:00:44.334288956Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/suffix_echo","Output":"--- PASS: TestTextCleaning/suffix_echo (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334290989Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/suffix_echo","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334292671Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/controls"}
+{"Time":"2026-09-17T12:00:44.334294074Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/controls","Output":"=== RUN   TestTextCleaning/controls\n"}
+{"Time":"2026-09-17T12:00:44.334296077Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/controls","Output":"--- PASS: TestTextCleaning/controls (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334297879Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/controls","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334299382Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/empty"}
+{"Time":"2026-09-17T12:00:44.334300784Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/empty","Output":"=== RUN   TestTextCleaning/empty\n"}
+{"Time":"2026-09-17T12:00:44.334313663Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/empty","Output":"--- PASS: TestTextCleaning/empty (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334315536Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/empty","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334317178Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/fence"}
+{"Time":"2026-09-17T12:00:44.334318641Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/fence","Output":"=== RUN   TestTextCleaning/fence\n"}
+{"Time":"2026-09-17T12:00:44.334320504Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/fence","Output":"--- PASS: TestTextCleaning/fence (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334322436Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/fence","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334323979Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/end_token"}
+{"Time":"2026-09-17T12:00:44.334325501Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/end_token","Output":"=== RUN   TestTextCleaning/end_token\n"}
+{"Time":"2026-09-17T12:00:44.334327364Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/end_token","Output":"--- PASS: TestTextCleaning/end_token (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334329127Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/end_token","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334330929Z","Action":"run","Package":"typenext/internal/core","Test":"TestTextCleaning/punctuation"}
+{"Time":"2026-09-17T12:00:44.334332412Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/punctuation","Output":"=== RUN   TestTextCleaning/punctuation\n"}
+{"Time":"2026-09-17T12:00:44.334334344Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning/punctuation","Output":"--- PASS: TestTextCleaning/punctuation (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334339853Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning/punctuation","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334341926Z","Action":"output","Package":"typenext/internal/core","Test":"TestTextCleaning","Output":"--- PASS: TestTextCleaning (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334343819Z","Action":"pass","Package":"typenext/internal/core","Test":"TestTextCleaning","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334345491Z","Action":"run","Package":"typenext/internal/core","Test":"TestContextFingerprint"}
+{"Time":"2026-09-17T12:00:44.334347124Z","Action":"output","Package":"typenext/internal/core","Test":"TestContextFingerprint","Output":"=== RUN   TestContextFingerprint\n"}
+{"Time":"2026-09-17T12:00:44.334365351Z","Action":"output","Package":"typenext/internal/core","Test":"TestContextFingerprint","Output":"--- PASS: TestContextFingerprint (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334367294Z","Action":"pass","Package":"typenext/internal/core","Test":"TestContextFingerprint","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334368937Z","Action":"run","Package":"typenext/internal/core","Test":"TestOllamaStreaming"}
+{"Time":"2026-09-17T12:00:44.334370439Z","Action":"output","Package":"typenext/internal/core","Test":"TestOllamaStreaming","Output":"=== RUN   TestOllamaStreaming\n"}
+{"Time":"2026-09-17T12:00:44.334974703Z","Action":"output","Package":"typenext/internal/core","Test":"TestOllamaStreaming","Output":"--- PASS: TestOllamaStreaming (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.334987863Z","Action":"pass","Package":"typenext/internal/core","Test":"TestOllamaStreaming","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.334991699Z","Action":"run","Package":"typenext/internal/core","Test":"TestOpenAICompatibleStreaming"}
+{"Time":"2026-09-17T12:00:44.334994643Z","Action":"output","Package":"typenext/internal/core","Test":"TestOpenAICompatibleStreaming","Output":"=== RUN   TestOpenAICompatibleStreaming\n"}
+{"Time":"2026-09-17T12:00:44.335335058Z","Action":"output","Package":"typenext/internal/core","Test":"TestOpenAICompatibleStreaming","Output":"--- PASS: TestOpenAICompatibleStreaming (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.335345604Z","Action":"pass","Package":"typenext/internal/core","Test":"TestOpenAICompatibleStreaming","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.335349941Z","Action":"run","Package":"typenext/internal/core","Test":"TestHTTPFailures"}
+{"Time":"2026-09-17T12:00:44.335352895Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures","Output":"=== RUN   TestHTTPFailures\n"}
+{"Time":"2026-09-17T12:00:44.335356391Z","Action":"run","Package":"typenext/internal/core","Test":"TestHTTPFailures/status"}
+{"Time":"2026-09-17T12:00:44.335359315Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/status","Output":"=== RUN   TestHTTPFailures/status\n"}
+{"Time":"2026-09-17T12:00:44.335801524Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/status","Output":"--- PASS: TestHTTPFailures/status (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.33581237Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHTTPFailures/status","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.335816827Z","Action":"run","Package":"typenext/internal/core","Test":"TestHTTPFailures/incomplete"}
+{"Time":"2026-09-17T12:00:44.335819791Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/incomplete","Output":"=== RUN   TestHTTPFailures/incomplete\n"}
+{"Time":"2026-09-17T12:00:44.335985342Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/incomplete","Output":"--- PASS: TestHTTPFailures/incomplete (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.335992833Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHTTPFailures/incomplete","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.335995337Z","Action":"run","Package":"typenext/internal/core","Test":"TestHTTPFailures/invalid_json"}
+{"Time":"2026-09-17T12:00:44.335997039Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/invalid_json","Output":"=== RUN   TestHTTPFailures/invalid_json\n"}
+{"Time":"2026-09-17T12:00:44.33627517Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/invalid_json","Output":"--- PASS: TestHTTPFailures/invalid_json (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.336282151Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHTTPFailures/invalid_json","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.336284735Z","Action":"run","Package":"typenext/internal/core","Test":"TestHTTPFailures/server_error"}
+{"Time":"2026-09-17T12:00:44.336286537Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/server_error","Output":"=== RUN   TestHTTPFailures/server_error\n"}
+{"Time":"2026-09-17T12:00:44.336695896Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/server_error","Output":"--- PASS: TestHTTPFailures/server_error (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.336700363Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHTTPFailures/server_error","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.336702797Z","Action":"run","Package":"typenext/internal/core","Test":"TestHTTPFailures/redirect"}
+{"Time":"2026-09-17T12:00:44.33670468Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/redirect","Output":"=== RUN   TestHTTPFailures/redirect\n"}
+{"Time":"2026-09-17T12:00:44.337146267Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures/redirect","Output":"--- PASS: TestHTTPFailures/redirect (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.337157504Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHTTPFailures/redirect","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.337162612Z","Action":"output","Package":"typenext/internal/core","Test":"TestHTTPFailures","Output":"--- PASS: TestHTTPFailures (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.337164896Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHTTPFailures","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.337170564Z","Action":"run","Package":"typenext/internal/core","Test":"TestCancellation"}
+{"Time":"2026-09-17T12:00:44.337172397Z","Action":"output","Package":"typenext/internal/core","Test":"TestCancellation","Output":"=== RUN   TestCancellation\n"}
+{"Time":"2026-09-17T12:00:44.397629711Z","Action":"output","Package":"typenext/internal/core","Test":"TestCancellation","Output":"--- PASS: TestCancellation (0.06s)\n"}
+{"Time":"2026-09-17T12:00:44.397685876Z","Action":"pass","Package":"typenext/internal/core","Test":"TestCancellation","Elapsed":0.06}
+{"Time":"2026-09-17T12:00:44.397716132Z","Action":"run","Package":"typenext/internal/core","Test":"TestNoProxy"}
+{"Time":"2026-09-17T12:00:44.397719356Z","Action":"output","Package":"typenext/internal/core","Test":"TestNoProxy","Output":"=== RUN   TestNoProxy\n"}
+{"Time":"2026-09-17T12:00:44.397755231Z","Action":"output","Package":"typenext/internal/core","Test":"TestNoProxy","Output":"--- PASS: TestNoProxy (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.397769582Z","Action":"pass","Package":"typenext/internal/core","Test":"TestNoProxy","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.397779297Z","Action":"run","Package":"typenext/internal/core","Test":"TestAPIKeyFromEnvironment"}
+{"Time":"2026-09-17T12:00:44.39778122Z","Action":"output","Package":"typenext/internal/core","Test":"TestAPIKeyFromEnvironment","Output":"=== RUN   TestAPIKeyFromEnvironment\n"}
+{"Time":"2026-09-17T12:00:44.398206043Z","Action":"output","Package":"typenext/internal/core","Test":"TestAPIKeyFromEnvironment","Output":"--- PASS: TestAPIKeyFromEnvironment (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398214335Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAPIKeyFromEnvironment","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398217019Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing"}
+{"Time":"2026-09-17T12:00:44.398219313Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing","Output":"=== RUN   TestHotkeyParsing\n"}
+{"Time":"2026-09-17T12:00:44.398221276Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Shift+F9"}
+{"Time":"2026-09-17T12:00:44.398222708Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Shift+F9","Output":"=== RUN   TestHotkeyParsing/Ctrl+Shift+F9\n"}
+{"Time":"2026-09-17T12:00:44.398225923Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Shift+F9","Output":"--- PASS: TestHotkeyParsing/Ctrl+Shift+F9 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398228046Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Shift+F9","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398230309Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/_control_+_alt_+_space_"}
+{"Time":"2026-09-17T12:00:44.398231832Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/_control_+_alt_+_space_","Output":"=== RUN   TestHotkeyParsing/_control_+_alt_+_space_\n"}
+{"Time":"2026-09-17T12:00:44.398235006Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/_control_+_alt_+_space_","Output":"--- PASS: TestHotkeyParsing/_control_+_alt_+_space_ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398237059Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/_control_+_alt_+_space_","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398238822Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/shift+alt+n"}
+{"Time":"2026-09-17T12:00:44.398240194Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/shift+alt+n","Output":"=== RUN   TestHotkeyParsing/shift+alt+n\n"}
+{"Time":"2026-09-17T12:00:44.398242878Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/shift+alt+n","Output":"--- PASS: TestHotkeyParsing/shift+alt+n (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398244731Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/shift+alt+n","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398255407Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Alt+Right"}
+{"Time":"2026-09-17T12:00:44.398256899Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Alt+Right","Output":"=== RUN   TestHotkeyParsing/Ctrl+Alt+Right\n"}
+{"Time":"2026-09-17T12:00:44.398259764Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Alt+Right","Output":"--- PASS: TestHotkeyParsing/Ctrl+Alt+Right (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398261657Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Alt+Right","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398263199Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+7"}
+{"Time":"2026-09-17T12:00:44.398264801Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+7","Output":"=== RUN   TestHotkeyParsing/Ctrl+7\n"}
+{"Time":"2026-09-17T12:00:44.398267025Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+7","Output":"--- PASS: TestHotkeyParsing/Ctrl+7 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398268777Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+7","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398271021Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+F24"}
+{"Time":"2026-09-17T12:00:44.398272443Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+F24","Output":"=== RUN   TestHotkeyParsing/Ctrl+F24\n"}
+{"Time":"2026-09-17T12:00:44.398274967Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+F24","Output":"--- PASS: TestHotkeyParsing/Ctrl+F24 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.39827727Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+F24","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398279554Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Alt+PageUp"}
+{"Time":"2026-09-17T12:00:44.398281156Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Alt+PageUp","Output":"=== RUN   TestHotkeyParsing/Alt+PageUp\n"}
+{"Time":"2026-09-17T12:00:44.398300676Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Alt+PageUp","Output":"--- PASS: TestHotkeyParsing/Alt+PageUp (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.39830346Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Alt+PageUp","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398305693Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+PageDown"}
+{"Time":"2026-09-17T12:00:44.398307316Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+PageDown","Output":"=== RUN   TestHotkeyParsing/Ctrl+PageDown\n"}
+{"Time":"2026-09-17T12:00:44.398321607Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+PageDown","Output":"--- PASS: TestHotkeyParsing/Ctrl+PageDown (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398324011Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+PageDown","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398326064Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Delete"}
+{"Time":"2026-09-17T12:00:44.398327436Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Delete","Output":"=== RUN   TestHotkeyParsing/Ctrl+Delete\n"}
+{"Time":"2026-09-17T12:00:44.398338793Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Delete","Output":"--- PASS: TestHotkeyParsing/Ctrl+Delete (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398340616Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/Ctrl+Delete","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398342599Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/#00"}
+{"Time":"2026-09-17T12:00:44.398345884Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/#00","Output":"=== RUN   TestHotkeyParsing/#00\n"}
+{"Time":"2026-09-17T12:00:44.398353726Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/#00","Output":"--- PASS: TestHotkeyParsing/#00 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398355819Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/#00","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398357532Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/none"}
+{"Time":"2026-09-17T12:00:44.398359004Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/none","Output":"=== RUN   TestHotkeyParsing/none\n"}
+{"Time":"2026-09-17T12:00:44.398360937Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/none","Output":"--- PASS: TestHotkeyParsing/none (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398362639Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/none","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398364863Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyParsing/DISABLED"}
+{"Time":"2026-09-17T12:00:44.398366415Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/DISABLED","Output":"=== RUN   TestHotkeyParsing/DISABLED\n"}
+{"Time":"2026-09-17T12:00:44.398368198Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing/DISABLED","Output":"--- PASS: TestHotkeyParsing/DISABLED (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.39836989Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing/DISABLED","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398371893Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyParsing","Output":"--- PASS: TestHotkeyParsing (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398374768Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyParsing","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.39837642Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings"}
+{"Time":"2026-09-17T12:00:44.398377902Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings\n"}
+{"Time":"2026-09-17T12:00:44.398380567Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/A"}
+{"Time":"2026-09-17T12:00:44.398381999Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/A","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/A\n"}
+{"Time":"2026-09-17T12:00:44.398383932Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/A","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/A (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398385804Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/A","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398388038Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Shift+A"}
+{"Time":"2026-09-17T12:00:44.39838943Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Shift+A","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Shift+A\n"}
+{"Time":"2026-09-17T12:00:44.398392094Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Shift+A","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Shift+A (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398394257Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Shift+A","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398404212Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/F9"}
+{"Time":"2026-09-17T12:00:44.398408088Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/F9","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/F9\n"}
+{"Time":"2026-09-17T12:00:44.398429761Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/F9","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/F9 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398431974Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/F9","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398443432Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F12"}
+{"Time":"2026-09-17T12:00:44.398453907Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F12","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F12\n"}
+{"Time":"2026-09-17T12:00:44.398456181Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F12","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F12 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398467258Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F12","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398477243Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F0"}
+{"Time":"2026-09-17T12:00:44.398479065Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F0","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F0\n"}
+{"Time":"2026-09-17T12:00:44.398489822Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F0","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F0 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398491755Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F0","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398493377Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F25"}
+{"Time":"2026-09-17T12:00:44.398503152Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F25","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F25\n"}
+{"Time":"2026-09-17T12:00:44.398505205Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F25","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F25 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.39851542Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+F25","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398517033Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+"}
+{"Time":"2026-09-17T12:00:44.398526728Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+\n"}
+{"Time":"2026-09-17T12:00:44.398529011Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+ (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398555892Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398558536Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl++A"}
+{"Time":"2026-09-17T12:00:44.398569713Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl++A","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl++A\n"}
+{"Time":"2026-09-17T12:00:44.39858129Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl++A","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl++A (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398593529Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl++A","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398595652Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Ctrl+J"}
+{"Time":"2026-09-17T12:00:44.398605677Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Ctrl+J","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Ctrl+J\n"}
+{"Time":"2026-09-17T12:00:44.398608011Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Ctrl+J","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Ctrl+J (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398619097Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Ctrl+J","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398629593Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Space+J"}
+{"Time":"2026-09-17T12:00:44.39864057Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Space+J","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Space+J\n"}
+{"Time":"2026-09-17T12:00:44.398643224Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Space+J","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Space+J (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398645507Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Space+J","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.39864725Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Win+N"}
+{"Time":"2026-09-17T12:00:44.398648792Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Win+N","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Win+N\n"}
+{"Time":"2026-09-17T12:00:44.398650685Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Win+N","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Win+N (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398652528Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Win+N","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398655723Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Win+N"}
+{"Time":"2026-09-17T12:00:44.398657065Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Win+N","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Win+N\n"}
+{"Time":"2026-09-17T12:00:44.398659038Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Win+N","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Win+N (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398660911Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Win+N","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398662884Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Tab"}
+{"Time":"2026-09-17T12:00:44.398664506Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Tab","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Tab\n"}
+{"Time":"2026-09-17T12:00:44.398666839Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Tab","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Tab (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398670014Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Tab","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398671857Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Enter"}
+{"Time":"2026-09-17T12:00:44.398673449Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Enter","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Enter\n"}
+{"Time":"2026-09-17T12:00:44.398675593Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Enter","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Enter (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398677446Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Enter","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398679328Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Esc"}
+{"Time":"2026-09-17T12:00:44.398680881Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Esc","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Esc\n"}
+{"Time":"2026-09-17T12:00:44.398682904Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Esc","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Esc (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398685478Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Esc","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.39868705Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Alt+F4"}
+{"Time":"2026-09-17T12:00:44.398688572Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Alt+F4","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Alt+F4\n"}
+{"Time":"2026-09-17T12:00:44.398690535Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Alt+F4","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Alt+F4 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398692328Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Alt+F4","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.39869394Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Alt+Delete"}
+{"Time":"2026-09-17T12:00:44.398695553Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Alt+Delete","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Alt+Delete\n"}
+{"Time":"2026-09-17T12:00:44.398698247Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Alt+Delete","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Alt+Delete (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.39870016Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Alt+Delete","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398702093Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Fbanana"}
+{"Time":"2026-09-17T12:00:44.398703685Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Fbanana","Output":"=== RUN   TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Fbanana\n"}
+{"Time":"2026-09-17T12:00:44.398887123Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Fbanana","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Fbanana (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398890147Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings/Ctrl+Fbanana","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398896056Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings","Output":"--- PASS: TestHotkeyRejectsUnsafeOrInvalidBindings (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398898149Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyRejectsUnsafeOrInvalidBindings","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398900022Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyMatchesExactly"}
+{"Time":"2026-09-17T12:00:44.398901645Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyMatchesExactly","Output":"=== RUN   TestHotkeyMatchesExactly\n"}
+{"Time":"2026-09-17T12:00:44.398903998Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyMatchesExactly","Output":"--- PASS: TestHotkeyMatchesExactly (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.398905861Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyMatchesExactly","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.398907834Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyConfigValidationAndMigration"}
+{"Time":"2026-09-17T12:00:44.398909276Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConfigValidationAndMigration","Output":"=== RUN   TestHotkeyConfigValidationAndMigration\n"}
+{"Time":"2026-09-17T12:00:44.399423915Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConfigValidationAndMigration","Output":"--- PASS: TestHotkeyConfigValidationAndMigration (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399429493Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyConfigValidationAndMigration","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.399431837Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal"}
+{"Time":"2026-09-17T12:00:44.399441772Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal","Output":"=== RUN   TestHotkeyConflictIsNonfatal\n"}
+{"Time":"2026-09-17T12:00:44.399443795Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/1"}
+{"Time":"2026-09-17T12:00:44.399445517Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/1","Output":"=== RUN   TestHotkeyConflictIsNonfatal/1\n"}
+{"Time":"2026-09-17T12:00:44.399448372Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/1","Output":"--- PASS: TestHotkeyConflictIsNonfatal/1 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399458597Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/1","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.39946066Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/2"}
+{"Time":"2026-09-17T12:00:44.399462182Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/2","Output":"=== RUN   TestHotkeyConflictIsNonfatal/2\n"}
+{"Time":"2026-09-17T12:00:44.399464406Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/2","Output":"--- PASS: TestHotkeyConflictIsNonfatal/2 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399475443Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/2","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.39948696Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/3"}
+{"Time":"2026-09-17T12:00:44.399488723Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/3","Output":"=== RUN   TestHotkeyConflictIsNonfatal/3\n"}
+{"Time":"2026-09-17T12:00:44.399498998Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/3","Output":"--- PASS: TestHotkeyConflictIsNonfatal/3 (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399506199Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal/3","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.399517396Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal","Output":"--- PASS: TestHotkeyConflictIsNonfatal (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399556195Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyConflictIsNonfatal","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.3995599Z","Action":"run","Package":"typenext/internal/core","Test":"TestAllHotkeyConflictsLeaveManagerUsable"}
+{"Time":"2026-09-17T12:00:44.399563295Z","Action":"output","Package":"typenext/internal/core","Test":"TestAllHotkeyConflictsLeaveManagerUsable","Output":"=== RUN   TestAllHotkeyConflictsLeaveManagerUsable\n"}
+{"Time":"2026-09-17T12:00:44.399568093Z","Action":"output","Package":"typenext/internal/core","Test":"TestAllHotkeyConflictsLeaveManagerUsable","Output":"--- PASS: TestAllHotkeyConflictsLeaveManagerUsable (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399571037Z","Action":"pass","Package":"typenext/internal/core","Test":"TestAllHotkeyConflictsLeaveManagerUsable","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.399573681Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyUnchangedApplyDoesNotRegisterTwice"}
+{"Time":"2026-09-17T12:00:44.399575784Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyUnchangedApplyDoesNotRegisterTwice","Output":"=== RUN   TestHotkeyUnchangedApplyDoesNotRegisterTwice\n"}
+{"Time":"2026-09-17T12:00:44.399578909Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyUnchangedApplyDoesNotRegisterTwice","Output":"--- PASS: TestHotkeyUnchangedApplyDoesNotRegisterTwice (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399581212Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyUnchangedApplyDoesNotRegisterTwice","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.399582915Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeySwapAndDisable"}
+{"Time":"2026-09-17T12:00:44.399584337Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeySwapAndDisable","Output":"=== RUN   TestHotkeySwapAndDisable\n"}
+{"Time":"2026-09-17T12:00:44.399586601Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeySwapAndDisable","Output":"--- PASS: TestHotkeySwapAndDisable (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399588263Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeySwapAndDisable","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.399589956Z","Action":"run","Package":"typenext/internal/core","Test":"TestHotkeyReleaseFailureDoesNotForgetActiveKey"}
+{"Time":"2026-09-17T12:00:44.399591338Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyReleaseFailureDoesNotForgetActiveKey","Output":"=== RUN   TestHotkeyReleaseFailureDoesNotForgetActiveKey\n"}
+{"Time":"2026-09-17T12:00:44.399593852Z","Action":"output","Package":"typenext/internal/core","Test":"TestHotkeyReleaseFailureDoesNotForgetActiveKey","Output":"--- PASS: TestHotkeyReleaseFailureDoesNotForgetActiveKey (0.00s)\n"}
+{"Time":"2026-09-17T12:00:44.399595644Z","Action":"pass","Package":"typenext/internal/core","Test":"TestHotkeyReleaseFailureDoesNotForgetActiveKey","Elapsed":0}
+{"Time":"2026-09-17T12:00:44.399597357Z","Action":"output","Package":"typenext/internal/core","Output":"PASS\n"}
+{"Time":"2026-09-17T12:00:44.400736514Z","Action":"output","Package":"typenext/internal/core","Output":"ok  \ttypenext/internal/core\t0.102s\n"}
+{"Time":"2026-09-17T12:00:44.400763255Z","Action":"pass","Package":"typenext/internal/core","Elapsed":0.103}
