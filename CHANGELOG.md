@@ -1,5 +1,21 @@
 # TypeNext changelog
 
+## 0.1.4 preview — 19 September 2026
+
+- Support focused Text, Custom, and Pane editors with TextPattern, a collapsed caret, and explicit writable metadata, including Qt's nonstandard Text role.
+- Keep outer windows, conversation lists, password fields, and read-only or unverifiable custom text controls rejected.
+- Explain Weixin's missing input accessibility and point to its screen-reader optimization setting when only the outer window is exposed.
+- Add metadata-only Weixin diagnostics and regression tests. Installed Weixin 4.1.13.65 initially exposed no editor provider; direct completion remains dependent on accessible input being available.
+
+## 0.1.3 preview — 19 September 2026
+
+- Add a read-only PowerPoint adapter for bounded context at a collapsed caret in normal/slide editing views; revalidate the target before inserting with Unicode keyboard input.
+- Fix modern PowerPoint editing-pane detection (`mdiClass`, alongside legacy `paneClassDC`), confirmed against the installed application's native window metadata. Add focused-window ancestry tests and an opt-in live reader check.
+- Include `powerpnt.exe` in new default allowlists, while preserving existing saved application permissions.
+- Separate logical caret identity from popup geometry, so caret blinking and positioning fallbacks do not dismiss unchanged suggestions; retain endpoint checks for repeated passages.
+- Reject stale capture/model callbacks after request or foreground changes, keep late acceptance results from replacing newer requests, and handle held Tab acceptance without self-cancellation.
+- Add regression coverage and manual PowerPoint/stability checks. The native reader passed three stable bounded captures against installed desktop PowerPoint; insertion and full suggestion UI remain unverified.
+
 ## 0.1.2 preview — 17 September 2026
 
 - Add an API settings window and tray action, with local, OpenAI, DeepSeek, OpenRouter, and custom OpenAI-compatible presets. Remote presets deliberately require a user-selected model ID.

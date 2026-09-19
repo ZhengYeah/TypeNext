@@ -101,7 +101,7 @@ func TestConfigBounds(t *testing.T) {
 
 func TestAllowlist(t *testing.T) {
 	c := DefaultConfig()
-	for _, app := range []string{"Notepad.exe", "WINWORD.EXE", "WeChat.exe"} {
+	for _, app := range []string{"Notepad.exe", "WINWORD.EXE", "POWERPNT.EXE", "WeChat.exe"} {
 		if !c.Allows(app) {
 			t.Fatal(app)
 		}

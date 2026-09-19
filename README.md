@@ -1,10 +1,26 @@
 # TypeNext
 
-**Writing completion for Windows — local models or remote APIs — 0.1.2 preview**
+**Writing completion for Windows — local models or remote APIs — 0.1.4 preview**
 
 TypeNext reads bounded existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. It inserts the text only when you accept it.
 
-**This is a desktop helper, not a registered Windows TSF IME and not universal in-editor ghost text.** It uses UI Automation. Word, Typora, WeChat, VS Code, and the Windows interface have not been live-tested in the delivery environment. Start with disposable text.
+**This is a desktop helper, not a registered Windows TSF IME and not universal in-editor ghost text.** It uses UI Automation and a dedicated PowerPoint text adapter. PowerPoint's native reader has passed a live bounded-read check; insertion and the full suggestion UI still need live verification. Word, Typora, WeChat, and VS Code remain unverified. Start with disposable text.
+
+## New in 0.1.4: Weixin accessibility checks
+
+TypeNext now recognizes focused custom text editors that expose a readable caret and confirm they are editable, including Qt editors that report themselves as Text instead of Edit. It still reads only the focused input; it does not scan chat history.
+
+If Weixin exposes only its outer window, TypeNext now explains that the message editor is unavailable instead of asking you to focus a standard textbox. Check **Weixin Settings → General → 读屏优化模式 (Screen reader optimization mode)** if your version offers it, then refocus the message input and retry. This setting is described by a maintained [Weixin accessibility integration](https://raw.githubusercontent.com/cary-rowen/WeChatEnhancement/master/addon/doc/zh_CN/readme.md); its availability and effect must be checked in the installed app.
+
+The installed Weixin 4.1.13.65 initially exposed no input text/caret interface in live metadata checks, including standard accessibility-provider probes. Direct suggestions cannot work while the editor remains hidden. These changes do not claim that every Weixin version/account is compatible, and TypeNext does not change Weixin or Windows accessibility settings automatically.
+
+## New in 0.1.3: PowerPoint and suggestion stability
+
+PowerPoint slide text now has a dedicated reader for its nonstandard editing controls, including modern `mdiClass` and older `paneClassDC` panes. In a normal or slide editing view, click inside a text box so the insertion caret is visible, then use **Inspect in 3s** or the usual suggestion shortcut. Selecting a shape or highlighting text is not supported. Notes, master views, slide shows, and embedded chart/SmartArt/table editors are outside this adapter's scope. Read-only presentations are rejected with a specific message. See `docs/VERIFICATION.md` for the live reader checks and remaining limits.
+
+New configurations include `powerpnt.exe` in the application allowlist. Existing saved allowlists are preserved: add `powerpnt.exe` in settings when upgrading.
+
+Suggestion validation now tracks the logical insertion point separately from popup coordinates, preventing a caret blink or a change in positioning fallback from dismissing unchanged text. Late callbacks are checked against the current request and foreground window; holding Tab while accepting no longer lets repeated Tab presses cancel the pending insertion. Caret movement, edits, and focus changes still invalidate a suggestion.
 
 ## New in 0.1.2: API support
 
@@ -65,6 +81,7 @@ The default executable allowlist is:
 ```text
 notepad.exe
 winword.exe
+powerpnt.exe
 typora.exe
 wechat.exe
 weixin.exe
@@ -76,11 +93,11 @@ Password-manager applications, credential dialogs, and terminal hosts on the bui
 
 ## What text can it read?
 
-A dedicated UI Automation worker reads the focused editable/document element only. It requires a readable text pattern and a reliable collapsed selection/caret. It checks password, focus, enabled, and available read-only properties. By default it reads up to **1000 characters before** and **200 after** the caret. The network client independently enforces these limits.
+A dedicated accessibility worker reads the focused editable/document element through UI Automation. It requires a readable text pattern and a reliable collapsed selection/caret, and checks password, focus, enabled, and available read-only properties. For PowerPoint slide text, a read-only Office object-model adapter accesses the exact focused document pane and requires a collapsed text selection. By default the returned context is limited to **1000 characters before** and **200 after** the caret. The PowerPoint reader may read twice those limits in UTF-16 code units to accommodate emoji before trimming; it never scans the document. The network client independently enforces the context limits.
 
-There is no clipboard, OCR, select-all operation, rolling typed-character transcript, full-document scan, or scraping of conversation panes. UI Automation runtime IDs, window handles, and caret coordinates stay in the process. Only the bounded prefix/suffix and a fixed instruction enter the model request.
+There is no clipboard, OCR, select-all operation, rolling typed-character transcript, full-document scan, or scraping of conversation panes. UI Automation runtime IDs, PowerPoint object identities, window handles, and caret metadata stay in the process. Only the bounded prefix/suffix and a fixed instruction enter the model request.
 
-An editor can expose only a fragment or no usable text. TypeNext does not guess that the caret is at the end. A TSF service or app-specific adapter would be needed for controls the UIA reader cannot access. API support does not change this limitation.
+An editor can expose only a fragment or no usable text. TypeNext does not guess that the caret is at the end. Controls unsupported by the UIA reader or PowerPoint adapter still need another app-specific adapter or a TSF service. API support does not change this limitation.
 
 ## Privacy and insertion limitations
 
@@ -94,7 +111,7 @@ Commit Chinese/Japanese IME composition before requesting or accepting suggestio
 
 ## Build and verification
 
-The release is unsigned. Do not disable security tools to run it. Review the source and rebuild when appropriate. **The supplied binary was built with the older Go toolchain available in the delivery environment; rebuild with a currently maintained Go release before production use.** The actual version and checks are recorded in `docs/VERIFICATION.md`.
+The executable is unsigned. Review the source and rebuild when appropriate. The PowerPoint/stability update was built with Go 1.27.1 on Windows amd64. The actual checks, current executable checksum, and historical release details are recorded in `docs/VERIFICATION.md`.
 
 There are no external Go module dependencies. On Windows x64, with a maintained Go toolchain:
 

@@ -14,6 +14,7 @@
   "allowed_apps": [
     "notepad.exe",
     "winword.exe",
+    "powerpnt.exe",
     "typora.exe",
     "wechat.exe",
     "weixin.exe"

@@ -1,4 +1,49 @@
-# Verification report — TypeNext 0.1.2 preview
+# Verification report — TypeNext
+
+## 0.1.3 PowerPoint pane correction — 19 September 2026
+
+The installed PowerPoint **16.0.20326.20144** exposes the slide editor as `PPTFrameClass -> MDIClient -> mdiClass`, rather than the legacy `paneClassDC` listed in the Office 2000 API documentation. A live metadata probe confirmed `OBJID_NATIVEOM` succeeds on that `mdiClass` pane and exposes Normal view, the active slide pane, and a collapsed text selection. The adapter now accepts both classes while retaining the actual keyboard-focus ancestry and foreground boundaries.
+
+Live verification:
+
+- The production `Capture` path successfully recognized the modern pane and rejected an initial presentation that PowerPoint reported as read-only. The read-only guard remains in place, with a clearer diagnostic.
+- Against a subsequently editable presentation, `TestPowerPointLiveNativeRead` passed **three stable bounded reads** through the native adapter's selection, context, and caret-identity code, using the explicitly identified pane HWND.
+- The native-read diagnostic does not require foreground focus. Attempts at the separate foreground-capture test timed out waiting for PowerPoint to become foreground, except the read-only rejection above. A full foreground suggestion/acceptance session remains unverified.
+- No source text was printed or sent to a model, and no text was inserted or selection changed.
+
+Final `go test -race -count=1 ./...`, `go vet ./...`, and the Windows GUI build passed with **Go 1.27.1 windows/amd64**. The two live tests are opt-in and skipped by ordinary test runs. New focus-tree tests cover modern and legacy panes, child controls, ribbon/search siblings, other presentation windows, absent focus, and malformed parent cycles.
+
+Current workspace artifact: `TypeNext.exe`, version **0.1.3-preview**, **7,163,904 bytes**, SHA-256:
+
+```text
+2d80b3e5e9ba083e85945fb3173358bdb9cfb541c5fb430c1a4d17a8a7c81045
+```
+
+`SHA256SUMS.txt` describes this executable. Earlier artifact hashes below are historical.
+
+## PowerPoint and suggestion stability update — 19 September 2026
+
+Verified on **Windows amd64 with Go 1.27.1**:
+
+- `go test -count=1 ./...` passed, including Windows ABI and dummy-key DPAPI tests.
+- `go test -race -count=1 ./...` passed. After the final PowerPoint container check, `go test -race -count=1 ./internal/win` passed again.
+- `go vet ./...` passed against the final source.
+- `CGO_ENABLED=0 go build -trimpath -ldflags='-H=windowsgui -s -w' -o TypeNext.exe ./cmd/typenext` succeeded.
+- `git diff --check` passed.
+
+New regression tests cover bounded PowerPoint text reads through a fake IDispatch provider, UTF-16 limits and empty suffixes, COM argument order/reference ownership, unsupported selections and containers, presentation/slide/shape/caret identity, logical UIA caret comparisons, stale provider failures, stale request callbacks, focus/input changes, held-Tab acceptance, metadata exclusion from model context, and preservation of existing app approvals.
+
+The COM tests execute native Windows callbacks against a fake provider. They do **not** establish compatibility with an installed PowerPoint version. No live presentation, real model endpoint, or interactive UI/input-hook session was exercised. The PowerPoint and suggestion-stability cases in `WINDOWS_TEST_PLAN.md` remain pending.
+
+Initial PowerPoint/stability artifact (superseded): `TypeNext.exe`, **7,161,344 bytes**, SHA-256:
+
+```text
+b6fb8875566c21e098c58937501054ef525957a0d65b8eac36e5806fb97a3813
+```
+
+This initial executable was unsigned. The older build and coverage figures below describe the previous API release and are retained as historical records.
+
+## Historical report — 0.1.2 API release
 
 Build date: 17 September 2026.
 

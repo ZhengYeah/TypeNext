@@ -75,6 +75,7 @@ type app struct {
 	snapshot                                              *core.TextContext
 	suggestion                                            string
 	candidateReady                                        bool
+	tabAcceptHeld                                         bool
 	running                                               bool
 	enabled                                               bool
 	lastActivity                                          time.Time
@@ -91,8 +92,8 @@ var currentApp *app
 func Run() error {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
-	// All HWNDs and input hooks live on this OS thread. Accessibility uses a
-	// dedicated MTA thread, and inference runs outside both of those threads.
+	// All HWNDs and input hooks live on this OS thread.
+	// Accessibility uses a dedicated MTA thread, and inference runs outside both of those threads.
 	user32.NewProc("SetProcessDPIAware").Call()
 	path, e := core.ConfigPath()
 	if e != nil {
@@ -249,13 +250,8 @@ func (a *app) checkbox(text string, id, x, y, w int, checked bool) {
 		pSendMessage.Call(h, 0xf1, 1, 0)
 	}
 }
-
-// Seperators and spacers are used to visually group settings.
 func (a *app) separator(x, y, w int) {
 	a.control("STATIC", "", 0, x, y, w, 2, 0x10)
-}
-func (a *app) spacer(x, y, w, h int) {
-	a.control("STATIC", "", 0, x, y, w, h, 0)
 }
 
 func (a *app) buildSettings() {
@@ -265,6 +261,7 @@ func (a *app) buildSettings() {
 	a.button("Shortcuts…", idHotkeys, 486, 24, 130)
 	a.button("Quit", idQuit, 628, 24, 90)
 	a.label("Writing Completion  /  Local Model or API  /  "+core.Version, 24, 65, 690, 22)
+	// The settings window is divided into three sections.
 	a.separator(24, 90, 694)
 	a.label("1  Connect a model (local or API)", 24, 98, 680, 24)
 	a.label("Provider", 24, 131, 95, 25)
@@ -297,6 +294,7 @@ func (a *app) buildSettings() {
 	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 450, 694, 86, 0x311044)
 	a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 543, 698, 24)
 	a.separator(24, 572, 694)
+	// Save, test buttons, and status labels are at the bottom of the window.
 	a.button("Save settings", idSave, 24, 580, 137)
 	a.button("Test model", idTest, 174, 580, 120)
 	a.button("Open test pad", idPad, 307, 580, 133)
@@ -380,6 +378,25 @@ func (a *app) post(f func()) {
 	a.jobs <- f
 	pPostMessage.Call(a.window, wmDispatch, 0, 0)
 }
+
+// Every stage of a request passes through the same UI-thread guard. In
+// particular, a completed capture must not briefly show an old-window preview
+// while waiting for the foreground timer to notice that focus changed.
+func (a *app) postRequest(id, revision uint64, window uintptr, update func()) {
+	a.post(func() { a.updateRequest(id, revision, window, foreground(), update) })
+}
+
+func (a *app) updateRequest(id, revision uint64, window, activeWindow uintptr, update func()) {
+	if a.requestID != id {
+		return
+	}
+	if a.revision.Load() != revision || window == 0 || activeWindow != window {
+		a.invalidate(false)
+		return
+	}
+	update()
+}
+
 func (a *app) invalidate(arm bool) {
 	a.revision.Add(1)
 	a.requestID++
@@ -415,7 +432,12 @@ func (a *app) request(manual bool) {
 		return
 	}
 	a.invalidate(false)
-	a.lastForeground = foreground()
+	window := foreground()
+	if window == 0 {
+		a.setStatus("Focus a textbox before requesting a continuation.")
+		return
+	}
+	a.lastForeground = window
 	id := a.requestID
 	rev := a.revision.Load()
 	cfg := a.cfg
@@ -432,30 +454,30 @@ func (a *app) request(manual bool) {
 		snapshot, e := a.worker.Capture(readCtx, cfg, pad)
 		readCancel()
 		if e != nil {
-			a.post(func() {
-				if a.requestID == id {
-					a.running = false
-					a.setStatus(e.Error())
-					if manual {
-						a.notify(e.Error())
-					}
+			a.postRequest(id, rev, window, func() {
+				a.running = false
+				a.setStatus(e.Error())
+				if manual {
+					a.notify(e.Error())
 				}
 			})
+			return
+		}
+		// Capture runs off-thread and can finish after focus moved, before the
+		// UI timer or a queued hook callback has invalidated this request. Never
+		// send context from that new window to the model.
+		if ctx.Err() != nil || a.revision.Load() != rev || uintptr(snapshot.Window) != window || foreground() != window {
+			a.postRequest(id, rev, window, func() { a.invalidate(false) })
 			return
 		}
 		if strings.TrimSpace(snapshot.Prefix) == "" {
-			a.post(func() {
-				if a.requestID == id {
-					a.running = false
-					a.setStatus("Type a few words before requesting a continuation.")
-				}
+			a.postRequest(id, rev, window, func() {
+				a.running = false
+				a.setStatus("Type a few words before requesting a continuation.")
 			})
 			return
 		}
-		a.post(func() {
-			if a.requestID != id {
-				return
-			}
+		a.postRequest(id, rev, window, func() {
 			a.snapshot = &snapshot
 			title, detail := "Generating locally…", "The first request may need to load the model."
 			if cfg.IsRemote() {
@@ -470,22 +492,18 @@ func (a *app) request(manual bool) {
 				return
 			}
 			last = time.Now()
-			a.post(func() {
-				if a.requestID == id && foreground() == uintptr(snapshot.Window) {
-					a.showOverlay(snapshot, "TypeNext · generating", partial, "Wait for completion · Esc to dismiss")
-				}
+			a.postRequest(id, rev, window, func() {
+				a.showOverlay(snapshot, "TypeNext · generating", partial, "Wait for completion · Esc to dismiss")
 			})
 		})
 		if e != nil {
-			a.post(func() {
-				if a.requestID == id {
-					a.running = false
-					a.hideOverlay()
-					a.snapshot = nil
-					a.setStatus(e.Error())
-					if manual && !errors.Is(e, context.Canceled) {
-						a.notify(e.Error())
-					}
+			a.postRequest(id, rev, window, func() {
+				a.running = false
+				a.hideOverlay()
+				a.snapshot = nil
+				a.setStatus(e.Error())
+				if manual && !errors.Is(e, context.Canceled) {
+					a.notify(e.Error())
 				}
 			})
 			return
@@ -494,12 +512,14 @@ func (a *app) request(manual bool) {
 		checkCtx, checkCancel := context.WithTimeout(ctx, 3*time.Second)
 		fresh, e := a.worker.Capture(checkCtx, cfg, pad)
 		checkCancel()
-		a.post(func() {
-			if a.requestID != id {
+		a.postRequest(id, rev, window, func() {
+			a.running = false
+			if e != nil {
+				a.invalidate(false)
+				a.setStatus("Could not verify the textbox after generation: " + e.Error())
 				return
 			}
-			a.running = false
-			if e != nil || fresh.Fingerprint() != snapshot.Fingerprint() || a.revision.Load() != rev {
+			if fresh.Fingerprint() != snapshot.Fingerprint() {
 				a.invalidate(false)
 				a.setStatus("Context changed during generation; suggestion discarded.")
 				return
@@ -814,6 +834,9 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 
 func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 	a := currentApp
+	if code >= 0 && a != nil && k.Flags&0x10 == 0 && a.consumeAcceptedTab(k.VK, wp) {
+		return 1
+	}
 	if code >= 0 && a != nil && (wp == 0x100 || wp == 0x104) {
 		if k.Flags&0x10 == 0 { // Ignore injected events; key contents are never stored.
 			v := k.VK
@@ -822,6 +845,7 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 			if !modifier && !ownShortcut {
 				if v == 0x09 && a.cfg.AcceptTab && a.candidateReady && a.snapshot != nil && !modifiersDown() && foreground() == uintptr(a.snapshot.Window) {
 					// The callback must stay fast; validation and insertion run asynchronously.
+					a.tabAcceptHeld = true
 					pPostMessage.Call(a.window, 0x312, 2, 0)
 					return 1
 				}
@@ -837,6 +861,24 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 	ret, _, _ := pCallNextHookEx.Call(0, uintptr(code), wp, uintptr(unsafe.Pointer(k)))
 	return ret
 }
+
+// A Tab press used for acceptance belongs to TypeNext until key-up. Otherwise
+// key repeat reaches the editor and cancels insertion while Insert waits for
+// the original Tab press to be released. Invalidation must not reset this flag.
+func (a *app) consumeAcceptedTab(vk uint32, message uintptr) bool {
+	if vk != 0x09 || !a.tabAcceptHeld {
+		return false
+	}
+	switch message {
+	case 0x100, 0x104: // WM_KEYDOWN, WM_SYSKEYDOWN
+		return true
+	case 0x101, 0x105: // WM_KEYUP, WM_SYSKEYUP
+		a.tabAcceptHeld = false
+		return true
+	}
+	return false
+}
+
 func mouseProc(code int32, wp, lp uintptr) uintptr {
 	if code >= 0 && currentApp != nil {
 		switch wp {

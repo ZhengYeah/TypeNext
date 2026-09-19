@@ -65,11 +65,14 @@ type variant struct {
 	Data           [16]byte
 }
 
-func rangeReadonly(r *comObject) bool {
+func rangeReadonly(r *comObject) (readOnly, known bool) {
 	var v variant
 	hr := comCall(r, 9, 40015, uintptr(unsafe.Pointer(&v))) // UIA_IsReadOnlyAttributeId
 	defer pVariantClear.Call(uintptr(unsafe.Pointer(&v)))
-	return !failed(hr) && v.VT == 11 && (*(*int16)(unsafe.Pointer(&v.Data[0]))) != 0
+	if failed(hr) || v.VT != 11 {
+		return false, false
+	}
+	return (*(*int16)(unsafe.Pointer(&v.Data[0]))) != 0, true
 }
 func bstrString(b *uint16) string {
 	if b == nil {
@@ -157,6 +160,7 @@ func rangeRect(r *comObject) (rect, bool) {
 type uiaWorker struct {
 	jobs           chan func(*comObject)
 	initialization error
+	caret          caretIdentity // accessed only on the dedicated COM thread
 }
 
 func newUIA() (*uiaWorker, error) {
@@ -178,6 +182,7 @@ func newUIA() (*uiaWorker, error) {
 			return
 		}
 		defer release(automation)
+		defer w.caret.close()
 		ready <- nil
 		for f := range w.jobs {
 			f(automation)
@@ -200,7 +205,7 @@ func (w *uiaWorker) Capture(ctx context.Context, c core.Config, padWindow uintpt
 			reply <- result{e: ctx.Err()}
 			return
 		}
-		t, e := readContext(a, c, padWindow)
+		t, e := readContext(a, c, padWindow, &w.caret)
 		reply <- result{t, e}
 	}
 	select {
@@ -216,7 +221,7 @@ func (w *uiaWorker) Capture(ctx context.Context, c core.Config, padWindow uintpt
 	}
 }
 
-func readContext(a *comObject, c core.Config, padWindow uintptr) (core.TextContext, error) {
+func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity) (core.TextContext, error) {
 	var result core.TextContext
 	window := foreground()
 	_, process, err := processOf(window)
@@ -228,6 +233,11 @@ func readContext(a *comObject, c core.Config, padWindow uintptr) (core.TextConte
 	}
 	if composing(window) {
 		return result, errors.New("finish the current IME composition first")
+	}
+	// Slide text is exposed by PowerPoint's native object model, rather than a
+	// standard UIA Edit. The adapter remains behind the same executable approval.
+	if strings.EqualFold(process, "powerpnt.exe") {
+		return readPowerPointContext(c, window, process)
 	}
 	var el *comObject
 	if failed(comCall(a, 8, uintptr(unsafe.Pointer(&el)))) || el == nil {
@@ -248,8 +258,11 @@ func readContext(a *comObject, c core.Config, padWindow uintptr) (core.TextConte
 		return result, errors.New("textbox is not enabled")
 	}
 	control, err := scalar(el, 21)
-	if err != nil || (control != 50004 && control != 50030) {
-		return result, errors.New("focused control is not an accessible Edit or Document; no text was read")
+	if err != nil {
+		return result, err
+	}
+	if !textControlAllowed(control) {
+		return result, focusedTextControlError(process, control)
 	}
 	pid, err := scalar(el, 20)
 	if err != nil {
@@ -293,16 +306,23 @@ func readContext(a *comObject, c core.Config, padWindow uintptr) (core.TextConte
 		var r2 *comObject
 		hr := comCall(p2, 10, uintptr(unsafe.Pointer(&active)), uintptr(unsafe.Pointer(&r2)))
 		if !failed(hr) && active != 0 && r2 != nil {
-			release(caret)
-			caret = r2
-			source = "TextPattern2 caret"
+			// Both patterns must describe the same collapsed selection. A stale
+			// provider caret must not move our read to another insertion point.
+			if sameRangeEndpoints(caret, r2) {
+				release(caret)
+				caret = r2
+				source = "TextPattern2 caret"
+			} else {
+				release(r2)
+			}
 		} else {
 			release(r2)
 		}
 		release(p2)
 	}
-	if rangeReadonly(caret) {
-		return result, errors.New("read-only text: completion disabled")
+	readOnly, known := rangeReadonly(caret)
+	if err := validateTextEditability(control, readOnly, known); err != nil {
+		return result, err
 	}
 	before, err := cloneRange(caret)
 	if err != nil {
@@ -366,7 +386,11 @@ func readContext(a *comObject, c core.Config, padWindow uintptr) (core.TextConte
 	if e != nil || currentID != id {
 		return result, errors.New("textbox changed while reading; try again")
 	}
-	result = core.TextContext{Window: uint64(window), FocusID: id, Process: process, Prefix: core.Tail(prefix, c.PrefixChars), Suffix: core.Head(suffix, c.SuffixChars), X: x, Y: y, CaretHeight: h, PositionSource: source}
+	caretID, err := identity.identify(window, id, caret)
+	if err != nil {
+		return result, err
+	}
+	result = core.TextContext{Window: uint64(window), FocusID: id, CaretID: caretID, Process: process, Prefix: core.Tail(prefix, c.PrefixChars), Suffix: core.Head(suffix, c.SuffixChars), X: x, Y: y, CaretHeight: h, PositionSource: source}
 	return result, nil
 }
 
@@ -384,7 +408,7 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 			reply <- errors.New("typing or focus changed; suggestion discarded")
 			return
 		}
-		actual, err := readContext(a, c, padWindow)
+		actual, err := readContext(a, c, padWindow, &w.caret)
 		if err != nil {
 			reply <- err
 			return

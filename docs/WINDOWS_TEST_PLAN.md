@@ -1,6 +1,6 @@
 # Windows acceptance test plan
 
-**Status: not executed in the Linux build environment.** Use disposable content. Do not treat a compiled binary or passing model-client tests as proof of application compatibility.
+**Status: live application checks below remain pending, including the unreleased PowerPoint adapter.** Use disposable content. Do not treat a compiled binary or passing automated tests as proof of application compatibility. See `VERIFICATION.md` for checks actually run.
 
 ## Baseline
 
@@ -20,6 +20,8 @@ Check the Shortcuts window at your display scale. Open it both from main setting
 
 ## Existing text and caret positioning
 
+For a read-only live PowerPoint reader check, leave a collapsed caret inside slide text and run `go test -count=1 -run '^TestPowerPointLiveRead$' -v ./internal/win -args -typenext-live-powerpoint`. It waits up to 55 seconds for PowerPoint to be foreground, then checks three captures for stable caret/context identity. It reports only character counts, never source text, and does not call a model or insert input. This test is skipped in ordinary runs. `scripts/Inspect-PowerPoint.ps1` separately reports window classes and native selection metadata without reading text. Current PowerPoint should identify an `mdiClass` pane; older versions may use `paneClassDC`.
+
 Open the built-in test pad. With its pre-existing paragraph intact, place the caret at the end. Request a suggestion and accept it. Confirm that existing content is not replaced, that the popup does not take focus, and that insertion is exactly the previewed continuation.
 
 Use Inspect in 3s, switch back to the pad, and verify that it reports text that was already present. Move the caret into the middle of the paragraph, run another inspection, and compare the reported prefix and suffix with the visible document. Try long documents, blank suffixes, an empty document, Chinese text, emoji, and a selected span. A selected span should be rejected, not replaced.
@@ -30,7 +32,37 @@ During slow generation, type another character, move the caret, select another f
 
 Accept while holding the shortcut modifiers briefly; TypeNext should wait for release. Keep them held beyond the timeout and verify a safe refusal. A partial Windows input failure must not trigger automatic retries. Test Tab acceptance separately; when there is no finished suggestion, Tab should retain its normal function. Turn the option back off if it conflicts with the current IME/editor.
 
+With a completed suggestion visible, leave the caret idle through several blink cycles. The card should stay visible and acceptable when no text or logical position changed, including in editors that alternate between native caret and fallback geometry. Repeat in Notepad and each supported editor. Move to a second occurrence of identical surrounding text within the same field; the old suggestion must be refused even when its prefix/suffix match.
+
+Use a slow response and switch windows during the initial capture, streaming, final validation, and acceptance-key release. A callback from the previous target must not show a card in the new window, start a request for its text, or insert there. Repeat with two windows from the same application and with two similar textboxes in one window.
+
+Enable Tab acceptance, wait for a finished suggestion, then hold Tab long enough for keyboard auto-repeat but release before the acceptance timeout. Exactly one insertion should occur after release, without moving focus or canceling the suggestion because of the repeats. Hold beyond the timeout and verify refusal; release and try a new suggestion. With no completed suggestion, Tab must keep its usual navigation/indent behavior.
+
 In a disposable chat draft, verify that accepted text does not send the message. Do not test this in an important conversation. The program never deliberately generates Enter/Return, but the receiving application's handling still requires validation.
+
+## PowerPoint slide text (unreleased)
+
+Record the PowerPoint version/build and Windows display scale. On an upgraded installation, add `powerpnt.exe` to the allowlist; verify that loading old settings did not add it automatically. A fresh configuration should include it. Use a disposable presentation in normal editing view, click inside an ordinary slide text box or text placeholder, and confirm that a text insertion caret is visible rather than shape-selection handles.
+
+1. Use Inspect in 3s at the beginning, middle, and end of existing text. Compare bounded prefix/suffix with the slide; test empty text, multiple paragraphs, long text, Chinese, and emoji. Reading must not move the caret, change the selection, or alter the presentation.
+2. Generate and accept a short suggestion in an ordinary text box and in a title/body placeholder. Confirm exactly one insertion at the original caret and preservation of existing text. Repeat in slide editing view where available, with manual and automatic requests.
+3. Highlight text or select only the shape outline. Both must be rejected. Test notes, outline, master, slide sorter, and slide-show views; unsupported targets must not yield slide text from another pane. Try table cells, chart labels, SmartArt, and grouped/embedded objects; an unsupported target must fail closed.
+4. Switch between slides, shapes, two presentations, and two windows of one presentation while generating and before accepting. Repeat with identical text in different shapes and with repeated passages inside one shape. The old suggestion must not survive the changed logical target or insert into it.
+5. Focus the ribbon, search field, notes pane, or a dialog while a slide caret remains remembered by PowerPoint. The slide adapter must not read the remembered selection as the currently focused target. Close the source presentation/window during a slow response and verify safe cancellation.
+6. Repeat the idle-blink and held-Tab cases above. Check popup placement at different zoom levels, near slide edges, and after changing monitor/DPI. A positioning fallback must not invalidate the same logical caret, but genuine focus/caret changes must still cancel.
+7. Try a read-only or Protected View presentation without enabling editing. Verify refusal and no insertion. Record a clear unsupported/error result when the installed PowerPoint version cannot expose an unambiguous collapsed text range.
+
+Passing automated COM/ABI tests does not establish these live behaviors. Keep the matrix status pending until each application/version has been exercised.
+
+## Weixin message input and custom UIA roles
+
+Record the Weixin version and the state of Settings > General > 读屏优化模式 (Screen reader optimization). On the initially inspected Weixin 4.1.13.65 installation, metadata exposed only a Win32 Window (50032), class `Qt51514QWindowIcon`, with no text or selection patterns. Provider probes found only generic clients. This is an observed compatibility failure; enabling the setting has not yet been verified to resolve it.
+
+1. With the mode disabled, focus the message input and run `scripts/Inspect-FocusedText.ps1 -WatchSeconds 15 -ProbeProvider`. Repeat with the mode enabled and the input refocused; follow any restart prompt from Weixin. The diagnostic must report only metadata, never chat text, titles, Name, or Value. Record the focused control type and available patterns for each state. An outer Window or missing TextPattern must produce an actionable refusal, not an empty successful capture.
+2. If the focused input exposes TextPattern, test a disposable unsent draft with known text and a collapsed caret at its beginning, middle, and end. Inspect only that draft's bounded prefix/suffix. No chat history, adjacent message, or other field may be read, and inspection must not change text, selection, or clipboard. Try empty text, Chinese, emoji, and a selected span; reject the selected span.
+3. For Text (50020), Custom (50025), and Pane (50033), use a controlled accessibility test provider to verify that only boolean `IsReadOnly=false` permits capture. True, unsupported, mixed, missing, wrong-type, and failed attribute responses must refuse before any text retrieval. TextPattern alone is insufficient. Window and List roles must stay rejected even if they advertise text patterns. Repeat existing Edit/Document regression cases.
+4. In a disposable draft, generate and accept once, confirming exactly the previewed text is inserted without sending a message. Switch conversations, focus chat history/search, move the caret, or type while generation or acceptance is pending; the old suggestion must not reappear or insert. No fallback may read another control to recover a missing input provider.
+5. Repeat the idle-caret, held-Tab, and committed Pinyin cases above with each usable setting state. Leave acceptance and full Weixin compatibility pending until exercised on the actual build; passing provider-policy tests does not establish live support.
 
 ## Permissions and privacy
 
@@ -51,8 +83,9 @@ Test two monitors, negative screen coordinates, the bottom edge of a display, hi
 | Built-in test pad | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 | Windows Notepad | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 | Microsoft Word | Pending | Pending | Pending | Pending | Pending | Not live-tested |
+| Microsoft PowerPoint 16.0.20326.20144 slide text | Native bounded read passed | Mid-text case pending | Pending | Pending | Pending | Native adapter: three stable reads; full foreground flow pending |
 | Typora | Pending | Pending | Pending | Pending | Pending | Not live-tested |
-| WeChat / Weixin | Pending | Pending | Pending | Pending | Pending | Not live-tested |
+| Weixin 4.1.13.65 | Unavailable in initial metadata probe | Pending | Pending | Pending | Pending | Outer Window only; screen-reader mode follow-up pending |
 | VS Code (explicit approval) | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 | Browser textarea (explicit approval) | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 

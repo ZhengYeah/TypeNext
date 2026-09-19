@@ -8,8 +8,11 @@ import (
 )
 
 type TextContext struct {
-	Window         uint64
-	FocusID        string
+	Window  uint64
+	FocusID string
+	// CaretID identifies a logical insertion point independently of popup geometry.
+	// It is local metadata and is never included in ContextJSON.
+	CaretID        string
 	Process        string
 	Prefix         string
 	Suffix         string
@@ -18,14 +21,19 @@ type TextContext struct {
 	PositionSource string
 }
 
-// Fingerprint never leaves the process. Including the caret rectangle helps
-// reject repeated, identical passages at different positions in a document.
+// Fingerprint never leaves the process. Readers with a verified logical caret
+// identity may change positioning methods without invalidating the text. Older
+// readers retain the conservative coordinate check for repeated passages.
 func (t TextContext) Fingerprint() [32]byte {
+	x, y := t.X, t.Y
+	if t.CaretID != "" {
+		x, y = 0, 0
+	}
 	b, _ := json.Marshal(struct {
-		W        uint64
-		ID, P, S string
-		X, Y     int32
-	}{t.Window, t.FocusID, t.Prefix, t.Suffix, t.X, t.Y})
+		W               uint64
+		ID, Caret, P, S string
+		X, Y            int32
+	}{t.Window, t.FocusID, t.CaretID, t.Prefix, t.Suffix, x, y})
 	return sha256.Sum256(b)
 }
 

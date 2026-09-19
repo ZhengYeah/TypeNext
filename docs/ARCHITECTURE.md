@@ -8,9 +8,10 @@ Version 0.1.2 is a native Windows x64 tray application, not a TSF DLL. It suppor
 focused, approved textbox
         |
         v
-Windows UI Automation worker (dedicated MTA / OS thread)
+Accessibility worker (dedicated MTA / OS thread)
+UI Automation or focused PowerPoint document adapter
         |
-        | bounded prefix + suffix, runtime ID, window, caret location
+        | bounded prefix + suffix, focus/caret identity, window, location
         v
 local HTTP or approved HTTPS API (cancellable NDJSON / SSE / JSON)
         |
@@ -32,21 +33,37 @@ Unicode SendInput; no clipboard or Return-key injection
 
 `internal/core/config.go` validates settings and executable permissions. `endpoint.go` normalizes URLs, enforces local-only or approved remote HTTPS policy, and binds consent to a canonical request URL. `client.go` builds completion-only prompts and parses streamed model responses. `text.go` represents immutable context snapshots and sanitizes suggested text. Their tests run on Linux and Windows.
 
-`internal/win/native_windows.go` contains the native API bindings and native structures. `uia_windows.go` implements COM text access on a dedicated, OS-thread-locked MTA. `app_windows.go` owns the native windows, settings controls, tray, hook callbacks, timers, and request state. `abi_assert_windows.go` enforces native structure layouts during compilation; `abi_windows_test.go` checks them in Windows tests.
+`internal/win/native_windows.go` contains the native API bindings and native structures. `uia_windows.go` implements COM text access on a dedicated, OS-thread-locked MTA; `uia_identity_windows.go` retains a caret range for logical position comparison. `powerpoint_windows.go` implements the focused PowerPoint adapter. `app_windows.go` owns the native windows, settings controls, tray, hook callbacks, timers, and request state. `abi_assert_windows.go` enforces native structure layouts during compilation; `abi_windows_test.go` checks them in Windows tests.
 
-The Win32 message loop owns UI state. Background model/capture operations marshal callbacks through a bounded queue. Input hooks do not perform accessibility or network calls and do not accumulate typed characters. Cancellation invalidates a request generation and increments an atomic input revision; stale callbacks cannot resurrect old suggestions.
+The Win32 message loop owns UI state. Background model/capture operations marshal callbacks through a bounded queue. Input hooks do not perform accessibility or network calls and do not accumulate typed characters. Cancellation invalidates a request generation and increments an atomic input revision. Capture and model callbacks also check request ownership and foreground binding before updating suggestion state. Acceptance checks the original target and input revision before insertion, and its result cannot replace a newer request. Optional Tab acceptance consumes repeat events while waiting for release, so a held acceptance key does not cancel its own pending insertion.
 
 A single accessibility worker prevents unbounded concurrent COM calls. Each caller has a timeout, and cancelled queued jobs are not executed. A malfunctioning third-party accessibility provider may still block the underlying COM call after the caller times out. The worker then remains unavailable until it returns or TypeNext is restarted. An isolated, restartable helper process is a future hardening step.
 
 ## Text access details
 
-The foreground executable is checked before text is read. UI Automation reads only the focused element, not its parents, siblings, or the entire application tree. The element must be an Edit or Document, report keyboard focus and enabled status, and not be password-protected. The caret selection must be collapsed. Read-only text is rejected when the provider exposes that attribute.
+The foreground executable is checked before text is read. UI Automation reads only the focused element, not its parents, siblings, or the entire application tree. The element must report keyboard focus and enabled status, expose TextPattern with a collapsed caret selection, and not be password-protected. Edit and Document controls retain the existing policy: read-only text is rejected when the provider exposes that attribute. Text, Custom, and Pane controls additionally require an explicit boolean `IsReadOnly=false`; missing, unsupported, mixed, or malformed attributes cannot establish editability. Window and List controls remain rejected.
 
 The native text-pattern interface is acquired through `GetCurrentPatternAs`, rather than assuming an arbitrary `IUnknown` pointer has a text-pattern vtable. Prefix and suffix are independent clones of the caret range. Only the requested endpoints are moved; TypeNext never changes the application's selection to read text.
 
-A snapshot includes the UI Automation runtime ID, foreground HWND, bounded text, and caret location. A SHA-256 fingerprint is used only for local equality checks; neither the fingerprint nor the source text is persisted. Including location makes repeated identical passages less likely to pass a stale check, but it is not a transaction ID or proof that all document state is unchanged.
+A snapshot includes the focus identity, foreground HWND, bounded text, logical `CaretID`, and caret geometry. A SHA-256 fingerprint is used only for local equality checks; neither the fingerprint nor the source text is persisted. When a reader supplies a verified logical caret identity, geometry is excluded from this comparison. Thus a blinking native caret or changing positioning fallback does not by itself invalidate unchanged text. Snapshots without a logical identity retain coordinate comparison.
+
+For UIA, the worker retains a cloned caret range and compares both endpoints with the next capture using `CompareEndpoints`. A changed window, focused element, endpoint, or failed comparison produces a new identity. Identical surrounding text at a different position therefore does not reuse the previous identity. Provider behavior still determines range reliability; these checks are not an atomic transaction or proof that all document state is unchanged.
 
 Native caret geometry is preferred. Degenerate UIA range geometry or a neighboring glyph can supply the location. If these are unavailable, the top-left region of the focused control is used, and the inspector labels the positioning fallback. A floating card is used because arbitrary programs do not share an API for rendering inline ghost text.
+
+## PowerPoint slide text (0.1.3 preview)
+
+PowerPoint's slide canvas does not reliably expose the same editable text patterns as a standard Windows textbox. Its adapter uses `AccessibleObjectFromWindow` with `OBJID_NATIVEOM` on the focused `mdiClass` (current desktop PowerPoint) or `paneClassDC` (older versions) document pane. Only the actual keyboard focus and its ancestors are considered; sibling ribbon/search controls cannot reuse a stale slide selection. It binds to that pane's `DocumentWindow`; it does not search open presentations or use a global active-document lookup to choose a target. Foreground, focus, view, and selection are checked around the bounded read.
+
+Only normal/slide editing with `ppSelectionText` and a zero-length `Selection.TextRange` is accepted. Shape selection, a nonempty text selection, unsupported views, or ambiguous ownership fail closed. The adapter reads bounded `Characters(start, length)` slices around the caret rather than retrieving the whole shape or presentation text. Retained presentation identity, slide and shape identifiers, and the text-range start distinguish targets and repeated passages. These identifiers remain local; only prefix/suffix reach the model.
+
+The object-model adapter performs reads only. Acceptance revalidates the current target and context, then uses the existing Unicode `SendInput` path. Popup positioning uses the native caret or PowerPoint range bounds converted through `PointsToScreenPixelsX/Y`, with a pane-corner fallback when caret geometry is unavailable. Notes, masters, slide shows, and embedded chart/SmartArt/table editors are not supported. New default configurations approve `powerpnt.exe`; existing saved allowlists are not expanded. See `VERIFICATION.md` for the live checks completed and their limits.
+
+## Weixin and custom text providers
+
+Qt 5.15 can report an editable field as the UIA Text control type when native virtual-keyboard activation is disabled. Eligibility therefore depends on the focused provider's text and editability contracts as well as its role. The custom-role path uses the same bounded caret-range reads, context checks, and Unicode insertion as other UIA editors; it does not search chat history or add a clipboard fallback.
+
+The installed Weixin 4.1.13.65 initially exposed only a Win32 Window (50032), class `Qt51514QWindowIcon`, with no text or selection patterns. Root/child HWND provider probes and MSAA checks found only generic clients. The custom-role change cannot read text through that outer window. Settings > General > 读屏优化模式 (Screen reader optimization) is a setting to investigate; its effect on this installation and live message-input compatibility remain unverified. `scripts/Inspect-FocusedText.ps1` inspects accessibility metadata without reading chat text, names, values, or window titles. See `VERIFICATION.md` for the current live-check status.
 
 ## Model behavior
 
@@ -58,7 +75,7 @@ Incomplete streams and server errors never become an acceptable completion. Part
 
 ## Boundaries, not promises
 
-UI Automation access is provider-dependent. A TSF-enabled app is not automatically compatible with this UIA-only reader. No claims are made that this preview reads full Word documents, Typora's source model, VS Code's complete buffer, or WeChat message history. It reads exactly what the focused text provider exposes.
+UI Automation access is provider-dependent. A TSF-enabled app is not automatically compatible with this reader, and the PowerPoint adapter applies only to its supported slide text. No claims are made that this preview reads full Word documents, Typora's source model, VS Code's complete buffer, or WeChat message history. It reads bounded context from the focused text provider.
 
 Automatic mode detects a typing pause using activity events, not a rolling key transcript. Some edits initiated by menus, other assistive tools, or the application itself will not arm automatic completion. Use the manual request shortcut for those cases. Keyboard and mouse activity still invalidate known suggestions; acceptance always attempts a fresh read.
 
