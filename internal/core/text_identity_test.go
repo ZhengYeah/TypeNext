@@ -20,7 +20,7 @@ func TestPowerPointApprovalPreservesSavedAllowlist(t *testing.T) {
 		t.Fatal(err)
 	}
 	if cfg.Allows("POWERPNT.EXE") || !cfg.Allows("notepad.exe") {
-		t.Fatal("upgrades must retain the user's existing app permissions")
+		t.Fatal("loading saved settings must retain the user's app permissions")
 	}
 }
 

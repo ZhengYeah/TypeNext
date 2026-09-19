@@ -61,9 +61,9 @@ func TestHotkeyMatchesExactly(t *testing.T) {
 		t.Fatal("wrong or disabled key matched")
 	}
 }
-func TestHotkeyConfigValidationAndMigration(t *testing.T) {
+func TestHotkeyConfigValidationAndDefaults(t *testing.T) {
 	c := DefaultConfig()
-	c.AcceptHotkey = "shift+ctrl+f9"
+	c.AcceptHotkey = "ctrl+space"
 	if err := c.Validate(); err == nil || !strings.Contains(err.Error(), "same shortcut") {
 		t.Fatalf("duplicate not detected: %v", err)
 	}
@@ -78,18 +78,18 @@ func TestHotkeyConfigValidationAndMigration(t *testing.T) {
 		t.Fatal("invalid binding not detected")
 	}
 	path := filepath.Join(t.TempDir(), "config.json")
-	// v0.1.0 configurations do not contain hotkey fields. New defaults must
+	// Configurations can omit hotkey fields. Defaults must
 	// load without changing the user's model, endpoint, or application list.
-	old := `{"provider":"ollama","model":"my-local-model","endpoint":"http://127.0.0.1:11435","allowed_apps":["typora.exe"],"automatic_suggestions":true}`
-	if err := os.WriteFile(path, []byte(old), 0600); err != nil {
+	partial := `{"provider":"ollama","model":"my-local-model","endpoint":"http://127.0.0.1:11435","allowed_apps":["typora.exe"],"automatic_suggestions":true}`
+	if err := os.WriteFile(path, []byte(partial), 0600); err != nil {
 		t.Fatal(err)
 	}
 	got, err := LoadConfig(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.SuggestHotkey != "Ctrl+Shift+F9" || got.AcceptHotkey != "Ctrl+Shift+F10" || got.PauseHotkey != "Ctrl+Shift+F11" || got.Model != "my-local-model" || !got.Auto || !reflect.DeepEqual(got.AllowedApps, []string{"typora.exe"}) || got.Endpoint != "http://127.0.0.1:11435" {
-		t.Fatalf("bad migration: %+v", got)
+	if got.SuggestHotkey != "Ctrl+Space" || got.AcceptHotkey != "Ctrl+Shift+F10" || got.PauseHotkey != "Ctrl+Shift+F11" || got.Model != "my-local-model" || !got.Auto || !reflect.DeepEqual(got.AllowedApps, []string{"typora.exe"}) || got.Endpoint != "http://127.0.0.1:11435" {
+		t.Fatalf("bad defaults for partial configuration: %+v", got)
 	}
 	got.SuggestHotkey = "Alt+Shift+N"
 	got.PauseHotkey = "None"

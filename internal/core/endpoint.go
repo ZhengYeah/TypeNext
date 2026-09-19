@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// LocalBase retains the previous loopback-only contract.
+// LocalBase validates a loopback-only server URL.
 func LocalBase(raw string) (*url.URL, error) { return ServerBase(raw, false) }
 
 // ServerBase never permits URL credentials, query-string secrets, or plaintext
@@ -105,7 +105,7 @@ func ServerBase(raw string, allowRemote bool) (*url.URL, error) {
 }
 
 // RequestURL accepts either a base URL or the complete chat endpoint.
-// A bare OpenAI-compatible host gets /v1, matching the prior local behavior.
+// A bare OpenAI-compatible host gets /v1.
 func (c Config) RequestURL() (*url.URL, error) {
 	u, err := ServerBase(c.Endpoint, c.AllowRemote)
 	if err != nil {

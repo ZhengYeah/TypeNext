@@ -372,10 +372,10 @@ func TestRequestOptionsByProvider(t *testing.T) {
 	}
 }
 
-func TestAPIConfigMigrationAndPersistence(t *testing.T) {
+func TestAPIConfigDefaultsAndPersistence(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.json")
-	old := `{"provider":"openai-compatible","endpoint":"http://localhost:1234/v1","model":"my-model","suggest_hotkey":"Ctrl+Alt+N","automatic_suggestions":true}`
-	if err := os.WriteFile(path, []byte(old), 0600); err != nil {
+	partial := `{"provider":"openai-compatible","endpoint":"http://localhost:1234/v1","model":"my-model","suggest_hotkey":"Ctrl+Alt+N","automatic_suggestions":true}`
+	if err := os.WriteFile(path, []byte(partial), 0600); err != nil {
 		t.Fatal(err)
 	}
 	cfg, err := LoadConfig(path)
@@ -383,7 +383,7 @@ func TestAPIConfigMigrationAndPersistence(t *testing.T) {
 		t.Fatal(err)
 	}
 	if cfg.AllowRemote || cfg.AllowRemoteAuto || cfg.TokenParameter != "max_tokens" || !cfg.SendTemperature || cfg.SuggestHotkey != "Ctrl+Alt+N" || !cfg.Auto {
-		t.Fatal("unsafe migration")
+		t.Fatal("unsafe defaults for partial configuration")
 	}
 	cfg.Endpoint = "https://api.example.com/v1"
 	cfg.AllowRemote = true

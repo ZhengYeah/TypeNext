@@ -161,7 +161,7 @@ func (a *app) openShortcuts() {
 	}
 	heading := control("STATIC", "Keyboard shortcuts", 0, 24, 20, 656, 34, 0)
 	pSendMessage.Call(heading, 0x30, a.heading, 1)
-	control("STATIC", "Type a shortcut such as Ctrl+Shift+F9, or None to disable it.\r\nTab accepts suggestions by default; the extra accept key is optional.", 0, 24, 62, 656, 40, 0)
+	control("STATIC", "Type a shortcut such as Ctrl+Space, or None to disable it.\r\nTab accepts suggestions by default; the extra accept key is optional.", 0, 24, 62, 656, 40, 0)
 	a.separatorIn(a.hotkeyWindow, 24, 116, 656)
 	for i, field := range []struct{ label, value string }{
 		{"Suggest", a.cfg.SuggestHotkey}, {"Extra accept key", a.cfg.AcceptHotkey}, {"Pause / resume", a.cfg.PauseHotkey},
