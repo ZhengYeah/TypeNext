@@ -175,8 +175,8 @@ func Run() error {
 	a.trayMessageValue()
 	a.addTray()
 	defer a.removeTray()
-	// A registration conflict is nonfatal. Shortcuts can be changed even when
-	// all configured global keys are unavailable.
+	// A registration conflict is nonfatal.
+	// Shortcuts can be changed even when all configured global keys are unavailable.
 	a.applyHotkeys()
 	a.keyboard, _, e = pSetWindowsHookEx.Call(13, syscall.NewCallback(keyboardProc), inst, 0)
 	if a.keyboard == 0 {
@@ -475,7 +475,7 @@ func (a *app) request(manual bool) {
 	a.setStatus("Reading the focused textbox…")
 	go func() {
 		readCtx, readCancel := context.WithTimeout(ctx, 3*time.Second)
-		snapshot, e := a.worker.Capture(readCtx, cfg, pad)
+		snapshot, e := a.worker.CaptureInitial(readCtx, cfg, pad)
 		readCancel()
 		if e != nil {
 			a.postRequest(id, rev, window, func() {
@@ -487,9 +487,9 @@ func (a *app) request(manual bool) {
 			})
 			return
 		}
-		// Capture runs off-thread and can finish after focus moved, before the
-		// UI timer or a queued hook callback has invalidated this request. Never
-		// send context from that new window to the model.
+		// Capture runs off-thread and can finish after focus moved,
+		// before the UI timer or a queued hook callback has invalidated this request.
+		// Never send context from that new window to the model.
 		if ctx.Err() != nil || a.revision.Load() != rev || uintptr(snapshot.Window) != window || foreground() != window {
 			a.postRequest(id, rev, window, func() { a.invalidate(false) })
 			return
@@ -522,30 +522,27 @@ func (a *app) request(manual bool) {
 		})
 		if e != nil {
 			a.postRequest(id, rev, window, func() {
-				a.running = false
-				a.hideOverlay()
-				a.snapshot = nil
-				a.setStatus(e.Error())
-				if manual && !errors.Is(e, context.Canceled) {
-					a.notify(e.Error())
+				if errors.Is(e, context.Canceled) {
+					a.invalidate(false)
+					return
 				}
+				a.failSuggestion(snapshot, cfg.Model, "Could not finish the suggestion: "+e.Error())
 			})
 			return
 		}
 		// A second read catches edits/focus changes that did not generate a key event.
+		a.postRequest(id, rev, window, func() {
+			a.showOverlay(snapshot, cfg.Model, result, "Checking textbox · Esc to dismiss")
+		})
 		checkCtx, checkCancel := context.WithTimeout(ctx, 3*time.Second)
-		fresh, e := a.worker.Capture(checkCtx, cfg, pad)
+		fresh, e := verifySuggestionContext(checkCtx, snapshot, func(ctx context.Context) (core.TextContext, error) {
+			return a.worker.Capture(ctx, cfg, pad)
+		})
 		checkCancel()
 		a.postRequest(id, rev, window, func() {
 			a.running = false
 			if e != nil {
-				a.invalidate(false)
-				a.setStatus("Could not verify the textbox after generation: " + e.Error())
-				return
-			}
-			if fresh.Fingerprint() != snapshot.Fingerprint() {
-				a.invalidate(false)
-				a.setStatus("Context changed during generation; suggestion discarded.")
+				a.failSuggestion(snapshot, cfg.Model, "Could not verify the suggestion: "+e.Error())
 				return
 			}
 			a.snapshot = &fresh
@@ -612,8 +609,8 @@ func (a *app) tick() {
 	if a.automaticDue(time.Now(), modifiersDown()) {
 		_, process, e := processOf(fg)
 		if e == nil && (fg == a.pad || a.cfg.Allows(process)) {
-			// Pausing during composition must not consume the only automatic
-			// attempt. Keep it armed until the IME has committed its text.
+			// Pausing during composition must not consume the only automatic attempt.
+			// Keep it armed until the IME has committed its text.
 			if composing(fg) {
 				return
 			}
@@ -671,7 +668,7 @@ func (a *app) inspect() {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
-		s, e := a.worker.Capture(ctx, cfg, pad)
+		s, e := a.worker.CaptureInitial(ctx, cfg, pad)
 		a.post(func() {
 			if e != nil {
 				a.setStatus(e.Error())
@@ -894,8 +891,7 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 					pPostMessage.Call(a.window, 0x312, 2, 0)
 					return 1
 				}
-				if v == 0x1b && (a.candidateReady || a.running) {
-					a.invalidate(false)
+				if v == 0x1b && a.dismissSuggestion() {
 					return 1
 				}
 				a.keyboardActivity(v, currentModifiers(), foreground())
@@ -989,6 +985,9 @@ func (a *app) showOverlay(s core.TextContext, model, text, footer string) {
 	a.overlayModel = model
 	a.overlayText = text
 	a.overlayFooter = footer
+	if a.overlay == 0 {
+		return
+	}
 	width := a.s(560)
 	// Measure actual wrapped text in the same font used for painting.
 	dc, _, _ := user32.NewProc("GetDC").Call(a.overlay)

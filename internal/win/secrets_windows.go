@@ -40,8 +40,8 @@ func zero(data []byte) {
 	}
 }
 
-// Uses current-user DPAPI, NOT CRYPTPROTECT_LOCAL_MACHINE. The canonical endpoint
-// is additional entropy, so a copied ciphertext is not usable for another URL.
+// Uses current-user DPAPI, NOT CRYPTPROTECT_LOCAL_MACHINE.
+// The canonical endpoint is additional entropy, so a copied ciphertext is not usable for another URL.
 func protectAPIKey(key, scope string) (string, error) {
 	if err := core.ValidateAPIKey(key); err != nil {
 		return "", err

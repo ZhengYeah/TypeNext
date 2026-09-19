@@ -44,8 +44,8 @@ func (a *app) separatorIn(parent uintptr, x, y, w int) {
 // The marker belongs to the HWND, so destroying a dialog cannot leave stale
 // handle entries that accidentally color controls in a later dialog.
 func (a *app) statusText(parent uintptr, text string, id, x, y, w, h int) uintptr {
-	// Padding strips do not overlap the text HWND. Overlapping static siblings
-	// can repaint over one another during native window redraw/capture.
+	// Padding strips do not overlap the text HWND.
+	// Overlapping static siblings can repaint over one another during native window redraw/capture.
 	for _, edge := range [][4]int{{x, y, w, 6}, {x, y + h - 6, w, 6}, {x, y + 6, 8, h - 12}, {x + w - 8, y + 6, 8, h - 12}} {
 		panel := a.controlIn(parent, "STATIC", "", 0, edge[0], edge[1], edge[2], edge[3], 0)
 		pSetWindowLongPtr.Call(panel, windowUserData, statusSurfaceTag)

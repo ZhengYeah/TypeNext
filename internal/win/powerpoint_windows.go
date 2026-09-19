@@ -158,8 +158,8 @@ func pptNumber(o *comObject, name string, args ...variant) (float64, error) {
 	return n, nil
 }
 
-// Only walk HWND ancestors of the actual keyboard focus. Enumerating arbitrary
-// presentation panes could pick a stale selection when the user is in a ribbon,
+// Only walk HWND ancestors of the actual keyboard focus.
+// Enumerating arbitrary presentation panes could pick a stale selection when the user is in a ribbon,
 // search box, dialog, another presentation, or slideshow.
 func pptFocusedPane(window uintptr) (pane, focus uintptr, ok bool) {
 	g, yes := guiInfo(window)
@@ -216,8 +216,8 @@ func (c *pptCaret) identity() string {
 	return fmt.Sprintf("presentation:%x/slide:%d/shape:%d/start:%d", c.presentationID, c.slideID, c.shapeID, c.start)
 }
 
-// pptSelection checks state before reading any Text property. TextFrame's range
-// object and Length are metadata; only bounded Characters(...).Text is read.
+// pptSelection checks state before reading any Text property.
+// TextFrame's range object and Length are metadata; only bounded Characters(...).Text is read.
 func pptSelection(document *comObject) (_ *pptCaret, err error) {
 	active, err := pptInteger(document, "Active")
 	if err != nil || active == 0 {
@@ -304,8 +304,8 @@ func pptSelection(document *comObject) (_ *pptCaret, err error) {
 		return nil, errors.New("PowerPoint textbox has no stable identity")
 	}
 	// Table cells, grouped shapes, charts and SmartArt can expose inner ranges
-	// whose offsets are not unique within the selected shape. Support ordinary
-	// textboxes, placeholders and autoshapes with one unambiguous text frame.
+	// whose offsets are not unique within the selected shape.
+	// Support ordinary textboxes, placeholders and autoshapes with one unambiguous text frame.
 	shapeType, err := pptInteger(shape, "Type")
 	if err != nil || (shapeType != 1 && shapeType != 14 && shapeType != 17) {
 		return nil, errors.New("this PowerPoint object is unsupported; use a regular slide textbox")
@@ -350,8 +350,8 @@ func pptSelection(document *comObject) (_ *pptCaret, err error) {
 }
 
 func pptTextSpan(frame *comObject, start, length int32) (string, error) {
-	// Characters past the end can clamp to the final character. Never ask for
-	// an empty range, otherwise an end-of-text suffix could repeat that character.
+	// Characters past the end can clamp to the final character.
+	// Never ask for an empty range, otherwise an end-of-text suffix could repeat that character.
 	if length == 0 {
 		return "", nil
 	}
@@ -398,8 +398,8 @@ func pptContextText(c *pptCaret, prefixLimit, suffixLimit int) (string, string, 
 	if prefixLimit < 0 || prefixLimit > 8000 || suffixLimit < 0 || suffixLimit > 2000 {
 		return "", "", errors.New("invalid PowerPoint context limits")
 	}
-	// Office offsets count UTF-16 characters. Read enough for supplementary
-	// characters, then apply the same Unicode-rune caps as the UIA path.
+	// Office offsets count UTF-16 characters.
+	// Read enough for supplementary characters, then apply the same Unicode-rune caps as the UIA path.
 	before := min(c.start-1, int32(prefixLimit*2))
 	after := min(c.length-c.start+1, int32(suffixLimit*2))
 	prefix, err := pptTextSpan(c.frameRange, c.start-before, before)
@@ -471,8 +471,8 @@ func readPowerPointContext(c core.Config, window uintptr, process string) (core.
 		source = "PowerPoint text range"
 	}
 	if !positioned {
-		// Logical caret identity remains exact when PowerPoint omits the blinking
-		// caret rectangle; only the visual anchor falls back to the focused pane.
+		// Logical caret identity remains exact when PowerPoint omits the blinking caret rectangle;
+		// only the visual anchor falls back to the focused pane.
 		var box rect
 		available, _, _ := pPPTGetWindowRect.Call(pane, uintptr(unsafe.Pointer(&box)))
 		if available == 0 || box.Right <= box.Left || box.Bottom <= box.Top {
@@ -481,8 +481,8 @@ func readPowerPointContext(c core.Config, window uintptr, process string) (core.
 		x, y, height = box.Left+12, box.Top+28, 20
 		source = "PowerPoint (pane-corner positioning)"
 	}
-	// Re-read the live selection, rather than trusting a retained TextRange after
-	// a COM call. The same checks also run immediately before SendInput.
+	// Re-read the live selection, rather than trusting a retained TextRange after a COM call.
+	// The same checks also run immediately before SendInput.
 	fresh, err := pptSelection(document)
 	if err != nil {
 		return result, err

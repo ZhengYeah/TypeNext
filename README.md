@@ -54,8 +54,6 @@ Automatic suggestions are off by default. Enable **Automatic suggestions** in th
 
 The default typing-pause delay is 1000 ms. Settings are saved in `%APPDATA%\TypeNext\config.json`; [config.example.json](config.example.json) lists the factory defaults. Saved settings override those defaults.
 
-The suggestion card streams text but cannot be accepted until a completed response has been checked. It does not take focus. Clicking the card does not insert it. Closing settings hides TypeNext; choose **Quit** from the tray to stop it.
-
 ## Approve applications
 
 The default executable allowlist is:
@@ -100,8 +98,6 @@ sh scripts/build.sh
 ```
 
 Both scripts write `TypeNext.exe` to the project root. The Windows build runs all automated tests and static analysis; the cross-build runs portable tests and checks the Windows source before compiling. Portable tests use mock HTTP/HTTPS servers and test credentials. Live application compatibility and model responses require manual checks on Windows.
-
-The icon artwork, ICO, resource definition, and compiled Windows resource are included in `assets/` and `cmd/typenext/`, so normal builds need no icon tools. Technical references are listed in [docs/SOURCES.md](docs/SOURCES.md).
 
 ## License
 

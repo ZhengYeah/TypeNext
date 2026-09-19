@@ -86,7 +86,7 @@ func TestCaretIdentityAcrossCaptures(t *testing.T) {
 	}
 }
 
-func TestCaretIdentityFailsClosedOnStaleProviderRange(t *testing.T) {
+func TestCaretIdentityPreservesSnapshotOnProviderFailure(t *testing.T) {
 	var identity caretIdentity
 	defer identity.close()
 	old := newTestCaret(10, 10)
@@ -97,8 +97,49 @@ func TestCaretIdentityFailsClosedOnStaleProviderRange(t *testing.T) {
 	old.unavailable = true
 	fresh := newTestCaret(10, 10)
 	next, err := identity.identify(7, "edit", &fresh.comObject)
-	if err != nil || id == next {
-		t.Fatal("unverifiable caret must invalidate the previous snapshot")
+	if err == nil || next != "" {
+		t.Fatal("unverifiable caret must not return an identity")
+	}
+	if identity.rangeRef != &old.comObject || identity.serial != 1 || identity.window != 7 || identity.focus != "edit" {
+		t.Fatal("provider failure changed the retained snapshot")
+	}
+	if old.refs != 2 || fresh.refs != 1 {
+		t.Fatalf("provider failure changed range ownership: old=%d new=%d", old.refs, fresh.refs)
+	}
+
+	old.unavailable = false
+	next, err = identity.identify(7, "edit", &fresh.comObject)
+	if err != nil || next != id {
+		t.Fatalf("recovered provider lost original caret identity: %q %q %v", id, next, err)
+	}
+	if old.refs != 1 || fresh.refs != 2 {
+		t.Fatalf("recovered range ownership: old=%d new=%d", old.refs, fresh.refs)
+	}
+	identity.close()
+	if fresh.refs != 1 {
+		t.Fatal("recovered retained range leaked")
+	}
+}
+
+func TestCaretIdentityRejectsMovementAfterProviderFailure(t *testing.T) {
+	var identity caretIdentity
+	defer identity.close()
+	old, moved := newTestCaret(10, 10), newTestCaret(50, 50)
+	id, err := identity.identify(7, "edit", &old.comObject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	moved.unavailable = true
+	if next, err := identity.identify(7, "edit", &moved.comObject); err == nil || next != "" {
+		t.Fatal("unavailable fresh range must not return an identity")
+	}
+	moved.unavailable = false
+	next, err := identity.identify(7, "edit", &moved.comObject)
+	if err != nil || next == id {
+		t.Fatalf("moved caret reused original identity after recovery: %q %q %v", id, next, err)
+	}
+	if old.refs != 1 || moved.refs != 2 {
+		t.Fatalf("moved range ownership: old=%d new=%d", old.refs, moved.refs)
 	}
 }
 
@@ -106,6 +147,16 @@ func TestCaretComparisonRequiresBothEndpoints(t *testing.T) {
 	a, b := newTestCaret(10, 10), newTestCaret(10, 11)
 	if sameRangeEndpoints(&a.comObject, &b.comObject) {
 		t.Fatal("non-collapsed TextPattern2 range accepted as the selection caret")
+	}
+	if same, err := compareRangeEndpoints(&a.comObject, &b.comObject); err != nil || same {
+		t.Fatal("different endpoints must report a verified mismatch")
+	}
+	b.unavailable = true
+	if same, err := compareRangeEndpoints(&a.comObject, &b.comObject); err == nil || same {
+		t.Fatal("provider failure must be distinct from a verified mismatch")
+	}
+	if sameRangeEndpoints(&a.comObject, &b.comObject) {
+		t.Fatal("unverifiable TextPattern2 range accepted as the selection caret")
 	}
 	if unsafe.Offsetof(testCaretRange{}.comObject) != 0 {
 		t.Fatal("fake COM object must start at the interface pointer")

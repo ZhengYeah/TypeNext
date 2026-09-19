@@ -11,8 +11,6 @@ import (
 var padRichEdit = syscall.NewLazyDLL("msftedit.dll")
 
 func createPadEdit(parent, instance uintptr, width, height int, text string) (uintptr, error) {
-	// The legacy EDIT proxy can return no UIA TextPattern. Rich Edit exposes
-	// the selection and text ranges used by the same reader as external apps.
 	if err := padRichEdit.Load(); err != nil {
 		return 0, fmt.Errorf("load test pad editor: %w", err)
 	}
@@ -20,8 +18,8 @@ func createPadEdit(parent, instance uintptr, width, height int, text string) (ui
 	if edit == 0 {
 		return 0, fmt.Errorf("create test pad editor: %w", err)
 	}
-	// EM_SETTEXTMODE requires an empty control. Keep typing and pasted content
-	// plain text, including when the clipboard contains rich text or objects.
+	// EM_SETTEXTMODE requires an empty control.
+	// Keep typing and pasted content plain text, including when the clipboard contains rich text or objects.
 	if result, _, _ := pSendMessage.Call(edit, 0x400+89, 1, 0); result != 0 { // TM_PLAINTEXT
 		pDestroyWindow.Call(edit)
 		return 0, fmt.Errorf("configure plain-text test pad: 0x%x", result)

@@ -192,6 +192,16 @@ func newUIA() (*uiaWorker, error) {
 }
 
 func (w *uiaWorker) Capture(ctx context.Context, c core.Config, padWindow uintptr) (core.TextContext, error) {
+	return w.capture(ctx, c, padWindow, false)
+}
+
+// A new request must not inherit a stale provider range from a previous one.
+// Verification and insertion retain the baseline established by this capture.
+func (w *uiaWorker) CaptureInitial(ctx context.Context, c core.Config, padWindow uintptr) (core.TextContext, error) {
+	return w.capture(ctx, c, padWindow, true)
+}
+
+func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintptr, initial bool) (core.TextContext, error) {
 	type result struct {
 		t core.TextContext
 		e error
@@ -201,6 +211,9 @@ func (w *uiaWorker) Capture(ctx context.Context, c core.Config, padWindow uintpt
 		if ctx.Err() != nil {
 			reply <- result{e: ctx.Err()}
 			return
+		}
+		if initial {
+			w.caret.close()
 		}
 		t, e := readContext(a, c, padWindow, &w.caret)
 		reply <- result{t, e}
@@ -231,8 +244,8 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 	if composing(window) {
 		return result, errors.New("finish the current IME composition first")
 	}
-	// Slide text is exposed by PowerPoint's native object model, rather than a
-	// standard UIA Edit. The adapter remains behind the same executable approval.
+	// Slide text is exposed by PowerPoint's native object model, rather than a standard UIA Edit.
+	// The adapter remains behind the same executable approval.
 	if strings.EqualFold(process, "powerpnt.exe") {
 		return readPowerPointContext(c, window, process)
 	}
@@ -262,8 +275,8 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 	if err != nil {
 		return result, err
 	}
-	// Some browser accessibility nodes belong to a renderer process. The visible
-	// foreground executable is the allowlist boundary; focus is rechecked below.
+	// Some browser accessibility nodes belong to a renderer process.
+	// The visible foreground executable is the allowlist boundary; focus is rechecked below.
 	_ = pid
 	id, err := focusID(el)
 	if err != nil {
@@ -293,15 +306,15 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 		return result, errors.New("selected text is not replaced; clear the selection first")
 	}
 	source := "TextPattern selection"
-	// Prefer TextPattern2's active caret when available, but still require a
-	// collapsed selection above so accepting can never replace selected text.
+	// Prefer TextPattern2's active caret when available,
+	// but still require a collapsed selection above so accepting can never replace selected text.
 	if p2, e := pattern(el, 10024, iidText2); e == nil {
 		var active int32
 		var r2 *comObject
 		hr := comCall(p2, 10, uintptr(unsafe.Pointer(&active)), uintptr(unsafe.Pointer(&r2)))
 		if !failed(hr) && active != 0 && r2 != nil {
-			// Both patterns must describe the same collapsed selection. A stale
-			// provider caret must not move our read to another insertion point.
+			// Both patterns must describe the same collapsed selection.
+			// A stale provider caret must not move our read to another insertion point.
 			if sameRangeEndpoints(caret, r2) {
 				release(caret)
 				caret = r2
@@ -367,6 +380,13 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 			return result, errors.New("textbox location unavailable")
 		}
 	}
+	// Browser providers may replace their range objects when unrelated page content refreshes.
+	// Prefer an exact offset derived entirely from this read;
+	// keep retained-range comparison for providers or long documents that cannot establish a bounded offset.
+	caretID, err := identity.identifyInPattern(window, id, pat, caret)
+	if err != nil {
+		return result, err
+	}
 	if foreground() != window {
 		return result, errors.New("focus changed while reading; try again")
 	}
@@ -378,10 +398,6 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 	release(current)
 	if e != nil || currentID != id {
 		return result, errors.New("textbox changed while reading; try again")
-	}
-	caretID, err := identity.identify(window, id, caret)
-	if err != nil {
-		return result, err
 	}
 	result = core.TextContext{Window: uint64(window), FocusID: id, CaretID: caretID, Process: process, Prefix: core.Tail(prefix, c.PrefixChars), Suffix: core.Head(suffix, c.SuffixChars), X: x, Y: y, CaretHeight: h, PositionSource: source}
 	return result, nil
@@ -423,8 +439,8 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 			reply <- errors.New("empty suggestion")
 			return
 		}
-		// Read/check/inject cannot be atomic across arbitrary third-party apps. This
-		// narrows the race; a native TSF edit session is needed to eliminate it.
+		// Read/check/inject cannot be atomic across arbitrary third-party apps.
+		// This narrows the race; a native TSF edit session is needed to eliminate it.
 		reply <- sendUnicode(safe)
 	}
 	select {

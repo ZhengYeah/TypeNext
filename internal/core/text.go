@@ -21,9 +21,9 @@ type TextContext struct {
 	PositionSource string
 }
 
-// Fingerprint never leaves the process. Readers with a verified logical caret
-// identity may change positioning methods without invalidating the text. Older
-// readers retain the conservative coordinate check for repeated passages.
+// Fingerprint never leaves the process.
+// Readers with a verified logical caret identity may change positioning methods without invalidating the text.
+// Older readers retain the conservative coordinate check for repeated passages.
 func (t TextContext) Fingerprint() [32]byte {
 	x, y := t.X, t.Y
 	if t.CaretID != "" {
@@ -69,8 +69,8 @@ func ContextJSON(t TextContext) string {
 	return string(b)
 }
 
-// CleanSuggestion strips reasoning and control characters. In particular, no
-// Enter or Tab key is ever sent to an application (important for chat clients).
+// CleanSuggestion strips reasoning and control characters.
+// In particular, no Enter or Tab key is ever sent to an application (important for chat clients).
 func CleanSuggestion(raw string, t TextContext, max int) string {
 	s := raw
 	for {
@@ -93,8 +93,8 @@ func CleanSuggestion(raw string, t TextContext, max int) string {
 	if t.Prefix != "" && strings.HasPrefix(s, t.Prefix) {
 		s = strings.TrimPrefix(s, t.Prefix)
 	}
-	// Remove an exact repeated suffix only at the very end; short overlaps can
-	// be legitimate (e.g. punctuation), so do not apply fuzzy overlap matching.
+	// Remove an exact repeated suffix only at the very end; short overlaps can be legitimate (e.g. punctuation),
+	// so do not apply fuzzy overlap matching.
 	if len([]rune(t.Suffix)) >= 4 && strings.HasSuffix(s, t.Suffix) {
 		s = strings.TrimSuffix(s, t.Suffix)
 	}
