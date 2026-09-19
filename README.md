@@ -1,6 +1,6 @@
 # TypeNext
 
-**Writing completion for Windows — local models or remote APIs**
+**Writing autocompletion for Windows — local models or remote APIs**
 
 TypeNext started as an attempt to bring VS Code's inline completion and inline chat to any application, in a lightweight way. Today it offers:
 
@@ -8,9 +8,7 @@ TypeNext started as an attempt to bring VS Code's inline completion and inline c
 - **Not an IME.** Keep your current input method, including Chinese, Japanese, and Korean IMEs.
 - **Your choice of model.** Run a local model or connect to a cloud API.
 
-TypeNext reads a bounded amount of existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. The text is inserted only when you accept it.
-
-It is a desktop helper, not a registered Windows TSF IME: it uses UI Automation plus a few dedicated text adapters, such as one for PowerPoint.
+TypeNext reads a bounded amount of existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. The text is inserted only when you accept it. It is a desktop helper, not a registered Windows TSF IME: it uses UI Automation plus a few dedicated text adapters, such as one for PowerPoint.
 
 > [!WARNING]
 > Not applicable to Weixin/WeChat. It has restrictions and does not expose the caret or text to accessibility APIs.
