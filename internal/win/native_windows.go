@@ -70,7 +70,6 @@ var (
 	pUnhookWindowsHookEx       = user32.NewProc("UnhookWindowsHookEx")
 	pCallNextHookEx            = user32.NewProc("CallNextHookEx")
 	pLoadCursor                = user32.NewProc("LoadCursorW")
-	pLoadIcon                  = user32.NewProc("LoadIconW")
 	pMessageBox                = user32.NewProc("MessageBoxW")
 	pGetClientRect             = user32.NewProc("GetClientRect")
 	pMoveWindow                = user32.NewProc("MoveWindow")

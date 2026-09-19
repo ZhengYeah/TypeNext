@@ -49,6 +49,15 @@ const (
 	ctrlAllowed       = 210
 )
 
+// GDI COLORREF values use 0xBBGGRR byte order.
+const (
+	overlayBackground = 0x3B291E // RGB #1E293B
+	overlayBorder     = 0x8B7464 // RGB #64748B
+	overlayAccent     = 0xFAA560 // RGB #60A5FA
+	overlayForeground = 0xFCFAF8 // RGB #F8FAFC
+	overlayMuted      = 0xE1D5CB // RGB #CBD5E1
+)
+
 type app struct {
 	apiWindow         uintptr
 	apiDraft          core.Config
@@ -56,36 +65,38 @@ type app struct {
 	lastRemoteRequest time.Time
 	testRunning       bool
 
-	window, overlay, pad, padEdit                         uintptr
-	instance, font, heading, smallFont, brush, whiteBrush uintptr
-	statusBrush                                           uintptr
-	keyboard, mouse                                       uintptr
-	cfg                                                   core.Config
-	configPath                                            string
-	controls                                              map[int]uintptr
-	statusLabel                                           uintptr
-	shortcutLabel, hotkeyWindow                           uintptr
-	hotkeys                                               *core.HotkeySet
-	hotkeyStates                                          []core.HotkeyStatus
-	jobs                                                  chan func()
-	worker                                                *uiaWorker
-	client                                                *core.Client
-	revision                                              atomic.Uint64
-	requestID                                             uint64
-	cancel                                                context.CancelFunc
-	snapshot                                              *core.TextContext
-	suggestion                                            string
-	candidateReady                                        bool
-	tabAcceptHeld                                         bool
-	running                                               bool
-	enabled                                               bool
-	lastActivity                                          time.Time
-	autoArmed                                             bool
-	lastForeground                                        uintptr
-	overlayHeading, overlayText, overlayFooter            string
-	inspectAt                                             time.Time
-	trayMessage                                           uint32
-	scale                                                 float64
+	window, overlay, pad, padEdit                        uintptr
+	instance, font, heading, smallFont, brush            uintptr
+	overlayBrush, overlayBorderBrush, overlayAccentBrush uintptr
+	statusBrush                                          uintptr
+	icon, smallIcon                                      uintptr
+	keyboard, mouse                                      uintptr
+	cfg                                                  core.Config
+	configPath                                           string
+	controls                                             map[int]uintptr
+	statusLabel                                          uintptr
+	shortcutLabel, hotkeyWindow                          uintptr
+	hotkeys                                              *core.HotkeySet
+	hotkeyStates                                         []core.HotkeyStatus
+	jobs                                                 chan func()
+	worker                                               *uiaWorker
+	client                                               *core.Client
+	revision                                             atomic.Uint64
+	requestID                                            uint64
+	cancel                                               context.CancelFunc
+	snapshot                                             *core.TextContext
+	suggestion                                           string
+	candidateReady                                       bool
+	tabAcceptHeld                                        bool
+	running                                              bool
+	enabled                                              bool
+	lastActivity                                         time.Time
+	autoArmed                                            bool
+	lastForeground                                       uintptr
+	overlayModel, overlayText, overlayFooter             string
+	inspectAt                                            time.Time
+	trayMessage                                          uint32
+	scale                                                float64
 }
 
 var currentApp *app
@@ -120,19 +131,32 @@ func Run() error {
 	a.heading = a.makeFont(25, 600)
 	a.smallFont = a.makeFont(13, 400)
 	a.brush, _, _ = pCreateSolidBrush.Call(windowBackground)
-	a.whiteBrush, _, _ = pCreateSolidBrush.Call(0xFFFFFF)
+	a.overlayBrush, _, _ = pCreateSolidBrush.Call(overlayBackground)
+	a.overlayBorderBrush, _, _ = pCreateSolidBrush.Call(overlayBorder)
+	a.overlayAccentBrush, _, _ = pCreateSolidBrush.Call(overlayAccent)
 	a.statusBrush, _, _ = pCreateSolidBrush.Call(statusBackground)
 	defer pDeleteObject.Call(a.font)
 	defer pDeleteObject.Call(a.heading)
 	defer pDeleteObject.Call(a.smallFont)
 	defer pDeleteObject.Call(a.brush)
-	defer pDeleteObject.Call(a.whiteBrush)
+	defer pDeleteObject.Call(a.overlayBrush)
+	defer pDeleteObject.Call(a.overlayBorderBrush)
+	defer pDeleteObject.Call(a.overlayAccentBrush)
 	defer pDeleteObject.Call(a.statusBrush)
 	cursor, _, _ := pLoadCursor.Call(0, 32512)
-	icon, _, _ := pLoadIcon.Call(0, 32516)
+	a.icon, e = loadAppIcon(inst, false)
+	if e != nil {
+		return e
+	}
+	defer pDestroyIcon.Call(a.icon)
+	a.smallIcon, e = loadAppIcon(inst, true)
+	if e != nil {
+		return e
+	}
+	defer pDestroyIcon.Call(a.smallIcon)
 	proc := syscall.NewCallback(windowProc)
 	className := u16("TypeNextWindow")
-	wc := windowClass{Size: uint32(unsafe.Sizeof(windowClass{})), Style: 3, Proc: proc, Instance: inst, Icon: icon, Cursor: cursor, Background: a.brush, ClassName: className, SmallIcon: icon}
+	wc := windowClass{Size: uint32(unsafe.Sizeof(windowClass{})), Style: 3, Proc: proc, Instance: inst, Icon: a.icon, Cursor: cursor, Background: a.brush, ClassName: className, SmallIcon: a.smallIcon}
 	if v, _, err := pRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc))); v == 0 {
 		return fmt.Errorf("register window: %v", err)
 	}
@@ -484,7 +508,7 @@ func (a *app) request(manual bool) {
 				u, _ := cfg.RequestURL()
 				title, detail = "Generating via API…", "Sending approved context to "+u.Host
 			}
-			a.showOverlay(snapshot, title, detail, "Esc to cancel · suggestions are never inserted automatically")
+			a.showOverlay(snapshot, cfg.Model, title+"\n"+detail, "Esc to cancel · never inserted automatically")
 		})
 		last := time.Time{}
 		result, e := a.client.Complete(ctx, cfg, snapshot, func(partial string) {
@@ -493,7 +517,7 @@ func (a *app) request(manual bool) {
 			}
 			last = time.Now()
 			a.postRequest(id, rev, window, func() {
-				a.showOverlay(snapshot, "TypeNext · generating", partial, "Wait for completion · Esc to dismiss")
+				a.showOverlay(snapshot, cfg.Model, partial, "Wait for completion · Esc to dismiss")
 			})
 		})
 		if e != nil {
@@ -528,7 +552,7 @@ func (a *app) request(manual bool) {
 			a.suggestion = result
 			a.candidateReady = true
 			footer := a.acceptHint()
-			a.showOverlay(fresh, "TypeNext · "+cfg.Model, result, footer)
+			a.showOverlay(fresh, cfg.Model, result, footer)
 			a.setStatus(fmt.Sprintf("Suggestion ready for %s. %d characters before / %d after the caret.", fresh.Process, len([]rune(fresh.Prefix)), len([]rune(fresh.Suffix))))
 		})
 	}()
@@ -904,8 +928,7 @@ func (a *app) trayMessageValue() {
 	a.trayMessage = uint32(v)
 }
 func (a *app) trayData() notifyIconData {
-	icon, _, _ := pLoadIcon.Call(0, 32516)
-	d := notifyIconData{Size: uint32(unsafe.Sizeof(notifyIconData{})), Window: a.window, ID: 1, Flags: 7, Callback: wmTray, Icon: icon}
+	d := notifyIconData{Size: uint32(unsafe.Sizeof(notifyIconData{})), Window: a.window, ID: 1, Flags: 7, Callback: wmTray, Icon: a.smallIcon}
 	copy(d.Tip[:], syscall.StringToUTF16("TypeNext — local or API completion"))
 	return d
 }
@@ -947,12 +970,12 @@ func (a *app) hideOverlay() {
 	if a.overlay != 0 {
 		pShowWindow.Call(a.overlay, 0)
 	}
-	a.overlayHeading = ""
+	a.overlayModel = ""
 	a.overlayText = ""
 	a.overlayFooter = ""
 }
-func (a *app) showOverlay(s core.TextContext, heading, text, footer string) {
-	a.overlayHeading = heading
+func (a *app) showOverlay(s core.TextContext, model, text, footer string) {
+	a.overlayModel = model
 	a.overlayText = text
 	a.overlayFooter = footer
 	width := a.s(560)
@@ -963,9 +986,9 @@ func (a *app) showOverlay(s core.TextContext, heading, text, footer string) {
 	pDrawText.Call(dc, uintptr(unsafe.Pointer(u16(text))), ^uintptr(0), uintptr(unsafe.Pointer(&r)), 0x400|0x10|0x800)
 	pSelectObject.Call(dc, old)
 	user32.NewProc("ReleaseDC").Call(a.overlay, dc)
-	height := int(r.Bottom) + a.s(88)
-	if height < a.s(128) {
-		height = a.s(128)
+	height := int(r.Bottom) + a.s(56)
+	if height < a.s(80) {
+		height = a.s(80)
 	}
 	if height > a.s(420) {
 		height = a.s(420)
@@ -997,22 +1020,37 @@ func (a *app) paintOverlay(w uintptr) {
 	defer pEndPaint.Call(w, uintptr(unsafe.Pointer(&ps)))
 	var bounds rect
 	pGetClientRect.Call(w, uintptr(unsafe.Pointer(&bounds)))
-	pFillRect.Call(dc, uintptr(unsafe.Pointer(&bounds)), a.whiteBrush)
-	accent, _, _ := pCreateSolidBrush.Call(0x8E6840)
-	defer pDeleteObject.Call(accent)
-	strip := rect{0, 0, int32(a.s(4)), bounds.Bottom}
-	pFillRect.Call(dc, uintptr(unsafe.Pointer(&strip)), accent)
+	// Keep a visible outline against both light and dark application windows.
+	pFillRect.Call(dc, uintptr(unsafe.Pointer(&bounds)), a.overlayBorderBrush)
+	border := int32(max(1, a.s(1)))
+	surface := rect{border, border, bounds.Right - border, bounds.Bottom - border}
+	pFillRect.Call(dc, uintptr(unsafe.Pointer(&surface)), a.overlayBrush)
+	strip := rect{border, border, border + int32(a.s(4)), surface.Bottom}
+	pFillRect.Call(dc, uintptr(unsafe.Pointer(&strip)), a.overlayAccentBrush)
 	pSetBkMode.Call(dc, 1)
-	draw := func(text string, r rect, font, color uintptr, flags uintptr) {
+	draw := func(text string, r rect, font, color uintptr, flags uintptr) rect {
 		old, _, _ := pSelectObject.Call(dc, font)
 		defer pSelectObject.Call(dc, old)
 		pSetTextColor.Call(dc, color)
 		pDrawText.Call(dc, uintptr(unsafe.Pointer(u16(text))), ^uintptr(0), uintptr(unsafe.Pointer(&r)), flags|0x800)
+		return r
 	}
 	pad := int32(a.s(18))
-	draw(a.overlayHeading, rect{pad, int32(a.s(12)), bounds.Right - pad, int32(a.s(35))}, a.smallFont, 0x776A5D, 0x20|0x8000)
-	draw(a.overlayText, rect{pad, int32(a.s(42)), bounds.Right - pad, bounds.Bottom - int32(a.s(36))}, a.font, 0x292522, 0x10)
-	draw(a.overlayFooter, rect{pad, bounds.Bottom - int32(a.s(28)), bounds.Right - pad, bounds.Bottom - int32(a.s(7))}, a.smallFont, 0x776A5D, 0x20)
+	draw(a.overlayText, rect{pad, int32(a.s(16)), bounds.Right - pad, bounds.Bottom - int32(a.s(40))}, a.font, overlayForeground, 0x10)
+	footer := rect{pad, bounds.Bottom - int32(a.s(28)), bounds.Right - pad, bounds.Bottom - int32(a.s(7))}
+	// Share one quiet footer row. Reserve the instruction width first so
+	// long model IDs cannot crowd out custom insertion shortcuts.
+	if a.overlayModel != "" {
+		measured := draw(a.overlayModel, rect{}, a.smallFont, overlayMuted, 0x20|0x400)
+		hint := draw(a.overlayFooter, rect{}, a.smallFont, overlayMuted, 0x20|0x400)
+		gap := int32(a.s(16))
+		available := max(0, footer.Right-footer.Left-hint.Right-gap)
+		modelWidth := min(measured.Right, (footer.Right-footer.Left)/3, available)
+		modelRect := rect{footer.Right - modelWidth, footer.Top, footer.Right, footer.Bottom}
+		draw(a.overlayModel, modelRect, a.smallFont, overlayMuted, 0x20|0x2|0x8000)
+		footer.Right = modelRect.Left - gap
+	}
+	draw(a.overlayFooter, footer, a.smallFont, overlayMuted, 0x20|0x8000)
 }
 
 func ShowFatal(err error) {

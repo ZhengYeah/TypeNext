@@ -123,7 +123,11 @@ There are no external Go module dependencies. On Windows x64, with a maintained 
 .\scripts\Build.ps1
 ```
 
-This runs portable tests, Windows-specific ABI and DPAPI tests, static analysis, and compilation. The DPAPI tests use a dummy key, not your credentials. Cross-build on Linux/macOS:
+This runs portable tests, Windows-specific ABI and DPAPI tests, static analysis, and compilation. The DPAPI tests use a dummy key, not your credentials.
+
+The window, tray, and executable icons come from `assets/logo.png`. The icon build step enlarges the artwork by 25% to reduce its outer padding and applies smooth, transparent rounded corners at every size. Generated ICO and Windows resource files are included, so normal builds need no image tools. After replacing the logo, run `.\scripts\Build-Icon.ps1` (Windows with MinGW-w64 `windres` on PATH), or `.\scripts\Build.ps1 -RefreshIcon` to regenerate and build together.
+
+Cross-build on Linux/macOS:
 
 ```sh
 go test -race -cover ./internal/core

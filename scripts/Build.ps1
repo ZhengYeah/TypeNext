@@ -1,9 +1,10 @@
-param([switch]$Run)
+param([switch]$Run, [switch]$RefreshIcon)
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
     throw "Install a supported Go toolchain, then run this script again."
 }
+if ($RefreshIcon) { & (Join-Path $PSScriptRoot "Build-Icon.ps1") }
 $env:CGO_ENABLED = "0"
 $env:GOOS = "windows"
 $env:GOARCH = "amd64"
