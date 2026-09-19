@@ -1,5 +1,12 @@
 # TypeNext changelog
 
+## 0.1.6 preview — 19 September 2026
+
+- Align fields, margins, and vertical spacing across main settings, API settings, and Shortcuts; add consistent header/footer separators and padded gray status areas.
+- Size settings windows by their client area so borders and captions do not consume the intended bottom padding.
+- Enable Tab acceptance by default for new configurations, preserve explicit saved preferences, and show Tab correctly in the shortcut summary. Clarify the optional extra Accept key.
+- Add an isolated UI preview script and verified screenshots with synthetic settings and no model requests.
+
 ## 0.1.5 preview — 19 September 2026
 
 - Keep automatic suggestions scheduled for Shift+typing, numpad input, Delete, Enter, and IME processing keys; preserve the first edit after a foreground-window change.

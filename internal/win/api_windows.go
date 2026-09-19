@@ -62,9 +62,7 @@ func (a *app) openAPI() {
 	a.inspectAt = time.Time{}
 	a.invalidate(false)
 	a.closeShortcuts()
-	a.apiWindow, _, err = pCreateWindowEx.Call(0x00010000, uintptr(unsafe.Pointer(u16("TypeNextWindow"))),
-		uintptr(unsafe.Pointer(u16("TypeNext — API settings"))), 0x00CA0000,
-		120, 70, uintptr(a.s(770)), uintptr(a.s(754)), a.window, 0, a.instance, 0)
+	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, 752, 786, a.window)
 	if a.apiWindow == 0 {
 		a.setStatus(fmt.Sprintf("Cannot open API settings: %v", err))
 		return
@@ -83,44 +81,44 @@ func (a *app) openAPI() {
 		}
 		selectCombo(h, index)
 	}
-	h := control("STATIC", "API connection", 0, 24, 18, 690, 35, 0)
+	h := control("STATIC", "API connection", 0, 24, 20, 704, 34, 0)
 	pSendMessage.Call(h, 0x30, a.heading, 1)
-	label("Use a local model or an HTTPS API. Only approved textbox context is sent; requests may incur provider charges.", 24, 58, 694, 38)
-	label("Preset", 24, 102, 122, 25)
+	label("Use a local model or an HTTPS API. Only approved textbox context is sent; requests may incur provider charges.", 24, 62, 704, 38)
+	a.separatorIn(a.apiWindow, 24, 112, 704)
+	label("Preset", 24, 132, 120, 24)
 	names := []string{}
 	for _, p := range core.APIPresets() {
 		names = append(names, p.Name)
 	}
-	combo(ctrlAPIPreset, 154, 98, 422, names, 0)
-	control("BUTTON", "Use preset", idAPIPreset, 592, 96, 126, 30, 0x10000)
-	label("Protocol", 24, 138, 122, 25)
+	combo(ctrlAPIPreset, 156, 128, 428, names, 0)
+	control("BUTTON", "Use preset", idAPIPreset, 600, 126, 128, 32, 0x10000)
+	label("Protocol", 24, 170, 120, 24)
 	idx := 0
 	if c.Provider == "openai-compatible" {
 		idx = 1
 	}
-	combo(ctrlAPIProvider, 154, 134, 282, []string{"ollama", "openai-compatible"}, idx)
-	label("API URL", 24, 174, 128, 25)
-	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 154, 170, 564, 27, 0x10080)
-	label("Model ID", 24, 210, 122, 25)
-	control("EDIT", c.Model, ctrlAPIModel, 154, 206, 564, 27, 0x10080)
-	label("API key", 24, 246, 122, 25)
-	keyBox := control("EDIT", "", ctrlAPIKey, 154, 242, 564, 27, 0x100a0) // ES_PASSWORD
+	combo(ctrlAPIProvider, 156, 166, 300, []string{"ollama", "openai-compatible"}, idx)
+	label("API URL", 24, 208, 120, 24)
+	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 156, 204, 572, 27, 0x10080)
+	label("Model ID", 24, 246, 120, 24)
+	control("EDIT", c.Model, ctrlAPIModel, 156, 242, 572, 27, 0x10080)
+	label("API key", 24, 284, 120, 24)
+	keyBox := control("EDIT", "", ctrlAPIKey, 156, 280, 572, 27, 0x100a0) // ES_PASSWORD
 	pSendMessage.Call(keyBox, 0xc5, 8192, 0)                              // EM_SETLIMITTEXT
-	h = control("STATIC", "Leave blank to keep this endpoint's saved key. Keys are encrypted for your Windows account.", ctrlAPIKeyStatus, 154, 274, 564, 34, 0)
-	pSendMessage.Call(h, 0x30, a.smallFont, 1)
-	label("Key environment", 24, 314, 124, 25)
-	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 154, 310, 306, 27, 0x10080)
-	check("Remove this endpoint's key", ctrlAPIClear, 474, 309, 244, false)
-	label("Output tokens", 24, 352, 122, 25)
-	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 154, 348, 80, 27, 0x12000)
+	a.statusText(a.apiWindow, "Leave blank to keep this endpoint's saved key. Keys are encrypted for your Windows account.", ctrlAPIKeyStatus, 156, 314, 572, 44)
+	label("Key environment", 24, 374, 120, 24)
+	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 370, 300, 27, 0x10080)
+	check("Remove this endpoint's key", ctrlAPIClear, 472, 370, 256, false)
+	label("Output tokens", 24, 414, 120, 24)
+	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 156, 410, 80, 27, 0x12000)
 	idx = 0
 	if c.TokenParameter == "max_completion_tokens" {
 		idx = 1
 	}
-	combo(ctrlAPITokenParam, 249, 348, 226, []string{"max_tokens", "max_completion_tokens"}, idx)
-	label("Timeout (s)", 492, 352, 123, 25)
-	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 624, 348, 94, 27, 0x12000)
-	label("Reasoning effort", 24, 390, 126, 25)
+	combo(ctrlAPITokenParam, 248, 410, 236, []string{"max_tokens", "max_completion_tokens"}, idx)
+	label("Timeout (s)", 504, 414, 116, 24)
+	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 632, 410, 96, 27, 0x12000)
+	label("Reasoning effort", 24, 452, 120, 24)
 	efforts := []string{"(omit / provider default)", "none", "minimal", "low", "medium", "high"}
 	idx = 0
 	for i, v := range efforts {
@@ -128,17 +126,17 @@ func (a *app) openAPI() {
 			idx = i
 		}
 	}
-	combo(ctrlAPIReasoning, 154, 386, 250, efforts, idx)
-	check("Send temperature = 0.2", ctrlAPITemperature, 424, 385, 294, c.SendTemperature)
-	check("Request non-thinking mode (Ollama / official DeepSeek only)", ctrlAPIThinking, 24, 424, 694, c.DisableThinking)
-	check("Allow remote HTTPS API requests (sends textbox context off this PC)", ctrlAPIRemote, 24, 458, 694, c.AllowRemote)
-	check("Allow automatic remote requests (unfinished text; usage charges possible)", ctrlAPIAutoRemote, 24, 489, 694, c.AllowRemoteAuto)
-	label("Automatic use also needs Automatic suggestions in the main window. Remote automatic requests are spaced by at least 3 seconds; no automatic retries. Saved key takes priority over the environment variable.", 24, 525, 694, 42)
-	control("BUTTON", "Apply API settings", idAPIApply, 24, 579, 173, 32, 0x10000)
-	control("BUTTON", "Test API (sample)", idAPITest, 210, 579, 184, 32, 0x10000)
-	control("BUTTON", "Close", idAPIClose, 598, 579, 120, 32, 0x10000)
-	h = control("STATIC", "Enter the exact model ID offered by your provider. Presets do not make a network request. Native Anthropic / Responses-only APIs are not supported.", ctrlAPIMessage, 24, 626, 694, 74, 0)
-	pSendMessage.Call(h, 0x30, a.smallFont, 1)
+	combo(ctrlAPIReasoning, 156, 448, 300, efforts, idx)
+	check("Send temperature = 0.2", ctrlAPITemperature, 472, 448, 256, c.SendTemperature)
+	check("Request non-thinking mode (Ollama / official DeepSeek only)", ctrlAPIThinking, 24, 488, 704, c.DisableThinking)
+	check("Allow remote HTTPS API requests (sends textbox context off this PC)", ctrlAPIRemote, 24, 520, 704, c.AllowRemote)
+	check("Allow automatic remote requests (unfinished text; usage charges possible)", ctrlAPIAutoRemote, 24, 552, 704, c.AllowRemoteAuto)
+	label("Also enable Automatic suggestions in the main window. Automatic remote requests are at least 3 seconds apart, with no retries. A saved key takes priority over the environment variable.", 24, 590, 704, 44)
+	a.separatorIn(a.apiWindow, 24, 648, 704)
+	control("BUTTON", "Apply API settings", idAPIApply, 24, 664, 176, 34, 0x10000)
+	control("BUTTON", "Test API (sample)", idAPITest, 212, 664, 184, 34, 0x10000)
+	control("BUTTON", "Close", idAPIClose, 608, 664, 120, 34, 0x10000)
+	a.statusText(a.apiWindow, "Enter your provider's exact model ID. Presets make no network request. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 714, 704, 50)
 	user32.NewProc("EnableWindow").Call(a.window, 0)
 	a.updateAPIKeyStatus()
 	pShowWindow.Call(a.apiWindow, 5)

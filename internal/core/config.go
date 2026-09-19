@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const Version = "0.1.5-preview"
+const Version = "0.1.6-preview"
 
 type Config struct {
 	// Remote networking is opt-in. Consent and encrypted keys are bound to the
@@ -46,7 +46,7 @@ func DefaultConfig() Config {
 	return Config{SuggestHotkey: "Ctrl+Shift+F9", AcceptHotkey: "Ctrl+Shift+F10", PauseHotkey: "Ctrl+Shift+F11",
 		TokenParameter: "max_tokens", SendTemperature: true,
 		Provider: "ollama", Endpoint: "http://127.0.0.1:11434", Model: "qwen3:4b",
-		DisableThinking: true, DebounceMS: 750, PrefixChars: 1000, SuffixChars: 200,
+		AcceptTab: true, DisableThinking: true, DebounceMS: 750, PrefixChars: 1000, SuffixChars: 200,
 		MaxTokens: 64, MaxSuggestionChars: 320, TimeoutSeconds: 45,
 		AllowedApps: []string{"notepad.exe", "winword.exe", "powerpnt.exe", "typora.exe", "wechat.exe", "weixin.exe"},
 		APIKeyEnv:   "TYPENEXT_API_KEY"}

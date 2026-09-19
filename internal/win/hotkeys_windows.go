@@ -97,9 +97,23 @@ func (a *app) acceptHint() string {
 	}
 	return strings.Join(options, " or ") + " to insert · Esc to dismiss"
 }
+func (a *app) acceptShortcutLabel() string {
+	extra := a.hotkeyLabel(core.HotkeyAccept)
+	if !a.cfg.AcceptTab {
+		return extra
+	}
+	switch extra {
+	case "off":
+		return "Tab"
+	case "unavailable":
+		return "Tab (extra unavailable)"
+	default:
+		return "Tab / " + extra
+	}
+}
 func (a *app) refreshHotkeyUI() {
 	if a.shortcutLabel != 0 {
-		s := fmt.Sprintf("Suggest: %s     Accept: %s     Pause: %s     Esc: dismiss", a.hotkeyLabel(1), a.hotkeyLabel(2), a.hotkeyLabel(3))
+		s := fmt.Sprintf("Suggest: %s     Accept: %s     Pause: %s     Esc: dismiss", a.hotkeyLabel(1), a.acceptShortcutLabel(), a.hotkeyLabel(3))
 		pSetWindowText.Call(a.shortcutLabel, uintptr(unsafe.Pointer(u16(s))))
 	}
 	if a.pad != 0 {
@@ -112,6 +126,12 @@ func (a *app) refreshHotkeyUI() {
 		text := "Disabled"
 		if st.Active.Enabled() {
 			text = "Active: " + st.Active.String()
+		}
+		if st.Binding.ID == core.HotkeyAccept && a.cfg.AcceptTab {
+			text = "Tab accepts suggestions; extra shortcut disabled."
+			if st.Active.Enabled() {
+				text = "Tab accepts suggestions; extra shortcut: " + st.Active.String()
+			}
 		}
 		if st.Err != nil {
 			text = "Unavailable: " + st.Err.Error()
@@ -131,7 +151,7 @@ func (a *app) openShortcuts() {
 		return
 	}
 	var err error
-	a.hotkeyWindow, _, err = pCreateWindowEx.Call(0x00010000, uintptr(unsafe.Pointer(u16("TypeNextWindow"))), uintptr(unsafe.Pointer(u16("TypeNext — Shortcuts"))), 0x00CA0000, 130, 90, uintptr(a.s(696)), uintptr(a.s(558)), a.window, 0, a.instance, 0)
+	a.hotkeyWindow, err = a.createSettingsWindow("TypeNext — Shortcuts", 130, 90, 704, 580, a.window)
 	if a.hotkeyWindow == 0 {
 		a.setStatus(fmt.Sprintf("Could not open shortcuts: %v", err))
 		return
@@ -139,24 +159,24 @@ func (a *app) openShortcuts() {
 	control := func(class, text string, id, x, y, w, h int, style uintptr) uintptr {
 		return a.controlIn(a.hotkeyWindow, class, text, id, x, y, w, h, style)
 	}
-	heading := control("STATIC", "Keyboard shortcuts", 0, 24, 18, 620, 32, 0)
+	heading := control("STATIC", "Keyboard shortcuts", 0, 24, 20, 656, 34, 0)
 	pSendMessage.Call(heading, 0x30, a.heading, 1)
-	control("STATIC", "Type a name such as Ctrl+Shift+F9; do not press the shortcut here. Use None to disable it. Click Apply to save and activate your choices.", 0, 24, 58, 620, 44, 0)
+	control("STATIC", "Type a shortcut such as Ctrl+Shift+F9, or None to disable it.\r\nTab accepts suggestions by default; the extra accept key is optional.", 0, 24, 62, 656, 40, 0)
+	a.separatorIn(a.hotkeyWindow, 24, 116, 656)
 	for i, field := range []struct{ label, value string }{
-		{"Suggest", a.cfg.SuggestHotkey}, {"Accept", a.cfg.AcceptHotkey}, {"Pause / resume", a.cfg.PauseHotkey},
+		{"Suggest", a.cfg.SuggestHotkey}, {"Extra accept key", a.cfg.AcceptHotkey}, {"Pause / resume", a.cfg.PauseHotkey},
 	} {
-		y := 112 + i*82
-		control("STATIC", field.label, 0, 24, y+3, 152, 25, 0)
-		control("EDIT", field.value, ctrlHotkeySuggest+i, 180, y, 466, 28, 0x10080)
-		status := control("STATIC", "", ctrlHotkeyStatus1+i, 180, y+34, 466, 42, 0)
-		pSendMessage.Call(status, 0x30, a.smallFont, 1)
+		y := 136 + i*84
+		control("STATIC", field.label, 0, 24, y+4, 136, 24, 0)
+		control("EDIT", field.value, ctrlHotkeySuggest+i, 176, y, 504, 28, 0x10080)
+		a.statusText(a.hotkeyWindow, "", ctrlHotkeyStatus1+i, 176, y+34, 504, 44)
 	}
-	control("STATIC", "Include Ctrl or Alt. Examples: Ctrl+Shift+F9, Ctrl+Alt+Space, Alt+Shift+N. Conflicts do not close TypeNext or override another application's shortcut.", 0, 24, 366, 622, 46, 0)
-	control("BUTTON", "Apply shortcuts", idHotkeyApply, 24, 426, 152, 32, 0x10000)
-	control("BUTTON", "Reset fields to defaults", idHotkeyDefaults, 188, 426, 226, 32, 0x10000)
-	control("BUTTON", "Close", idHotkeyClose, 544, 426, 102, 32, 0x10000)
-	message := control("STATIC", "Your other settings are preserved.", ctrlHotkeyMessage, 24, 468, 622, 40, 0)
-	pSendMessage.Call(message, 0x30, a.smallFont, 1)
+	control("STATIC", "Extra shortcuts must include Ctrl or Alt. Change Tab acceptance in the main window.\r\nClick Apply to save and activate your choices.", 0, 24, 394, 656, 40, 0)
+	a.separatorIn(a.hotkeyWindow, 24, 448, 656)
+	control("BUTTON", "Apply shortcuts", idHotkeyApply, 24, 464, 152, 32, 0x10000)
+	control("BUTTON", "Reset fields to defaults", idHotkeyDefaults, 188, 464, 226, 32, 0x10000)
+	control("BUTTON", "Close", idHotkeyClose, 576, 464, 104, 32, 0x10000)
+	a.statusText(a.hotkeyWindow, "Your other settings are preserved.", ctrlHotkeyMessage, 24, 510, 656, 44)
 	a.refreshHotkeyUI()
 	pShowWindow.Call(a.hotkeyWindow, 5)
 	pSetForegroundWindow.Call(a.hotkeyWindow)

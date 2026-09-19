@@ -1,5 +1,19 @@
 # Verification report — TypeNext
 
+## 0.1.6 UI polish — 19 September 2026
+
+Main settings, API settings, and Shortcuts were rendered and visually inspected on Windows using isolated synthetic settings. All three windows have aligned controls, header/footer separators, and padded gray status panels. Native text measurement found **zero clipped static labels** in each window at the tested display scale. Screenshots are in `docs/screenshots/`; `scripts/Preview-UI.ps1` reproduces them after quitting any running TypeNext instance. No user credentials or model requests were used for the preview.
+
+Tab acceptance is enabled in new default configurations and the example configuration. Existing explicit preferences are preserved; the installed user's Tab option was already enabled. The main shortcut summary now includes Tab even when the extra Accept shortcut is disabled. Existing insertion and key-release behavior is unchanged.
+
+`go test -count=1 ./...`, `go vet ./...`, and the Windows GUI build passed. The final executable was installed and launched successfully; saved settings were preserved. Other display scales and live model acceptance were not exercised in this UI check.
+
+Current artifact: **`TypeNext.exe`**, **0.1.6-preview**, **7,169,536 bytes**, SHA-256:
+
+```text
+03fef217201928311875729968ac6e93631107ec0a0d3042ac7e38a4f28d536a
+```
+
 ## 0.1.5 automatic suggestion correction — 19 September 2026
 
 Reverted the unsuccessful Weixin/custom Qt reader changes, setting advice, and diagnostic script. The PowerPoint adapter and logical-caret/popup stability fixes remain.
@@ -10,7 +24,7 @@ Verified with **Go 1.27.1 windows/amd64**: `go test -race -count=1 ./...`, `go v
 
 The local executable was replaced and restarted successfully. The previously disabled automatic-remote flag was enabled after explicit user approval, retaining the existing endpoint and typing delay. The configuration edit changes only that Boolean value. The previous binary and configuration were backed up before installation.
 
-Current artifact: **`TypeNext.exe`**, **0.1.5-preview**, **7,166,464 bytes**, SHA-256:
+Historical artifact: **`TypeNext.exe`**, **0.1.5-preview**, **7,166,464 bytes**, SHA-256:
 
 ```text
 15284632345f457bf5ac163920f901f175d8364f8eec5699b40a0a3adddbc4e4
@@ -35,7 +49,7 @@ Historical artifact: `TypeNext.exe`, version **0.1.3-preview**, **7,163,904 byte
 2d80b3e5e9ba083e85945fb3173358bdb9cfb541c5fb430c1a4d17a8a7c81045
 ```
 
-`SHA256SUMS.txt` describes the current 0.1.5 executable. Artifact hashes below are historical.
+`SHA256SUMS.txt` describes the current executable. Artifact hashes below are historical.
 
 ## PowerPoint and suggestion stability update — 19 September 2026
 

@@ -58,6 +58,7 @@ type app struct {
 
 	window, overlay, pad, padEdit                         uintptr
 	instance, font, heading, smallFont, brush, whiteBrush uintptr
+	statusBrush                                           uintptr
 	keyboard, mouse                                       uintptr
 	cfg                                                   core.Config
 	configPath                                            string
@@ -120,11 +121,13 @@ func Run() error {
 	a.smallFont = a.makeFont(13, 400)
 	a.brush, _, _ = pCreateSolidBrush.Call(windowBackground)
 	a.whiteBrush, _, _ = pCreateSolidBrush.Call(0xFFFFFF)
+	a.statusBrush, _, _ = pCreateSolidBrush.Call(statusBackground)
 	defer pDeleteObject.Call(a.font)
 	defer pDeleteObject.Call(a.heading)
 	defer pDeleteObject.Call(a.smallFont)
 	defer pDeleteObject.Call(a.brush)
 	defer pDeleteObject.Call(a.whiteBrush)
+	defer pDeleteObject.Call(a.statusBrush)
 	cursor, _, _ := pLoadCursor.Call(0, 32512)
 	icon, _, _ := pLoadIcon.Call(0, 32516)
 	proc := syscall.NewCallback(windowProc)
@@ -133,8 +136,7 @@ func Run() error {
 	if v, _, err := pRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc))); v == 0 {
 		return fmt.Errorf("register window: %v", err)
 	}
-	width, height := a.s(770), a.s(754)
-	a.window, _, e = pCreateWindowEx.Call(0x00010000, uintptr(unsafe.Pointer(className)), uintptr(unsafe.Pointer(u16("TypeNext — writing completion"))), 0x00CA0000, 100, 70, uintptr(width), uintptr(height), 0, 0, inst, 0)
+	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 752, 776, 0)
 	if a.window == 0 {
 		return fmt.Errorf("create settings window: %v", e)
 	}
@@ -222,7 +224,7 @@ func (a *app) isSettingsChild(w uintptr) bool {
 	return ok != 0
 }
 
-// (x, y) are in screen coordinates. (w, h) are in pixels. The returned HWND is always topmost and does not take focus.
+// Control coordinates use unscaled client-area pixels relative to the parent.
 func (a *app) control(class, text string, id, x, y, w, h int, style uintptr) uintptr {
 	return a.controlIn(a.window, class, text, id, x, y, w, h, style)
 }
@@ -251,21 +253,20 @@ func (a *app) checkbox(text string, id, x, y, w int, checked bool) {
 	}
 }
 func (a *app) separator(x, y, w int) {
-	a.control("STATIC", "", 0, x, y, w, 2, 0x10)
+	a.separatorIn(a.window, x, y, w)
 }
 
 func (a *app) buildSettings() {
-	h := a.label("TypeNext", 24, 18, 280, 35)
+	h := a.label("TypeNext", 24, 20, 280, 34)
 	pSendMessage.Call(h, 0x30, a.heading, 1)
-	a.button("API settings…", idAPI, 334, 24, 140)
-	a.button("Shortcuts…", idHotkeys, 486, 24, 130)
-	a.button("Quit", idQuit, 628, 24, 90)
-	a.label("Writing Completion  /  Local Model or API  /  "+core.Version, 24, 65, 690, 22)
-	// The settings window is divided into three sections.
-	a.separator(24, 90, 694)
-	a.label("1  Connect a model (local or API)", 24, 98, 680, 24)
-	a.label("Provider", 24, 131, 95, 25)
-	combo := a.control("COMBOBOX", "", ctrlProvider, 126, 128, 207, 120, 0x10003)
+	a.button("API settings…", idAPI, 344, 24, 140)
+	a.button("Shortcuts…", idHotkeys, 496, 24, 130)
+	a.button("Quit", idQuit, 638, 24, 90)
+	a.label("Writing completion  /  Local model or API  /  "+core.Version, 24, 64, 704, 22)
+	a.separator(24, 98, 704)
+	a.label("1  Connect a model", 24, 114, 704, 24)
+	a.label("Provider", 24, 150, 96, 24)
+	combo := a.control("COMBOBOX", "", ctrlProvider, 132, 146, 208, 120, 0x10003)
 	for _, v := range []string{"ollama", "openai-compatible"} {
 		pSendMessage.Call(combo, 0x143, 0, uintptr(unsafe.Pointer(u16(v))))
 	}
@@ -274,36 +275,35 @@ func (a *app) buildSettings() {
 		idx = 1
 	}
 	pSendMessage.Call(combo, 0x14e, idx, 0)
-	a.label("Model", 354, 131, 61, 25)
-	a.control("EDIT", a.cfg.Model, ctrlModel, 412, 128, 306, 27, 0x10080)
-	a.label("Server URL", 24, 171, 99, 25)
-	a.control("EDIT", a.cfg.Endpoint, ctrlEndpoint, 126, 168, 592, 27, 0x10080)
-	a.connectionLabel = a.label("", 126, 200, 594, 34)
-	pSendMessage.Call(a.connectionLabel, 0x30, a.smallFont, 1)
-	a.label("2  Choose the interaction", 24, 238, 680, 24)
-	a.checkbox("Automatic suggestions after a typing pause (experimental)", ctrlAuto, 24, 270, 688, a.cfg.Auto)
-	a.checkbox("Tab accepts a finished suggestion (or use your configured Accept shortcut)", ctrlTab, 24, 300, 688, a.cfg.AcceptTab)
-	a.checkbox("Request non-thinking mode (Ollama / official DeepSeek; disable if rejected)", ctrlThinking, 24, 330, 688, a.cfg.DisableThinking)
-	a.label("Pause (ms)", 24, 375, 100, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.DebounceMS), ctrlPause, 125, 371, 80, 27, 0x12000)
-	a.label("Before caret", 239, 375, 107, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 348, 371, 80, 27, 0x12000)
-	a.label("After caret", 468, 375, 95, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 573, 371, 80, 27, 0x12000)
-	a.label("3  Approve applications (one executable name per line)", 24, 417, 694, 24)
-	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 450, 694, 86, 0x311044)
-	a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 543, 698, 24)
-	a.separator(24, 572, 694)
-	// Save, test buttons, and status labels are at the bottom of the window.
-	a.button("Save settings", idSave, 24, 580, 137)
-	a.button("Test model", idTest, 174, 580, 120)
-	a.button("Open test pad", idPad, 307, 580, 133)
-	a.button("Inspect in 3s", idInspect, 453, 580, 122)
-	a.button("Hide to tray", idHide, 588, 580, 130)
-	a.statusLabel = a.label("", 24, 626, 694, 48)
-	pSendMessage.Call(a.statusLabel, 0x30, a.smallFont, 1)
-	a.shortcutLabel = a.label("", 24, 680, 694, 28)
-	pSendMessage.Call(a.shortcutLabel, 0x30, a.smallFont, 1)
+	a.label("Model", 364, 150, 56, 24)
+	a.control("EDIT", a.cfg.Model, ctrlModel, 432, 146, 296, 28, 0x10080)
+	a.label("Server URL", 24, 188, 96, 24)
+	a.control("EDIT", a.cfg.Endpoint, ctrlEndpoint, 132, 184, 596, 28, 0x10080)
+	a.connectionLabel = a.statusText(a.window, "", 0, 132, 222, 596, 44)
+	a.label("2  Choose the interaction", 24, 282, 704, 24)
+	a.checkbox("Automatic suggestions after a typing pause", ctrlAuto, 24, 314, 704, a.cfg.Auto)
+	a.checkbox("Tab accepts a finished suggestion (recommended)", ctrlTab, 24, 344, 704, a.cfg.AcceptTab)
+	a.checkbox("Request non-thinking mode (Ollama / official DeepSeek)", ctrlThinking, 24, 374, 704, a.cfg.DisableThinking)
+	a.label("Pause (ms)", 24, 418, 96, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.DebounceMS), ctrlPause, 132, 414, 88, 28, 0x12000)
+	a.label("Before caret", 268, 418, 100, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 376, 414, 88, 28, 0x12000)
+	a.label("After caret", 532, 418, 96, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 640, 414, 88, 28, 0x12000)
+	a.label("3  Approve applications", 24, 462, 704, 24)
+	h = a.label("One executable name per line", 410, 466, 318, 20)
+	pSendMessage.Call(h, 0x30, a.smallFont, 1)
+	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 494, 704, 80, 0x211044)
+	h = a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 584, 704, 20)
+	pSendMessage.Call(h, 0x30, a.smallFont, 1)
+	a.separator(24, 618, 704)
+	a.button("Save settings", idSave, 24, 634, 137)
+	a.button("Test model", idTest, 173, 634, 120)
+	a.button("Open test pad", idPad, 305, 634, 133)
+	a.button("Inspect in 3s", idInspect, 450, 634, 122)
+	a.button("Hide to tray", idHide, 584, 634, 144)
+	a.statusLabel = a.statusText(a.window, "", 0, 24, 682, 704, 44)
+	a.shortcutLabel = a.statusText(a.window, "", 0, 24, 726, 704, 28)
 }
 func windowText(w uintptr) string {
 	n, _, _ := pGetWindowTextLength.Call(w)
@@ -684,6 +684,12 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 	}
 	switch m {
 	case 0x135, 0x138: // WM_CTLCOLORBTN, WM_CTLCOLORSTATIC
+		if tag, _, _ := pGetWindowLongPtr.Call(lp, windowUserData); tag == statusSurfaceTag {
+			pSetBkColor.Call(wp, statusBackground)
+			pSetTextColor.Call(wp, statusForeground)
+			pSetBkMode.Call(wp, 2) // OPAQUE: repaint changing status text cleanly.
+			return a.statusBrush
+		}
 		// Match labels and checkbox captions to the shared window background.
 		// Return a solid brush so changing text also clears its previous contents.
 		pSetBkColor.Call(wp, windowBackground)

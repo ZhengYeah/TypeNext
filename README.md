@@ -1,10 +1,14 @@
 # TypeNext
 
-**Writing completion for Windows — local models or remote APIs — 0.1.5 preview**
+**Writing completion for Windows — local models or remote APIs — 0.1.6 preview**
 
 TypeNext reads bounded existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. It inserts the text only when you accept it.
 
 **This is a desktop helper, not a registered Windows TSF IME and not universal in-editor ghost text.** It uses UI Automation and a dedicated PowerPoint text adapter. PowerPoint's native reader has passed a live bounded-read check; insertion and the full suggestion UI still need live verification. Word, Typora, WeChat, and VS Code remain unverified. Start with disposable text.
+
+## New in 0.1.6: Settings polish
+
+Main settings, API settings, and Shortcuts now share aligned fields, consistent spacing, header/footer separators, and padded gray status panels. Tab accepts a finished suggestion by default in new configurations; existing saved choices are preserved. The optional extra Accept shortcut remains available, and the shortcut summary correctly includes Tab when enabled.
 
 ## New in 0.1.5: Automatic suggestions
 
@@ -64,7 +68,7 @@ For an OpenAI-compatible local server, select `openai-compatible`, enter its bas
 | Accept a finished suggestion | Ctrl+Shift+F10 |
 | Cancel/dismiss | Esc |
 | Pause/resume | Ctrl+Shift+F11 |
-| Accept with Tab | Optional; initially off |
+| Accept with Tab | On by default; configurable in settings |
 
 Shortcut fields accept names, not captured keypresses. Use Ctrl or Alt with optional Shift and an allowed key; `None` disables the action. **Apply shortcuts** shows Active, Disabled, or Unavailable. Defaults cannot be guaranteed free on every computer. Re-applying an unchanged active binding does not register it twice.
 
