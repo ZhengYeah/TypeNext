@@ -13,6 +13,9 @@ TypeNext reads a bounded amount of existing text around the caret in an approved
 > [!WARNING]
 > Not applicable to Weixin/WeChat. It has restrictions and does not expose the caret or text to accessibility APIs.
 
+> [!TIP]
+> If you are experienced with Go and Windows development, and interested in contributing, feel free to join. I may not have time to refine the codebase or add features, but I can review pull requests and discuss design.
+
 ## Start with an API
 
 1. Run `TypeNext.exe` on Windows x64. TypeNext itself needs no Python, Node, Go, or .NET runtime installation.
