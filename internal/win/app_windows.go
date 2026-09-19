@@ -690,9 +690,20 @@ func (a *app) openPad() {
 		pSetFocus.Call(a.padEdit)
 		return
 	}
-	a.pad, _, _ = pCreateWindowEx.Call(0, uintptr(unsafe.Pointer(u16("TypeNextWindow"))), uintptr(unsafe.Pointer(u16("TypeNext test pad — suggest: "+a.hotkeyLabel(core.HotkeySuggest)))), 0x00CF0000, 150, 100, uintptr(a.s(800)), uintptr(a.s(460)), 0, 0, a.instance, 0)
+	var err error
+	a.pad, _, err = pCreateWindowEx.Call(0, uintptr(unsafe.Pointer(u16("TypeNextWindow"))), uintptr(unsafe.Pointer(u16("TypeNext test pad — suggest: "+a.hotkeyLabel(core.HotkeySuggest)))), 0x00CF0000, 150, 100, uintptr(a.s(800)), uintptr(a.s(460)), 0, 0, a.instance, 0)
+	if a.pad == 0 {
+		a.setStatus(fmt.Sprintf("Cannot open test pad: %v", err))
+		return
+	}
 	sample := "This is existing text in the editor. TypeNext should read it even though it was not typed through TypeNext.\r\n\r\nDifferential privacy provides a mathematical definition of privacy. One important consideration is "
-	a.padEdit, _, _ = pCreateWindowEx.Call(0x200, uintptr(unsafe.Pointer(u16("EDIT"))), uintptr(unsafe.Pointer(u16(sample))), 0x503110c4, 12, 12, uintptr(a.s(754)), uintptr(a.s(375)), a.pad, 600, a.instance, 0)
+	a.padEdit, err = createPadEdit(a.pad, a.instance, a.s(754), a.s(375), sample)
+	if err != nil {
+		pDestroyWindow.Call(a.pad)
+		a.pad = 0
+		a.setStatus(fmt.Sprintf("Cannot open test pad: %v", err))
+		return
+	}
 	pSendMessage.Call(a.padEdit, 0x30, a.font, 1)
 	pShowWindow.Call(a.pad, 5)
 	pSetForegroundWindow.Call(a.pad)

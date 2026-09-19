@@ -7,6 +7,9 @@ Engineering references for the implementation. These describe API contracts; app
 - Microsoft, IUIAutomationTextRange::MoveEndpointByUnit: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-moveendpointbyunit
 - Microsoft, SendInput and its privilege/input-state restrictions: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput
 - Microsoft's Windows SDK metadata header, used to verify interface GUIDs and method order: https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/UIAutomationClient.h
+- Microsoft, UI Automation support for standard controls: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-controlsupport
+- Microsoft, creating the Rich Edit control used by the test pad: https://learn.microsoft.com/en-us/windows/win32/controls/create-rich-edit-controls
+- Microsoft, EM_SETTEXTMODE (plain text, set before adding content): https://learn.microsoft.com/en-us/windows/win32/controls/em-settextmode
 - Ollama chat API (streaming, thinking, and keep-alive parameters): https://docs.ollama.com/api/chat
 - Ollama Qwen3 4B example model: https://ollama.com/library/qwen3:4b
 

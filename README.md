@@ -1,17 +1,19 @@
 # TypeNext
 
-The initial idea of TypeNext was to use VSCode's inline-completion and inline-chat in any software.
-I want a light-weight implementation, and now it has the following features:
+**Writing completion for Windows — local models or remote APIs**
 
-- Independent of any editor, IDE, or browser. You can use it in Browsers, Editors, Office, etc.
-- Not an IME so do not need to change your input method. It can work with any input method, including Chinese/Japanese/Korean IMEs.
-- Supports local models and remote APIs. You can use it with your own model or a cloud API.
+TypeNext started as an attempt to bring VS Code's inline completion and inline chat to any application, in a lightweight way. Today it offers:
 
-**Writing completion for Windows — local models or remote APIs — v0.1.0**
+- **Works everywhere.** Independent of any editor, IDE, or browser — use it in browsers, editors, Office, and more.
+- **Not an IME.** Keep your current input method, including Chinese, Japanese, and Korean IMEs.
+- **Your choice of model.** Run a local model or connect to a cloud API.
 
-TypeNext reads bounded existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. It inserts the text when you accept it.
+TypeNext reads a bounded amount of existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. The text is inserted only when you accept it.
 
-This is a desktop helper, not a registered Windows TSF IME. It uses UI Automation and some dedicated text adapters, e.g. for PowerPoint.
+It is a desktop helper, not a registered Windows TSF IME: it uses UI Automation plus a few dedicated text adapters, such as one for PowerPoint.
+
+> [!WARNING]
+> Not applicable to Weixin/WeChat. It has restrictions and does not expose the caret or text to accessibility APIs.
 
 ## Start with an API
 
@@ -85,8 +87,6 @@ On Windows x64:
 ```powershell
 .\scripts\Build.ps1
 ```
-
-This runs portable tests, Windows-specific ABI and DPAPI tests, static analysis, and compilation. The DPAPI tests use a dummy key, not your credentials.
 
 Cross-build on Linux/macOS:
 
