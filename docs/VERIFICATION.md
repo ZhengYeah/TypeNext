@@ -1,5 +1,21 @@
 # Verification report — TypeNext
 
+## 0.1.5 automatic suggestion correction — 19 September 2026
+
+Reverted the unsuccessful Weixin/custom Qt reader changes, setting advice, and diagnostic script. The PowerPoint adapter and logical-caret/popup stability fixes remain.
+
+Automatic scheduling now keeps Shift-typed letters/punctuation armed, recognizes numpad and additional editing/IME keys, and associates typing with the foreground window before the next timer poll. Pending requests wait while modifiers or native IME composition are active. Navigation, focus changes, and command shortcuts still cancel pending suggestions. Main settings now explain when automatic mode is enabled but automatic remote access or endpoint approval is missing.
+
+Verified with **Go 1.27.1 windows/amd64**: `go test -race -count=1 ./...`, `go vet ./...`, and the Windows GUI build passed. New regression tests exercise the typing/poll/debounce sequence, shifted final punctuation, foreground switches, command/navigation cancellation, app and remote permission gates, and blocked-setting diagnostics. Native IME and actual model/overlay timing still require the manual test plan; no real editor text was sent to a model during these checks.
+
+The local executable was replaced and restarted successfully. The previously disabled automatic-remote flag was enabled after explicit user approval, retaining the existing endpoint and typing delay. The configuration edit changes only that Boolean value. The previous binary and configuration were backed up before installation.
+
+Current artifact: **`TypeNext.exe`**, **0.1.5-preview**, **7,166,464 bytes**, SHA-256:
+
+```text
+15284632345f457bf5ac163920f901f175d8364f8eec5699b40a0a3adddbc4e4
+```
+
 ## 0.1.3 PowerPoint pane correction — 19 September 2026
 
 The installed PowerPoint **16.0.20326.20144** exposes the slide editor as `PPTFrameClass -> MDIClient -> mdiClass`, rather than the legacy `paneClassDC` listed in the Office 2000 API documentation. A live metadata probe confirmed `OBJID_NATIVEOM` succeeds on that `mdiClass` pane and exposes Normal view, the active slide pane, and a collapsed text selection. The adapter now accepts both classes while retaining the actual keyboard-focus ancestry and foreground boundaries.
@@ -13,13 +29,13 @@ Live verification:
 
 Final `go test -race -count=1 ./...`, `go vet ./...`, and the Windows GUI build passed with **Go 1.27.1 windows/amd64**. The two live tests are opt-in and skipped by ordinary test runs. New focus-tree tests cover modern and legacy panes, child controls, ribbon/search siblings, other presentation windows, absent focus, and malformed parent cycles.
 
-Current workspace artifact: `TypeNext.exe`, version **0.1.3-preview**, **7,163,904 bytes**, SHA-256:
+Historical artifact: `TypeNext.exe`, version **0.1.3-preview**, **7,163,904 bytes**, SHA-256:
 
 ```text
 2d80b3e5e9ba083e85945fb3173358bdb9cfb541c5fb430c1a4d17a8a7c81045
 ```
 
-`SHA256SUMS.txt` describes this executable. Earlier artifact hashes below are historical.
+`SHA256SUMS.txt` describes the current 0.1.5 executable. Artifact hashes below are historical.
 
 ## PowerPoint and suggestion stability update — 19 September 2026
 

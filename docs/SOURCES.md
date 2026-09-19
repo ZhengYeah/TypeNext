@@ -21,14 +21,6 @@ No external source code from these projects is bundled as a TypeNext dependency.
 
 These references establish API contracts, not live PowerPoint compatibility or a guarantee that every accessibility provider retains caret ranges correctly. The PowerPoint and suggestion-stability manual cases remain in `WINDOWS_TEST_PLAN.md`.
 
-## Weixin/custom text-provider investigation - checked 19 September 2026
-
-- Qt 5.15, [QWindowsUiaMainProvider](https://github.com/qt/qtbase/blob/5.15/src/plugins/platforms/windows/uiautomation/qwindowsuiamainprovider.cpp): `GetPropertyValue` can map Edit to Text when native virtual-keyboard activation is disabled; `GetPatternProvider` supplies text patterns according to the accessible text interface. This explains why a role check alone can reject a usable Qt editor; it does not establish what Weixin exposes.
-- Qt 5.15, [QWindowsUiaTextRangeProvider](https://github.com/qt/qtbase/blob/5.15/src/plugins/platforms/windows/uiautomation/qwindowsuiatextrangeprovider.cpp): the read-only text attribute is returned as a boolean based on the accessible state. TypeNext requires an explicit false value before reading the newly eligible custom roles.
-- WeChatEnhancement author, [NVDA add-on documentation](https://raw.githubusercontent.com/cary-rowen/WeChatEnhancement/master/addon/doc/zh_CN/readme.md): mentions Weixin Settings > General > 读屏优化模式 as addressing global-search accessibility. This is the add-on author's documentation, not Tencent documentation or evidence of TypeNext message-input compatibility.
-
-The installed Weixin 4.1.13.65 was inspected using metadata only. Its initial focused provider was a Win32 Window without text/selection patterns; HWND and MSAA probes did not reveal a usable editor. The setting's effect and live text reading/insertion remain unverified. No third-party source code was copied into TypeNext for this change.
-
 ## Shortcut registration update
 
 Microsoft RegisterHotKey reference (checked 15 September 2026): https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey

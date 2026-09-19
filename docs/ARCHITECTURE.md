@@ -41,7 +41,7 @@ A single accessibility worker prevents unbounded concurrent COM calls. Each call
 
 ## Text access details
 
-The foreground executable is checked before text is read. UI Automation reads only the focused element, not its parents, siblings, or the entire application tree. The element must report keyboard focus and enabled status, expose TextPattern with a collapsed caret selection, and not be password-protected. Edit and Document controls retain the existing policy: read-only text is rejected when the provider exposes that attribute. Text, Custom, and Pane controls additionally require an explicit boolean `IsReadOnly=false`; missing, unsupported, mixed, or malformed attributes cannot establish editability. Window and List controls remain rejected.
+The foreground executable is checked before text is read. UI Automation reads only the focused element, not its parents, siblings, or the entire application tree. The element must be an Edit or Document, report keyboard focus and enabled status, and not be password-protected. The caret selection must be collapsed. Read-only text is rejected when the provider exposes that attribute.
 
 The native text-pattern interface is acquired through `GetCurrentPatternAs`, rather than assuming an arbitrary `IUnknown` pointer has a text-pattern vtable. Prefix and suffix are independent clones of the caret range. Only the requested endpoints are moved; TypeNext never changes the application's selection to read text.
 
@@ -59,12 +59,6 @@ Only normal/slide editing with `ppSelectionText` and a zero-length `Selection.Te
 
 The object-model adapter performs reads only. Acceptance revalidates the current target and context, then uses the existing Unicode `SendInput` path. Popup positioning uses the native caret or PowerPoint range bounds converted through `PointsToScreenPixelsX/Y`, with a pane-corner fallback when caret geometry is unavailable. Notes, masters, slide shows, and embedded chart/SmartArt/table editors are not supported. New default configurations approve `powerpnt.exe`; existing saved allowlists are not expanded. See `VERIFICATION.md` for the live checks completed and their limits.
 
-## Weixin and custom text providers
-
-Qt 5.15 can report an editable field as the UIA Text control type when native virtual-keyboard activation is disabled. Eligibility therefore depends on the focused provider's text and editability contracts as well as its role. The custom-role path uses the same bounded caret-range reads, context checks, and Unicode insertion as other UIA editors; it does not search chat history or add a clipboard fallback.
-
-The installed Weixin 4.1.13.65 initially exposed only a Win32 Window (50032), class `Qt51514QWindowIcon`, with no text or selection patterns. Root/child HWND provider probes and MSAA checks found only generic clients. The custom-role change cannot read text through that outer window. Settings > General > 读屏优化模式 (Screen reader optimization) is a setting to investigate; its effect on this installation and live message-input compatibility remain unverified. `scripts/Inspect-FocusedText.ps1` inspects accessibility metadata without reading chat text, names, values, or window titles. See `VERIFICATION.md` for the current live-check status.
-
 ## Model behavior
 
 The completion client is not a general agent. It does not execute tools, browse, call shell commands, or follow instructions found in a document. Prefix and suffix are provided as JSON data with a fixed completion-only system prompt. This reduces prompt confusion but does not prove that the model will always follow the prompt. The user reviews the generated text.
@@ -77,7 +71,9 @@ Incomplete streams and server errors never become an acceptable completion. Part
 
 UI Automation access is provider-dependent. A TSF-enabled app is not automatically compatible with this reader, and the PowerPoint adapter applies only to its supported slide text. No claims are made that this preview reads full Word documents, Typora's source model, VS Code's complete buffer, or WeChat message history. It reads bounded context from the focused text provider.
 
-Automatic mode detects a typing pause using activity events, not a rolling key transcript. Some edits initiated by menus, other assistive tools, or the application itself will not arm automatic completion. Use the manual request shortcut for those cases. Keyboard and mouse activity still invalidate known suggestions; acceptance always attempts a fresh read.
+Automatic mode detects a typing pause using activity events, not a rolling key transcript. Shift+typing, numpad input, Delete, Enter, and IME processing keys arm automatic completion. The scheduler preserves editing activity from the newly focused window when its next timer observes the foreground change. A pending automatic request waits for modifier release and detected IME composition to finish before capture, while a switch away from its target invalidates it. Modern TSF-only composition detection remains incomplete.
+
+The scheduler checks every 150 ms. The configured delay is a minimum typing pause before starting a request; model response time and the minimum three-second interval between remote automatic starts can add latency. Both global automatic mode and automatic-remote permission are required for a remote request, along with endpoint approval. Main-window status explains when global automatic mode is on but remote automatic use is disabled. Some edits initiated by menus, other assistive tools, or the application itself will not arm automatic completion. Use the manual request shortcut for those cases. Keyboard and mouse activity still invalidate known suggestions; acceptance always attempts a fresh read.
 
 Before insertion, context is rechecked on the accessibility worker after modifier release. This is followed by `SendInput`, not a TSF edit-session write. The application could change in the gap, so atomicity is not guaranteed. Elevated windows, custom controls, modern IME composition, DPI changes, and multiple monitors need live validation.
 

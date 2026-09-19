@@ -331,6 +331,9 @@ func (a *app) saveAPI() bool {
 }
 
 func (a *app) connectionSummary() string {
+	if reason := automaticBlockReason(a.cfg); reason != "" {
+		return reason
+	}
 	if !a.cfg.IsRemote() {
 		return "Local endpoint active. Your local server must also be configured not to forward requests."
 	}
@@ -346,6 +349,9 @@ func (a *app) refreshConnectionUI() {
 	text := "Local endpoint. API settings adds keys, HTTPS providers, and request options."
 	if a.cfg.IsRemote() {
 		text = "REMOTE API active: textbox context leaves this PC. Use API settings to change access."
+	}
+	if reason := automaticBlockReason(a.cfg); reason != "" {
+		text = reason
 	}
 	setControlText(a.connectionLabel, text)
 }

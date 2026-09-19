@@ -65,14 +65,11 @@ type variant struct {
 	Data           [16]byte
 }
 
-func rangeReadonly(r *comObject) (readOnly, known bool) {
+func rangeReadonly(r *comObject) bool {
 	var v variant
 	hr := comCall(r, 9, 40015, uintptr(unsafe.Pointer(&v))) // UIA_IsReadOnlyAttributeId
 	defer pVariantClear.Call(uintptr(unsafe.Pointer(&v)))
-	if failed(hr) || v.VT != 11 {
-		return false, false
-	}
-	return (*(*int16)(unsafe.Pointer(&v.Data[0]))) != 0, true
+	return !failed(hr) && v.VT == 11 && (*(*int16)(unsafe.Pointer(&v.Data[0]))) != 0
 }
 func bstrString(b *uint16) string {
 	if b == nil {
@@ -258,11 +255,8 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 		return result, errors.New("textbox is not enabled")
 	}
 	control, err := scalar(el, 21)
-	if err != nil {
-		return result, err
-	}
-	if !textControlAllowed(control) {
-		return result, focusedTextControlError(process, control)
+	if err != nil || (control != 50004 && control != 50030) {
+		return result, errors.New("focused control is not an accessible Edit or Document; no text was read")
 	}
 	pid, err := scalar(el, 20)
 	if err != nil {
@@ -320,9 +314,8 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 		}
 		release(p2)
 	}
-	readOnly, known := rangeReadonly(caret)
-	if err := validateTextEditability(control, readOnly, known); err != nil {
-		return result, err
+	if rangeReadonly(caret) {
+		return result, errors.New("read-only text: completion disabled")
 	}
 	before, err := cloneRange(caret)
 	if err != nil {

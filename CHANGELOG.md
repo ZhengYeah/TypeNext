@@ -1,11 +1,11 @@
 # TypeNext changelog
 
-## 0.1.4 preview — 19 September 2026
+## 0.1.5 preview — 19 September 2026
 
-- Support focused Text, Custom, and Pane editors with TextPattern, a collapsed caret, and explicit writable metadata, including Qt's nonstandard Text role.
-- Keep outer windows, conversation lists, password fields, and read-only or unverifiable custom text controls rejected.
-- Explain Weixin's missing input accessibility and point to its screen-reader optimization setting when only the outer window is exposed.
-- Add metadata-only Weixin diagnostics and regression tests. Installed Weixin 4.1.13.65 initially exposed no editor provider; direct completion remains dependent on accessible input being available.
+- Keep automatic suggestions scheduled for Shift+typing, numpad input, Delete, Enter, and IME processing keys; preserve the first edit after a foreground-window change.
+- Wait for modifier release and detected IME composition to finish without dropping a pending automatic request. Preserve pause, application permissions, remote consent, and the three-second remote request interval.
+- Explain in the main status text when automatic mode is on but automatic remote requests are disabled. Add scheduling and input regression coverage plus manual checks; live automatic-suggestion behavior remains to be verified.
+- Revert the unsuccessful Weixin integration and restore standard UIA Edit/Document support. Retain the PowerPoint adapter and suggestion stability fixes.
 
 ## 0.1.3 preview — 19 September 2026
 

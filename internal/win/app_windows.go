@@ -580,19 +580,23 @@ func (a *app) toggle() {
 }
 func (a *app) tick() {
 	fg := foreground()
-	if fg != a.lastForeground {
-		a.lastForeground = fg
-		a.invalidate(false)
-	}
+	a.observeForeground(fg)
 	if !a.inspectAt.IsZero() && time.Now().After(a.inspectAt) {
 		a.inspectAt = time.Time{}
 		a.inspect()
 	}
-	if a.enabled && a.apiWindow == 0 && a.cfg.AutomaticDue(time.Now(), a.lastRemoteRequest) && a.autoArmed && !a.running && time.Since(a.lastActivity) >= time.Duration(a.cfg.DebounceMS)*time.Millisecond && !modifiersDown() {
-		a.autoArmed = false
+	if a.automaticDue(time.Now(), modifiersDown()) {
 		_, process, e := processOf(fg)
 		if e == nil && (fg == a.pad || a.cfg.Allows(process)) {
+			// Pausing during composition must not consume the only automatic
+			// attempt. Keep it armed until the IME has committed its text.
+			if composing(fg) {
+				return
+			}
+			a.autoArmed = false
 			a.request(false)
+		} else {
+			a.autoArmed = false
 		}
 	}
 }
@@ -853,8 +857,7 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 					a.invalidate(false)
 					return 1
 				}
-				arm := !modifiersDown() && (v == 0x08 || v == 0x20 || (v >= 0x30 && v <= 0x5a) || (v >= 0xba && v <= 0xe7))
-				a.invalidate(arm)
+				a.keyboardActivity(v, currentModifiers(), foreground())
 			}
 		}
 	}

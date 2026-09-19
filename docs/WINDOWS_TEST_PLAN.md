@@ -26,6 +26,16 @@ Open the built-in test pad. With its pre-existing paragraph intact, place the ca
 
 Use Inspect in 3s, switch back to the pad, and verify that it reports text that was already present. Move the caret into the middle of the paragraph, run another inspection, and compare the reported prefix and suffix with the visible document. Try long documents, blank suffixes, an empty document, Chinese text, emoji, and a selected span. A selected span should be rejected, not replaced.
 
+## Automatic typing-pause requests (0.1.5)
+
+These live checks remain pending. Use disposable text in the built-in test pad and Notepad, with an approved local model or controlled test endpoint. Enable Automatic suggestions and record the configured delay. Allow up to one 150 ms scheduler interval beyond that delay, plus model response time, before expecting a card.
+
+1. Type lowercase text, then repeat with a final uppercase letter or shifted punctuation. Release the keys and pause; each edit should schedule a request. Repeat with numpad digits/operators, Backspace, Delete, and Enter in a multiline field. A standalone navigation key or shortcut must not schedule completion.
+2. Switch to another approved editor, type immediately before the next timer tick, and pause. The first edit should still schedule a request for that new target. Switch away before the delay expires; no request for the old target may start. Repeat with a slow request already pending and verify stale callbacks cannot show a card in the new window.
+3. Type while holding Shift, keep it held beyond the delay, then release without another edit. Capture should wait for release and the pending request should still run. Use a Chinese IME: leave composition active past the delay, commit it, and verify completion uses committed text when the IME exposes composition state. Record IME/version limitations; do not assume modern TSF-only composition is always detected.
+4. Pause TypeNext or turn Automatic suggestions off, then type and wait; no automatic request should start. Repeat in a disallowed application, a password field, and a selected span. Existing permission and text-access checks must still refuse these targets.
+5. With an approved remote API and Automatic suggestions on but Allow automatic remote requests off, verify the main status explains why completion remains manual and typing sends no request. Explicitly enable the second permission, then verify automatic starts remain at least three seconds apart even with a shorter typing-pause delay. Turn either switch off and confirm automatic remote use stops.
+
 ## Cancellation and input safety
 
 During slow generation, type another character, move the caret, select another field, click elsewhere, scroll, switch apps, and press Esc. The old suggestion must not reappear or be inserted. Test two textboxes in one window with similar contents. Verify that accepting a stale suggestion is refused.
@@ -54,16 +64,6 @@ Record the PowerPoint version/build and Windows display scale. On an upgraded in
 
 Passing automated COM/ABI tests does not establish these live behaviors. Keep the matrix status pending until each application/version has been exercised.
 
-## Weixin message input and custom UIA roles
-
-Record the Weixin version and the state of Settings > General > 读屏优化模式 (Screen reader optimization). On the initially inspected Weixin 4.1.13.65 installation, metadata exposed only a Win32 Window (50032), class `Qt51514QWindowIcon`, with no text or selection patterns. Provider probes found only generic clients. This is an observed compatibility failure; enabling the setting has not yet been verified to resolve it.
-
-1. With the mode disabled, focus the message input and run `scripts/Inspect-FocusedText.ps1 -WatchSeconds 15 -ProbeProvider`. Repeat with the mode enabled and the input refocused; follow any restart prompt from Weixin. The diagnostic must report only metadata, never chat text, titles, Name, or Value. Record the focused control type and available patterns for each state. An outer Window or missing TextPattern must produce an actionable refusal, not an empty successful capture.
-2. If the focused input exposes TextPattern, test a disposable unsent draft with known text and a collapsed caret at its beginning, middle, and end. Inspect only that draft's bounded prefix/suffix. No chat history, adjacent message, or other field may be read, and inspection must not change text, selection, or clipboard. Try empty text, Chinese, emoji, and a selected span; reject the selected span.
-3. For Text (50020), Custom (50025), and Pane (50033), use a controlled accessibility test provider to verify that only boolean `IsReadOnly=false` permits capture. True, unsupported, mixed, missing, wrong-type, and failed attribute responses must refuse before any text retrieval. TextPattern alone is insufficient. Window and List roles must stay rejected even if they advertise text patterns. Repeat existing Edit/Document regression cases.
-4. In a disposable draft, generate and accept once, confirming exactly the previewed text is inserted without sending a message. Switch conversations, focus chat history/search, move the caret, or type while generation or acceptance is pending; the old suggestion must not reappear or insert. No fallback may read another control to recover a missing input provider.
-5. Repeat the idle-caret, held-Tab, and committed Pinyin cases above with each usable setting state. Leave acceptance and full Weixin compatibility pending until exercised on the actual build; passing provider-policy tests does not establish live support.
-
 ## Permissions and privacy
 
 Try an application outside the allowlist. It should be rejected before text retrieval or a model request. Test an ordinary password control in an explicitly approved test application; it should be rejected. Check that known blocked executables remain denied even after being added to the allowlist.
@@ -85,7 +85,7 @@ Test two monitors, negative screen coordinates, the bottom edge of a display, hi
 | Microsoft Word | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 | Microsoft PowerPoint 16.0.20326.20144 slide text | Native bounded read passed | Mid-text case pending | Pending | Pending | Pending | Native adapter: three stable reads; full foreground flow pending |
 | Typora | Pending | Pending | Pending | Pending | Pending | Not live-tested |
-| Weixin 4.1.13.65 | Unavailable in initial metadata probe | Pending | Pending | Pending | Pending | Outer Window only; screen-reader mode follow-up pending |
+| WeChat / Weixin | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 | VS Code (explicit approval) | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 | Browser textarea (explicit approval) | Pending | Pending | Pending | Pending | Pending | Not live-tested |
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const Version = "0.1.4-preview"
+const Version = "0.1.5-preview"
 
 type Config struct {
 	// Remote networking is opt-in. Consent and encrypted keys are bound to the

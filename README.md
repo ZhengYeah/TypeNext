@@ -1,18 +1,16 @@
 # TypeNext
 
-**Writing completion for Windows — local models or remote APIs — 0.1.4 preview**
+**Writing completion for Windows — local models or remote APIs — 0.1.5 preview**
 
 TypeNext reads bounded existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. It inserts the text only when you accept it.
 
 **This is a desktop helper, not a registered Windows TSF IME and not universal in-editor ghost text.** It uses UI Automation and a dedicated PowerPoint text adapter. PowerPoint's native reader has passed a live bounded-read check; insertion and the full suggestion UI still need live verification. Word, Typora, WeChat, and VS Code remain unverified. Start with disposable text.
 
-## New in 0.1.4: Weixin accessibility checks
+## New in 0.1.5: Automatic suggestions
 
-TypeNext now recognizes focused custom text editors that expose a readable caret and confirm they are editable, including Qt editors that report themselves as Text instead of Edit. It still reads only the focused input; it does not scan chat history.
+Typing capital letters or shifted punctuation now keeps automatic suggestions scheduled. Numpad input, Delete, Enter, and IME processing keys also count as editing activity. The first edit after switching windows is preserved, and a pending request waits for modifier release and detected IME composition to finish before reading text.
 
-If Weixin exposes only its outer window, TypeNext now explains that the message editor is unavailable instead of asking you to focus a standard textbox. Check **Weixin Settings → General → 读屏优化模式 (Screen reader optimization mode)** if your version offers it, then refocus the message input and retry. This setting is described by a maintained [Weixin accessibility integration](https://raw.githubusercontent.com/cary-rowen/WeChatEnhancement/master/addon/doc/zh_CN/readme.md); its availability and effect must be checked in the installed app.
-
-The installed Weixin 4.1.13.65 initially exposed no input text/caret interface in live metadata checks, including standard accessibility-provider probes. Direct suggestions cannot work while the editor remains hidden. These changes do not claim that every Weixin version/account is compatible, and TypeNext does not change Weixin or Windows accessibility settings automatically.
+The main status text now explains when automatic suggestions are enabled but automatic remote requests are not permitted. The unsuccessful Weixin integration has been reverted; the PowerPoint and suggestion stability fixes remain.
 
 ## New in 0.1.3: PowerPoint and suggestion stability
 
@@ -70,7 +68,9 @@ For an OpenAI-compatible local server, select `openai-compatible`, enter its bas
 
 Shortcut fields accept names, not captured keypresses. Use Ctrl or Alt with optional Shift and an allowed key; `None` disables the action. **Apply shortcuts** shows Active, Disabled, or Unavailable. Defaults cannot be guaranteed free on every computer. Re-applying an unchanged active binding does not register it twice.
 
-Automatic suggestions are off by default. Local automatic mode initially waits 750 ms after typing activity. Automatic remote requests additionally require a second permission and are spaced by at least three seconds. This is not a cost cap. Typing, focus changes, or edits cancel stale suggestions; cancellation cannot retract a remote request already sent.
+Automatic suggestions are off by default. Enable **Automatic suggestions** in the main window. For a remote API, also enable **Allow automatic remote requests** in API settings and approve the endpoint. With only the first switch enabled, remote completion remains manual; the main status text explains this.
+
+The default typing-pause delay is 750 ms. This controls when a request may start, not when its suggestion will appear: the scheduler checks every 150 ms, and the model needs additional response time. Pending requests wait for modifier release and detected IME composition to finish. Automatic remote starts are spaced by at least three seconds, which can add a further wait; this is not a cost cap. Typing, focus changes, or edits cancel stale suggestions; cancellation cannot retract a remote request already sent.
 
 The suggestion card streams text but cannot be accepted until a completed response has been checked. It does not take focus. Clicking the card does not insert it. Closing settings hides TypeNext; choose **Quit** from the tray to stop it.
 
