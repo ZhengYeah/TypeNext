@@ -4,18 +4,18 @@
 
 TypeNext started as an attempt to bring VS Code's inline completion and inline chat to any application, in a lightweight way. Today it offers:
 
-- **Works everywhere.** Independent of any editor, IDE, or browser — use it in browsers, editors, Office, and more.
+- **Across applications.** Use one completion helper in supported browsers, editors, and Office text fields. Compatibility depends on each application's text and focus interfaces.
 - **Not an IME.** Keep your current input method, including Chinese, Japanese, and Korean IMEs.
 - **Your choice of model.** Run a local model or connect to a cloud API.
 
-TypeNext reads a bounded amount of existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. The text is inserted only when you accept it. It is a desktop helper, not a registered Windows TSF IME: it uses UI Automation plus a few dedicated text adapters, such as one for PowerPoint.
+TypeNext reads a bounded amount of text around the caret in an approved application, asks a model for a continuation, and shows a floating preview. When accessible text is unavailable, it can reconstruct recent typing in the current field. Text is inserted only when you accept it. The context engine uses UI Automation, an in-memory keyboard tracker, and the existing PowerPoint adapter; no TSF service, input-method registration, or C++ DLL is required.
 
 
 https://github.com/user-attachments/assets/ca52d078-7969-4951-a03c-18c22873f3fe
 
 
-> [!WARNING]
-> Not applicable to Weixin/WeChat. It has restrictions and does not expose the caret or text to accessibility APIs.
+> [!NOTE]
+> Weixin/WeChat support is experimental. Keyboard fallback may help with ordinary non-IME typing only when TypeNext can verify the focused field's identity and protection properties. This is not a compatibility guarantee. Chinese/Japanese/Korean input still requires readable committed text from UI Automation or an existing adapter.
 
 > [!TIP]
 > If you are experienced with Go and Windows development, and interested in contributing, feel free to join. I may not have time to refine the codebase or add features, but I can review pull requests and discuss design.
@@ -54,6 +54,16 @@ Automatic suggestions are off by default. Enable **Automatic suggestions** in th
 
 The default typing-pause delay is 1000 ms. Settings are saved in `%APPDATA%\TypeNext\config.json`; [config.example.json](config.example.json) lists the factory defaults. Saved settings override those defaults.
 
+## Text context and keyboard fallback
+
+TypeNext checks text capabilities even when the focused control reports `Custom`, `Pane`, or another type. It prefers `TextPattern2`/`TextPattern` and searches a small number of nearby ancestors and descendants for a provider associated with the active caret. A `ValuePattern` or legacy accessible value can supplement tracked typing, but its text alone does not establish the caret position.
+
+**Keyboard context fallback** is enabled by default. Disable its checkbox in the main window, or set `keyboard_context_tracking` to `false`, to use only readable UIA/adapter context. The tracker retains at most 12,000 Unicode characters for the current focused field; focus changes, pause, and settings changes discard its history. Readable UIA snapshots replace the tracked state.
+
+Inspection reports the context source and synchronization state. `synchronized` means an authoritative read supplied the text/caret; `tracked` is reconstructed context with lower confidence; `unknown` or `uncertain` means completion needs a fresh read or new usable typing. Confidence is a quality indicator, not a measured probability of correctness.
+
+Keyboard fallback cannot recover existing text it never observed. Clipboard operations, undo/redo, mouse repositioning, and ambiguous navigation clear tracked context. IME/CJK input and dead-key composition are not reconstructed. App-generated edits or rejected keystrokes can remain undetected while UIA is unavailable. See [the context engine and Windows validation checklist](docs/CONTEXT_ENGINE.md) for supported edits and remaining limits.
+
 ## Approve applications
 
 The default executable allowlist is:
@@ -70,6 +80,8 @@ powerpnt.exe
 This grants permission to attempt a read; it is **not a tested compatibility list**. Browser approval (`chrome.exe` or `msedge.exe`) applies to accessible textboxes across that browser, not one website. The built-in test pad is separately allowed.
 
 Password-manager applications, credential dialogs, and terminal hosts on the built-in blocklist remain blocked even if added. This list is not exhaustive, and ordinary textboxes can contain sensitive material. TypeNext's own API-settings fields are not used as completion context.
+
+Keyboard fallback uses the same application and field checks. Fields with unknown protection properties or no verifiable focused identity remain disabled; unsupported text access does not override a known password, read-only, or selection restriction.
 
 ## Privacy and insertion limitations
 
@@ -97,7 +109,7 @@ Cross-build on Linux/macOS:
 sh scripts/build.sh
 ```
 
-Both scripts write `TypeNext.exe` to the project root. The Windows build runs all automated tests and static analysis; the cross-build runs portable tests and checks the Windows source before compiling. Portable tests use mock HTTP/HTTPS servers and test credentials. Live application compatibility and model responses require manual checks on Windows.
+Both scripts write `TypeNext.exe` to the project root. The Windows build runs all automated tests and static analysis; the cross-build runs portable tests and checks the Windows source before compiling. Portable tests cover the shadow editor and use mock HTTP/HTTPS servers with test credentials. Windows tests additionally exercise mocked COM providers, keyboard translation decisions, and owned sample controls. These tests do not establish live application compatibility. Use the [Windows validation matrix](docs/CONTEXT_ENGINE.md#windows-validation-matrix) before claiming support for a specific application or version.
 
 ## License
 

@@ -32,6 +32,9 @@ func automaticTypingKey(vk, modifiers uint32) bool {
 func (a *app) keyboardActivity(vk, modifiers uint32, window uintptr) {
 	// Associate the input with its window immediately. Otherwise the next
 	// foreground poll can discard typing that began just after an app switch.
+	if window != a.lastForeground && a.worker != nil {
+		a.worker.ResetTracking()
+	}
 	a.lastForeground = window
 	a.invalidate(window != 0 && automaticTypingKey(vk, modifiers))
 }
@@ -39,6 +42,9 @@ func (a *app) keyboardActivity(vk, modifiers uint32, window uintptr) {
 func (a *app) observeForeground(window uintptr) {
 	if window != a.lastForeground {
 		a.lastForeground = window
+		if a.worker != nil {
+			a.worker.ResetTracking()
+		}
 		a.invalidate(false)
 	}
 }

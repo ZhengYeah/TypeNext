@@ -3,6 +3,7 @@
   "endpoint": "http://127.0.0.1:11434",
   "model": "qwen3:4b",
   "automatic_suggestions": false,
+  "keyboard_context_tracking": true,
   "accept_with_tab": true,
   "disable_thinking": true,
   "debounce_ms": 1000,

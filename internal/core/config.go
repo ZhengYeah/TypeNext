@@ -30,6 +30,7 @@ type Config struct {
 	Endpoint           string   `json:"endpoint"`
 	Model              string   `json:"model"`
 	Auto               bool     `json:"automatic_suggestions"`
+	KeyboardTracking   bool     `json:"keyboard_context_tracking"`
 	AcceptTab          bool     `json:"accept_with_tab"`
 	DisableThinking    bool     `json:"disable_thinking"`
 	DebounceMS         int      `json:"debounce_ms"`
@@ -46,7 +47,7 @@ func DefaultConfig() Config {
 	return Config{SuggestHotkey: "Ctrl+Space", AcceptHotkey: "Ctrl+Shift+F10", PauseHotkey: "Ctrl+Shift+F11",
 		TokenParameter: "max_tokens", SendTemperature: true,
 		Provider: "ollama", Endpoint: "http://127.0.0.1:11434", Model: "qwen3:4b",
-		AcceptTab: true, DisableThinking: true, DebounceMS: 1000, PrefixChars: 1000, SuffixChars: 200,
+		AcceptTab: true, KeyboardTracking: true, DisableThinking: true, DebounceMS: 1000, PrefixChars: 1000, SuffixChars: 200,
 		MaxTokens: 64, MaxSuggestionChars: 320, TimeoutSeconds: 45,
 		AllowedApps: []string{"chrome.exe", "msedge.exe", "notepad.exe", "typora.exe", "winword.exe", "powerpnt.exe"},
 		APIKeyEnv:   "TYPENEXT_API_KEY"}

@@ -16,7 +16,7 @@ import (
 )
 
 // COM vtable slots follow Microsoft's UIAutomationClient.h; see docs/SOURCES.md.
-// Only the focused element is inspected. No parent/document tree is traversed.
+// Provider discovery is bounded to the focused subtree and nearby ancestors.
 type comObject struct{ VTable *[96]uintptr }
 
 //go:uintptrescapes
@@ -161,7 +161,7 @@ type uiaWorker struct {
 }
 
 func newUIA() (*uiaWorker, error) {
-	w := &uiaWorker{jobs: make(chan func(*comObject), 1)}
+	w := &uiaWorker{jobs: make(chan func(*comObject), 128)}
 	ready := make(chan error, 1)
 	go func() {
 		runtime.LockOSThread()
@@ -232,175 +232,38 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 }
 
 func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity) (core.TextContext, error) {
-	var result core.TextContext
+	// Keep the existing native adapter first. Only capability failures permit a
+	// generic fallback; known selection/protection failures remain blocking.
 	window := foreground()
 	_, process, err := processOf(window)
 	if err != nil {
-		return result, err
+		return core.TextContext{}, err
 	}
 	if window != padWindow && !c.Allows(process) {
-		return result, fmt.Errorf("%s is not approved; add its executable name in Settings before reading it", process)
+		return core.TextContext{}, fmt.Errorf("%s is not approved; add its executable name in Settings before reading it", process)
 	}
 	if composing(window) {
-		return result, errors.New("finish the current IME composition first")
+		return core.TextContext{}, errors.New("finish the current IME composition first")
 	}
-	// Slide text is exposed by PowerPoint's native object model, rather than a standard UIA Edit.
-	// The adapter remains behind the same executable approval.
 	if strings.EqualFold(process, "powerpnt.exe") {
-		return readPowerPointContext(c, window, process)
-	}
-	var el *comObject
-	if failed(comCall(a, 8, uintptr(unsafe.Pointer(&el)))) || el == nil {
-		return result, errors.New("no accessible focused textbox")
-	}
-	defer release(el)
-	// Do not ask for Name/Value before checking password protection.
-	password, err := scalar(el, 35)
-	if err != nil || password != 0 {
-		return result, errors.New("password/protected field: text access disabled")
-	}
-	focused, err := scalar(el, 26)
-	if err != nil || focused == 0 {
-		return result, errors.New("textbox does not have keyboard focus")
-	}
-	enabled, err := scalar(el, 28)
-	if err != nil || enabled == 0 {
-		return result, errors.New("textbox is not enabled")
-	}
-	control, err := scalar(el, 21)
-	if err != nil || (control != 50004 && control != 50030) {
-		return result, errors.New("focused control is not an accessible Edit or Document; no text was read")
-	}
-	pid, err := scalar(el, 20)
-	if err != nil {
-		return result, err
-	}
-	// Some browser accessibility nodes belong to a renderer process.
-	// The visible foreground executable is the allowlist boundary; focus is rechecked below.
-	_ = pid
-	id, err := focusID(el)
-	if err != nil {
-		return result, err
-	}
-	pat, err := pattern(el, 10014, iidText)
-	if err != nil {
-		return result, err
-	}
-	defer release(pat)
-	var selections *comObject
-	if failed(comCall(pat, 5, uintptr(unsafe.Pointer(&selections)))) || selections == nil {
-		return result, errors.New("textbox does not expose a reliable selection/caret; no end-of-text guess is made")
-	}
-	defer release(selections)
-	count, err := scalar(selections, 3)
-	if err != nil || count != 1 {
-		return result, errors.New("place one caret in the textbox without selecting text")
-	}
-	var caret *comObject
-	if failed(comCall(selections, 4, 0, uintptr(unsafe.Pointer(&caret)))) || caret == nil {
-		return result, errors.New("caret range unavailable")
-	}
-	defer func() { release(caret) }()
-	var compare int32
-	if failed(comCall(caret, 5, 0, uintptr(unsafe.Pointer(caret)), 1, uintptr(unsafe.Pointer(&compare)))) || compare != 0 {
-		return result, errors.New("selected text is not replaced; clear the selection first")
-	}
-	source := "TextPattern selection"
-	// Prefer TextPattern2's active caret when available,
-	// but still require a collapsed selection above so accepting can never replace selected text.
-	if p2, e := pattern(el, 10024, iidText2); e == nil {
-		var active int32
-		var r2 *comObject
-		hr := comCall(p2, 10, uintptr(unsafe.Pointer(&active)), uintptr(unsafe.Pointer(&r2)))
-		if !failed(hr) && active != 0 && r2 != nil {
-			// Both patterns must describe the same collapsed selection.
-			// A stale provider caret must not move our read to another insertion point.
-			if sameRangeEndpoints(caret, r2) {
-				release(caret)
-				caret = r2
-				source = "TextPattern2 caret"
-			} else {
-				release(r2)
-			}
-		} else {
-			release(r2)
+		result, e := readPowerPointContext(c, window, process)
+		if e == nil {
+			result.Source, result.State, result.Confidence = "powerpoint", core.StateSynchronized, 1
+			result.ProviderID = result.FocusID
+			// The adapter returns bounded context, not proof of whole-field boundaries.
+			result.KnownBefore, result.KnownAfter = false, false
+			return result, nil
 		}
-		release(p2)
-	}
-	if rangeReadonly(caret) {
-		return result, errors.New("read-only text: completion disabled")
-	}
-	before, err := cloneRange(caret)
-	if err != nil {
-		return result, err
-	}
-	defer release(before)
-	after, err := cloneRange(caret)
-	if err != nil {
-		return result, err
-	}
-	defer release(after)
-	if err = moveEnd(before, 0, -c.PrefixChars); err != nil {
-		return result, err
-	}
-	if err = moveEnd(after, 1, c.SuffixChars); err != nil {
-		return result, err
-	}
-	prefix, err := rangeText(before, c.PrefixChars*2+4)
-	if err != nil {
-		return result, err
-	}
-	suffix, err := rangeText(after, c.SuffixChars*2+4)
-	if err != nil {
-		return result, err
-	}
-	x, y, h, ok := nativeCaret(window)
-	if !ok {
-		if r, yes := rangeRect(caret); yes {
-			x, y, h, ok = r.Left, r.Bottom, r.Bottom-r.Top, true
+		if !errors.Is(e, errPowerPointUnavailable) {
+			return core.TextContext{}, e
 		}
 	}
-	if !ok {
-		// A zero-length UIA range often has no rectangle; try the preceding glyph.
-		if r, e := cloneRange(caret); e == nil {
-			if moveEnd(r, 0, -1) == nil {
-				if box, yes := rangeRect(r); yes {
-					x, y, h, ok = box.Right, box.Bottom, box.Bottom-box.Top, true
-				}
-			}
-			release(r)
-		}
-	}
-	if !ok {
-		var box rect
-		if !failed(comCall(el, 43, uintptr(unsafe.Pointer(&box)))) && box.Right > box.Left {
-			x, y, h = box.Left+12, box.Top+28, 20
-			source += " (field-corner positioning)"
-		} else {
-			return result, errors.New("textbox location unavailable")
-		}
-	}
-	// Browser providers may replace their range objects when unrelated page content refreshes.
-	// Prefer an exact offset derived entirely from this read;
-	// keep retained-range comparison for providers or long documents that cannot establish a bounded offset.
-	caretID, err := identity.identifyInPattern(window, id, pat, caret)
+	probe, err := focusedProbe(a, c, padWindow)
 	if err != nil {
-		return result, err
+		return core.TextContext{}, err
 	}
-	if foreground() != window {
-		return result, errors.New("focus changed while reading; try again")
-	}
-	var current *comObject
-	if failed(comCall(a, 8, uintptr(unsafe.Pointer(&current)))) || current == nil {
-		return result, errors.New("focus disappeared")
-	}
-	currentID, e := focusID(current)
-	release(current)
-	if e != nil || currentID != id {
-		return result, errors.New("textbox changed while reading; try again")
-	}
-	result = core.TextContext{Window: uint64(window), FocusID: id, CaretID: caretID, Process: process, Prefix: core.Tail(prefix, c.PrefixChars), Suffix: core.Head(suffix, c.SuffixChars), X: x, Y: y, CaretHeight: h, PositionSource: source}
-	return result, nil
+	defer probe.close()
+	return probe.read(c, identity)
 }
 
 func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr, expected core.TextContext, text string, revision *atomic.Uint64, expectedRevision uint64, acceptVK uint32) error {

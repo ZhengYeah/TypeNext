@@ -47,6 +47,7 @@ const (
 	ctrlTab           = 208
 	ctrlThinking      = 209
 	ctrlAllowed       = 210
+	ctrlKeyboard      = 218
 )
 
 // GDI COLORREF values use 0xBBGGRR byte order.
@@ -79,7 +80,8 @@ type app struct {
 	hotkeys                                              *core.HotkeySet
 	hotkeyStates                                         []core.HotkeyStatus
 	jobs                                                 chan func()
-	worker                                               *uiaWorker
+	worker                                               *contextWorker
+	keyboardState                                        keyboardHookState
 	client                                               *core.Client
 	revision                                             atomic.Uint64
 	requestID                                            uint64
@@ -117,7 +119,7 @@ func Run() error {
 		return e
 	}
 	inst, _, _ := pGetModuleHandle.Call(0)
-	a := &app{cfg: cfg, configPath: path, worker: worker, client: core.NewClient(), jobs: make(chan func(), 128), controls: map[int]uintptr{}, instance: inst, enabled: true, scale: 1}
+	a := &app{cfg: cfg, configPath: path, worker: newContextWorker(worker), client: core.NewClient(), jobs: make(chan func(), 128), controls: map[int]uintptr{}, instance: inst, enabled: true, scale: 1}
 	a.client.DecryptKey = unprotectAPIKey
 	currentApp = a
 	dpi := user32.NewProc("GetDpiForSystem")
@@ -160,7 +162,7 @@ func Run() error {
 	if v, _, err := pRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc))); v == 0 {
 		return fmt.Errorf("register window: %v", err)
 	}
-	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 752, 776, 0)
+	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 752, 806, 0)
 	if a.window == 0 {
 		return fmt.Errorf("create settings window: %v", e)
 	}
@@ -235,6 +237,7 @@ func Run() error {
 		pDispatchMessage.Call(uintptr(unsafe.Pointer(&m)))
 	}
 	a.invalidate(false)
+	a.worker.ResetTracking()
 	return nil
 }
 
@@ -308,26 +311,27 @@ func (a *app) buildSettings() {
 	a.checkbox("Automatic suggestions after a typing pause", ctrlAuto, 24, 314, 704, a.cfg.Auto)
 	a.checkbox("Tab accepts a finished suggestion (recommended)", ctrlTab, 24, 344, 704, a.cfg.AcceptTab)
 	a.checkbox("Request non-thinking mode (Ollama / official DeepSeek)", ctrlThinking, 24, 374, 704, a.cfg.DisableThinking)
-	a.label("Pause (ms)", 24, 418, 96, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.DebounceMS), ctrlPause, 132, 414, 88, 28, 0x12000)
-	a.label("Before caret", 268, 418, 100, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 376, 414, 88, 28, 0x12000)
-	a.label("After caret", 532, 418, 96, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 640, 414, 88, 28, 0x12000)
-	a.label("3  Approve applications", 24, 462, 704, 24)
-	h = a.label("One executable name per line", 410, 466, 318, 20)
+	a.checkbox("Keyboard context fallback (kept in memory while focused)", ctrlKeyboard, 24, 404, 704, a.cfg.KeyboardTracking)
+	a.label("Pause (ms)", 24, 448, 96, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.DebounceMS), ctrlPause, 132, 444, 88, 28, 0x12000)
+	a.label("Before caret", 268, 448, 100, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 376, 444, 88, 28, 0x12000)
+	a.label("After caret", 532, 448, 96, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 640, 444, 88, 28, 0x12000)
+	a.label("3  Approve applications", 24, 492, 704, 24)
+	h = a.label("One executable name per line", 410, 496, 318, 20)
 	pSendMessage.Call(h, 0x30, a.smallFont, 1)
-	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 494, 704, 80, 0x211044)
-	h = a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 584, 704, 20)
+	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 524, 704, 80, 0x211044)
+	h = a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 614, 704, 20)
 	pSendMessage.Call(h, 0x30, a.smallFont, 1)
-	a.separator(24, 618, 704)
-	a.button("Save settings", idSave, 24, 634, 137)
-	a.button("Test model", idTest, 173, 634, 120)
-	a.button("Open test pad", idPad, 305, 634, 133)
-	a.button("Inspect in 3s", idInspect, 450, 634, 122)
-	a.button("Hide to tray", idHide, 584, 634, 144)
-	a.statusLabel = a.statusText(a.window, "", 0, 24, 682, 704, 44)
-	a.shortcutLabel = a.statusText(a.window, "", 0, 24, 726, 704, 28)
+	a.separator(24, 648, 704)
+	a.button("Save settings", idSave, 24, 664, 137)
+	a.button("Test model", idTest, 173, 664, 120)
+	a.button("Open test pad", idPad, 305, 664, 133)
+	a.button("Inspect in 3s", idInspect, 450, 664, 122)
+	a.button("Hide to tray", idHide, 584, 664, 144)
+	a.statusLabel = a.statusText(a.window, "", 0, 24, 712, 704, 44)
+	a.shortcutLabel = a.statusText(a.window, "", 0, 24, 756, 704, 28)
 }
 func windowText(w uintptr) string {
 	n, _, _ := pGetWindowTextLength.Call(w)
@@ -361,6 +365,7 @@ func (a *app) readSettings() (core.Config, error) {
 	c.Auto = checked(a.controls[ctrlAuto])
 	c.AcceptTab = checked(a.controls[ctrlTab])
 	c.DisableThinking = checked(a.controls[ctrlThinking])
+	c.KeyboardTracking = checked(a.controls[ctrlKeyboard])
 	c.AllowedApps = nil
 	for _, line := range strings.FieldsFunc(windowText(a.controls[ctrlAllowed]), func(r rune) bool { return r == '\r' || r == '\n' || r == ',' || r == ';' }) {
 		if s := strings.ToLower(strings.TrimSpace(line)); s != "" {
@@ -387,6 +392,7 @@ func (a *app) save() bool {
 		return false
 	}
 	a.invalidate(false)
+	a.worker.ResetTracking()
 	a.cfg = c
 	a.applyHotkeys()
 	a.refreshConnectionUI()
@@ -550,7 +556,7 @@ func (a *app) request(manual bool) {
 			a.candidateReady = true
 			footer := a.acceptHint()
 			a.showOverlay(fresh, cfg.Model, result, footer)
-			a.setStatus(fmt.Sprintf("Suggestion ready for %s. %d characters before / %d after the caret.", fresh.Process, len([]rune(fresh.Prefix)), len([]rune(fresh.Suffix))))
+			a.setStatus(fmt.Sprintf("Suggestion ready for %s (%s, %s). %d characters before / %d after the caret.", fresh.Process, fresh.Source, fresh.State, len([]rune(fresh.Prefix)), len([]rune(fresh.Suffix))))
 		})
 	}()
 }
@@ -593,6 +599,7 @@ func (a *app) accept() {
 func (a *app) toggle() {
 	a.enabled = !a.enabled
 	a.invalidate(false)
+	a.worker.ResetTracking()
 	if a.enabled {
 		a.notify("TypeNext resumed. Only approved textboxes can be read.")
 	} else {
@@ -602,6 +609,8 @@ func (a *app) toggle() {
 func (a *app) tick() {
 	fg := foreground()
 	a.observeForeground(fg)
+	a.worker.PollFocus(a.cfg.Clone(), a.pad, a.enabled && a.apiWindow == 0 &&
+		fg != a.window && fg != a.hotkeyWindow && fg != a.overlay)
 	if !a.inspectAt.IsZero() && time.Now().After(a.inspectAt) {
 		a.inspectAt = time.Time{}
 		a.inspect()
@@ -675,7 +684,7 @@ func (a *app) inspect() {
 				a.notify(e.Error())
 				return
 			}
-			detail := fmt.Sprintf("Application: %s\nReader: %s\nBefore caret: %d characters\nAfter caret: %d characters\n\nThe following was read on your explicit request. It is not saved or sent to the model.\n\n%s\n[CARET]\n%s", s.Process, s.PositionSource, len([]rune(s.Prefix)), len([]rune(s.Suffix)), core.Tail(s.Prefix, 1400), core.Head(s.Suffix, 300))
+			detail := fmt.Sprintf("Application: %s\nSource: %s\nState: %s (confidence %.0f%%; partial context: %t)\nPosition: %s\nBefore caret: %d characters\nAfter caret: %d characters\n\nThis context is shown locally. It is not saved or sent to the model.\n\n%s\n[CARET]\n%s", s.Process, s.Source, s.State, s.Confidence*100, s.Partial, s.PositionSource, len([]rune(s.Prefix)), len([]rune(s.Suffix)), core.Tail(s.Prefix, 1400), core.Head(s.Suffix, 300))
 			pMessageBox.Call(a.window, uintptr(unsafe.Pointer(u16(detail))), uintptr(unsafe.Pointer(u16("TypeNext — textbox inspection"))), 0x40)
 		})
 	}()
@@ -876,14 +885,32 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 
 func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 	a := currentApp
+	if code >= 0 && a != nil && k.Flags&0x10 != 0 {
+		// TypeNext's own Unicode input is reconciled by the context worker.
+		// Foreign injection may change either text or selection behind its back.
+		if k.Extra != typeNextInputMarker {
+			a.keyboardState.capture(k, wp)
+			a.invalidate(false)
+			if a.worker != nil {
+				a.worker.InvalidateTracking()
+			}
+		}
+		ret, _, _ := pCallNextHookEx.Call(0, uintptr(code), wp, uintptr(unsafe.Pointer(k)))
+		return ret
+	}
+	var keys [256]byte
+	var mods uint32
+	if code >= 0 && a != nil {
+		keys, mods = a.keyboardState.capture(k, wp)
+	}
 	if code >= 0 && a != nil && k.Flags&0x10 == 0 && a.consumeAcceptedTab(k.VK, wp) {
 		return 1
 	}
 	if code >= 0 && a != nil && (wp == 0x100 || wp == 0x104) {
-		if k.Flags&0x10 == 0 { // Ignore injected events; key contents are never stored.
+		if k.Flags&0x10 == 0 {
 			v := k.VK
-			modifier := v == 0x10 || v == 0x11 || v == 0x12 || (v >= 0xa0 && v <= 0xa5) || v == 0x5b || v == 0x5c
-			ownShortcut := a.hotkeys != nil && a.hotkeys.Matches(v, currentModifiers())
+			modifier := keyboardModifier(v) || keyboardToggle(v)
+			ownShortcut := a.hotkeys != nil && a.hotkeys.Matches(v, mods)
 			if !modifier && !ownShortcut {
 				if v == 0x09 && a.cfg.AcceptTab && a.candidateReady && a.snapshot != nil && !modifiersDown() && foreground() == uintptr(a.snapshot.Window) {
 					// The callback must stay fast; validation and insertion run asynchronously.
@@ -894,7 +921,9 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 				if v == 0x1b && a.dismissSuggestion() {
 					return 1
 				}
-				a.keyboardActivity(v, currentModifiers(), foreground())
+				window := foreground()
+				a.keyboardActivity(v, mods, window)
+				a.observeKeyboardContext(k, keys, mods, window)
 			}
 		}
 	}
@@ -924,6 +953,9 @@ func mouseProc(code int32, wp, lp uintptr) uintptr {
 		switch wp {
 		case 0x201, 0x204, 0x207, 0x20a, 0x20b, 0x20e:
 			currentApp.invalidate(false)
+			if currentApp.worker != nil {
+				currentApp.worker.InvalidateTracking()
+			}
 		}
 	}
 	ret, _, _ := pCallNextHookEx.Call(0, uintptr(code), wp, lp)

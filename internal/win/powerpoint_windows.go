@@ -435,6 +435,9 @@ func pptRangePosition(document, r *comObject) (int32, int32, int32, bool) {
 	return int32(math.Round(x)), int32(math.Round(y)), int32(math.Round(y - yTop)), true
 }
 
+// Only these capability failures allow the generic UIA provider to try next.
+var errPowerPointUnavailable = errors.New("PowerPoint native provider unavailable")
+
 func readPowerPointContext(c core.Config, window uintptr, process string) (core.TextContext, error) {
 	var result core.TextContext
 	if !strings.EqualFold(process, "powerpnt.exe") || !c.Allows(process) || foreground() != window {
@@ -446,13 +449,13 @@ func readPowerPointContext(c core.Config, window uintptr, process string) (core.
 		if !available || g.Focus == 0 {
 			return result, errors.New("PowerPoint keyboard focus is unavailable; switch back to the slide text")
 		}
-		return result, fmt.Errorf("PowerPoint editing pane not recognized (focused window class: %s); use a slide textbox in Normal view", pptWindowClass(g.Focus))
+		return result, fmt.Errorf("%w: editing pane not recognized (focused window class: %s)", errPowerPointUnavailable, pptWindowClass(g.Focus))
 	}
 	var document *comObject
 	hr, _, _ := pPPTAccessibleObjectFromWindow.Call(pane, 0xfffffff0, uintptr(unsafe.Pointer(&iidPPTDispatch)), uintptr(unsafe.Pointer(&document))) // OBJID_NATIVEOM
 	if failed(hr) || document == nil {
 		release(document)
-		return result, errors.New("this PowerPoint pane does not expose its native text model")
+		return result, fmt.Errorf("%w: this pane does not expose its native text model", errPowerPointUnavailable)
 	}
 	defer release(document)
 	caret, err := pptSelection(document)

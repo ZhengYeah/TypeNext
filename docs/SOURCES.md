@@ -22,6 +22,16 @@ No external source code from these projects is bundled as a TypeNext dependency.
 - Microsoft, [TextRange.Characters](https://learn.microsoft.com/en-us/office/vba/api/powerpoint.textrange.characters): bounded character slices, including the API's out-of-range clamping behavior.
 - Microsoft, [IUIAutomationTextRange::CompareEndpoints](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-compareendpoints): comparing logical range positions independently of screen geometry.
 
+## Capability discovery and keyboard context
+
+- Microsoft, [UI Automation control patterns](https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-controlpatternsoverview): querying a control's implemented capabilities and handling aggregate controls.
+- Microsoft, [IUIAutomationTextPattern2::GetCaretRange](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextpattern2-getcaretrange): the active-caret flag identifies whether the containing text control has keyboard focus.
+- Microsoft, [IUIAutomationValuePattern](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nn-uiautomationclient-iuiautomationvaluepattern): string values and read-only state; it does not provide a text-range caret.
+- Microsoft, [IUIAutomationLegacyIAccessiblePattern](https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nn-uiautomationclient-iuiautomationlegacyiaccessiblepattern): MSAA role, state, and value access.
+- Microsoft, [ToUnicodeEx](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-tounicodeex): keyboard-layout translation, dead-key return values, and the no-state-change flag available since Windows 10 version 1607. Physical keys alone are insufficient to reconstruct all committed text.
+
+See [CONTEXT_ENGINE.md](CONTEXT_ENGINE.md) for TypeNext's discovery bounds, tracking rules, and manual validation matrix. These are implementation choices, not guarantees of application compatibility.
+
 ## Shortcut registration
 
 Microsoft RegisterHotKey reference: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey

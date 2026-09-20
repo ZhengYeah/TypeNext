@@ -19,6 +19,16 @@ type TextContext struct {
 	X, Y           int32
 	CaretHeight    int32
 	PositionSource string
+	// Context metadata is local; ContextJSON sends only Prefix and Suffix.
+	Source     string
+	ProviderID string
+	State      SyncState
+	Confidence float64
+	Partial    bool
+	// These are document boundary guarantees, not merely a readable prefix/suffix.
+	// A bounded UIA read normally leaves one or both false.
+	KnownBefore bool
+	KnownAfter  bool
 }
 
 // Fingerprint never leaves the process.
@@ -30,10 +40,10 @@ func (t TextContext) Fingerprint() [32]byte {
 		x, y = 0, 0
 	}
 	b, _ := json.Marshal(struct {
-		W               uint64
-		ID, Caret, P, S string
-		X, Y            int32
-	}{t.Window, t.FocusID, t.CaretID, t.Prefix, t.Suffix, x, y})
+		W                         uint64
+		ID, Provider, Caret, P, S string
+		X, Y                      int32
+	}{t.Window, t.FocusID, t.ProviderID, t.CaretID, t.Prefix, t.Suffix, x, y})
 	return sha256.Sum256(b)
 }
 
