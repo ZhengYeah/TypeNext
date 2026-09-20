@@ -281,7 +281,7 @@ func (a *app) separator(x, y, w int) {
 }
 
 func (a *app) buildSettings() {
-	h := a.label("TypeNext", 24, 24, 280, 32)
+	h := a.label("TypeNext", 24, 20, 280, 32)
 	pSendMessage.Call(h, 0x30, a.heading, 1)
 	a.button("Shortcuts…", idHotkeys, 376, 24, 128)
 	a.button("Pause", idPause, 520, 24, 96)
