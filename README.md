@@ -15,10 +15,10 @@ https://github.com/user-attachments/assets/ca52d078-7969-4951-a03c-18c22873f3fe
 
 
 > [!WARNING]
-> Not applicable to Weixin/WeChat. It has restrictions and does not expose the caret or text to accessibility APIs.
+> Not applicable to Weixin/WeChat, which has restrictions on accessibility, clipboard use, and keyboard tracking.
 
 > [!TIP]
-> If you are experienced with Go and Windows development, and interested in contributing, feel free to join. I may not have time to refine the codebase or add features, but I can review pull requests and discuss design.
+> If you are experienced with Go and Windows development, and interested in contributing, feel free to join as a contributor. I may not have time to refine the codebase or add features.
 
 ## Start with an API
 
@@ -26,6 +26,10 @@ https://github.com/user-attachments/assets/ca52d078-7969-4951-a03c-18c22873f3fe
 2. Open **API settings…** in **1 Connect a model**. Enter a **Saved name**, select the **Protocol**, and enter your provider's **API URL**, **Model ID**, and **API key**. Set request options as required by your provider, then enable **Allow remote HTTPS API requests**.
 3. Click **Test API (sample)** and approve the exact endpoint. The test sends a fixed sample, not application text. API usage can still be charged.
 4. Close API settings, open the test pad, and request a continuation with **Ctrl+Space**. Accept the completed preview with **Ctrl+Shift+F10**.
+
+> [!TIP]
+> You can top up a small balance for DeepSeek, whose API is cheap enough for completion tasks. This is cheaper than local deployment for most users. DeepSeek's API is compatible with OpenAI's, so you can use the same settings in TypeNext.
+
 
 ## Start with a local model
 
@@ -40,6 +44,8 @@ Open **API settings…** in **1 Connect a model**. Enter a **Saved name** you li
 For an OpenAI-compatible local server, select `openai-compatible`, enter its base URL (for example `http://127.0.0.1:1234/v1`), and use its exact loaded model ID. API settings also accepts a full `/chat/completions` endpoint. Local servers needing authentication can use the same saved-key or environment-key settings.
 
 Choose a **Saved model** on the main page to switch connections immediately; the selection is saved for the next launch. Your existing connection is added to this list automatically. In **API settings…**, edit the selected model and click **Save model** to update it, or click **New model** to start with an empty name, API URL, model ID, and API key. Select the protocol and fill in your connection details manually. Saving under a different name keeps the previous configuration. Each saved model remembers its request options and remote permissions; API keys remain tied to their endpoint. Typing behavior, shortcuts, and approved applications are shared across models, and **Save settings** applies changes to the main page's controls.
+
+To delete a saved connection, click **Remove model** on the main page, choose the model, and confirm. You can remove an inactive model without switching to it. Removing the active model selects the first remaining model; removing the last one stops suggestions until you add another in **API settings…**. Removal is saved immediately. Endpoint API keys are kept because other models may share them; use **Remove this endpoint's key** in API settings to delete a key separately.
 
 ## Controls
 

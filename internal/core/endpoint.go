@@ -135,6 +135,9 @@ func (c Config) IsRemote() bool {
 }
 
 func (c Config) CheckConsent() error {
+	if !c.HasModelConnection() {
+		return errors.New("no saved model is configured; open API settings and save a model")
+	}
 	u, err := c.RequestURL()
 	if err != nil {
 		return err
@@ -153,7 +156,9 @@ func (c Config) AutomaticAllowed() bool {
 func (c Config) Clone() Config {
 	out := c
 	out.AllowedApps = append([]string(nil), c.AllowedApps...)
-	out.ModelProfiles = append([]ModelProfile(nil), c.ModelProfiles...)
+	if c.ModelProfiles != nil {
+		out.ModelProfiles = append(make([]ModelProfile, 0, len(c.ModelProfiles)), c.ModelProfiles...)
+	}
 	out.EncryptedAPIKeys = make(map[string]string, len(c.EncryptedAPIKeys))
 	for k, v := range c.EncryptedAPIKeys {
 		out.EncryptedAPIKeys[k] = v

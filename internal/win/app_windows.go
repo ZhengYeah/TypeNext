@@ -33,6 +33,7 @@ const (
 	idHotkeyApply     = 108
 	idHotkeyDefaults  = 109
 	idHotkeyClose     = 110
+	idModelRemove     = 117
 	ctrlHotkeySuggest = 211
 	ctrlHotkeyAccept  = 212
 	ctrlHotkeyPause   = 213
@@ -290,7 +291,8 @@ func (a *app) buildSettings() {
 	a.separator(24, 96, 704)
 	a.label("1  Connect a model", 24, 118, 704, 24)
 	a.label("Saved model", 24, 156, 100, 24)
-	a.control("COMBOBOX", "", ctrlSavedModel, 132, 152, 440, 240, 0x10003)
+	a.control("COMBOBOX", "", ctrlSavedModel, 132, 152, 296, 240, 0x10003)
+	a.button("Remove model", idModelRemove, 444, 150, 128)
 	a.button("API settings…", idAPI, 588, 150, 140)
 	a.label("Connection", 24, 196, 100, 24)
 	// Separate single-line labels keep native ellipsis from collapsing the URL
@@ -365,12 +367,14 @@ func (a *app) save() bool {
 		a.setStatus(e.Error())
 		return false
 	}
-	if !a.approveRemote(&c, a.window) {
-		return false
-	}
-	if e = c.SaveModelProfile(c.ActiveModelProfile); e != nil {
-		a.setStatus(e.Error())
-		return false
+	if c.HasModelConnection() {
+		if !a.approveRemote(&c, a.window) {
+			return false
+		}
+		if e = c.SaveModelProfile(c.ActiveModelProfile); e != nil {
+			a.setStatus(e.Error())
+			return false
+		}
 	}
 	if e = core.SaveConfig(a.configPath, c); e != nil {
 		a.setStatus("Settings could not be saved: " + e.Error())
@@ -636,6 +640,11 @@ func (a *app) startModelTest() {
 		a.apiMessage("An API test is already running.")
 		return
 	}
+	if err := a.cfg.CheckConsent(); err != nil {
+		a.setStatus(err.Error())
+		a.apiMessage(err.Error())
+		return
+	}
 	a.testRunning = true
 	message := "Testing with a fixed sample sentence; no app text is read. API usage may be charged."
 	a.setStatus(message)
@@ -843,6 +852,8 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 				}
 			case idAPI:
 				a.openAPI()
+			case idModelRemove:
+				a.removeModelProfile()
 			case idHotkeys:
 				a.openShortcuts()
 			case idSave:

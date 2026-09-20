@@ -62,7 +62,7 @@ func (a *app) openAPI() {
 	a.inspectAt = time.Time{}
 	a.invalidate(false)
 	a.closeShortcuts()
-	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, 752, 748, a.window)
+	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, 880, 784, a.window)
 	if a.apiWindow == 0 {
 		a.setStatus(fmt.Sprintf("Cannot open API settings: %v", err))
 		return
@@ -71,6 +71,10 @@ func (a *app) openAPI() {
 		return a.controlIn(a.apiWindow, class, text, id, x, y, w, h, style)
 	}
 	label := func(text string, x, y, w, h int) { control("STATIC", text, 0, x, y, w, h, 0) }
+	note := func(text string, x, y, w, h int) {
+		label := control("STATIC", text, 0, x, y, w, h, 0)
+		pSendMessage.Call(label, 0x30, a.smallFont, 1)
+	}
 	check := func(text string, id, x, y, w int, on bool) {
 		setCheck(control("BUTTON", text, id, x, y, w, 26, 0x10003), on)
 	}
@@ -81,61 +85,76 @@ func (a *app) openAPI() {
 		}
 		selectCombo(h, index)
 	}
-	h := control("STATIC", "API connection", 0, 24, 20, 704, 34, 0)
+	h := control("STATIC", "API connection", 0, 24, 24, 832, 32, 0)
 	pSendMessage.Call(h, 0x30, a.heading, 1)
-	label("Use a local model or HTTPS API. A new saved name keeps a separate model; an existing name updates it. Choose saved models on the main page.", 24, 62, 704, 38)
-	a.separatorIn(a.apiWindow, 24, 108, 704)
-	label("Saved name", 24, 124, 120, 24)
-	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, 156, 120, 428, 27, 0x10080)
+	label("Connect a local model or HTTPS API. Choose saved models on the main page.", 24, 64, 832, 22)
+	a.separatorIn(a.apiWindow, 24, 96, 832)
+
+	label("1  Connection", 24, 118, 832, 24)
+	label("Saved name", 24, 156, 120, 24)
+	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, 156, 152, 556, 28, 0x10080)
 	pSendMessage.Call(nameBox, 0xc5, 80, 0) // EM_SETLIMITTEXT
-	control("BUTTON", "New model", idAPINew, 600, 118, 128, 32, 0x10000)
-	label("Protocol", 24, 162, 120, 24)
+	control("BUTTON", "New model", idAPINew, 728, 150, 128, 32, 0x10000)
+	label("Protocol", 24, 196, 120, 24)
 	idx := 0
 	if c.Provider == "openai-compatible" {
 		idx = 1
 	}
-	combo(ctrlAPIProvider, 156, 158, 300, []string{"ollama", "openai-compatible"}, idx)
-	label("API URL", 24, 200, 120, 24)
-	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 156, 196, 572, 27, 0x10080)
-	label("Model ID", 24, 238, 120, 24)
-	control("EDIT", c.Model, ctrlAPIModel, 156, 234, 572, 27, 0x10080)
-	label("API key", 24, 276, 120, 24)
-	keyBox := control("EDIT", "", ctrlAPIKey, 156, 272, 572, 27, 0x100a0) // ES_PASSWORD
+	combo(ctrlAPIProvider, 156, 192, 236, []string{"ollama", "openai-compatible"}, idx)
+	label("Model ID", 416, 196, 96, 24)
+	control("EDIT", c.Model, ctrlAPIModel, 524, 192, 332, 28, 0x10080)
+	label("API URL", 24, 236, 120, 24)
+	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 156, 232, 700, 28, 0x10080)
+
+	label("2  Authentication", 24, 276, 832, 24)
+	label("API key", 24, 312, 120, 24)
+	keyBox := control("EDIT", "", ctrlAPIKey, 156, 308, 700, 28, 0x100a0) // ES_PASSWORD
 	pSendMessage.Call(keyBox, 0xc5, 8192, 0)                              // EM_SETLIMITTEXT
-	a.statusText(a.apiWindow, "Leave blank to keep this endpoint's saved key. Keys are encrypted for your Windows account.", ctrlAPIKeyStatus, 156, 306, 572, 44)
-	label("Key environment", 24, 360, 120, 24)
-	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 356, 300, 27, 0x10080)
-	check("Remove this endpoint's key", ctrlAPIClear, 472, 356, 256, false)
-	label("Output tokens", 24, 396, 120, 24)
-	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 156, 392, 80, 27, 0x12000)
+	a.statusText(a.apiWindow, "", ctrlAPIKeyStatus, 156, 348, 700, 44)
+	label("Key environment", 24, 412, 120, 24)
+	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 408, 364, 28, 0x10080)
+	check("Remove this endpoint's key", ctrlAPIClear, 544, 408, 312, false)
+
+	// Two option groups share the remaining space instead of extending the form
+	// into a long stack. Match the main window's margins and section spacing.
+	label("3  Request options", 24, 464, 404, 24)
+	label("Output tokens", 24, 504, 100, 24)
+	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 132, 500, 64, 28, 0x12000)
 	idx = 0
 	if c.TokenParameter == "max_completion_tokens" {
 		idx = 1
 	}
-	combo(ctrlAPITokenParam, 248, 392, 236, []string{"max_tokens", "max_completion_tokens"}, idx)
-	label("Timeout (s)", 504, 396, 116, 24)
-	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 632, 392, 96, 27, 0x12000)
-	label("Reasoning effort", 24, 432, 120, 24)
-	efforts := []string{"(omit / provider default)", "none", "minimal", "low", "medium", "high"}
+	combo(ctrlAPITokenParam, 208, 500, 220, []string{"max_tokens", "max_completion_tokens"}, idx)
+	label("Timeout (s)", 24, 544, 88, 24)
+	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 120, 540, 64, 28, 0x12000)
+	label("Reasoning", 196, 544, 88, 24)
+	efforts := []string{"(default)", "none", "minimal", "low", "medium", "high"}
 	idx = 0
 	for i, v := range efforts {
 		if v == c.ReasoningEffort {
 			idx = i
 		}
 	}
-	combo(ctrlAPIReasoning, 156, 428, 300, efforts, idx)
-	check("Send temperature = 0.2", ctrlAPITemperature, 472, 428, 256, c.SendTemperature)
-	check("Request non-thinking mode (Ollama / official DeepSeek only)", ctrlAPIThinking, 24, 466, 704, c.DisableThinking)
-	check("Allow remote HTTPS API requests (sends textbox context off this PC)", ctrlAPIRemote, 24, 498, 704, c.AllowRemote)
-	check("Allow automatic remote requests (unfinished text; usage charges possible)", ctrlAPIAutoRemote, 24, 530, 704, c.AllowRemoteAuto)
-	label("Also enable Automatic suggestions in the main window. Automatic remote requests are at least 3 seconds apart, with no retries. A saved key takes priority over the environment variable.", 24, 568, 704, 44)
-	a.separatorIn(a.apiWindow, 24, 622, 704)
-	control("BUTTON", "Save model", idAPIApply, 24, 638, 176, 34, 0x10000)
-	control("BUTTON", "Test API (sample)", idAPITest, 212, 638, 184, 34, 0x10000)
-	control("BUTTON", "Close", idAPIClose, 608, 638, 120, 34, 0x10000)
-	a.statusText(a.apiWindow, "Enter your provider's API URL and exact model ID. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 684, 704, 50)
+	combo(ctrlAPIReasoning, 292, 540, 136, efforts, idx)
+	check("Non-thinking mode (Ollama / official DeepSeek)", ctrlAPIThinking, 24, 584, 404, c.DisableThinking)
+	check("Send temperature = 0.2", ctrlAPITemperature, 24, 616, 404, c.SendTemperature)
+
+	label("4  Remote access", 456, 464, 400, 24)
+	check("Allow remote HTTPS API requests", ctrlAPIRemote, 456, 500, 400, c.AllowRemote)
+	note("Sends textbox context off this PC.", 480, 532, 376, 20)
+	check("Allow automatic remote requests", ctrlAPIAutoRemote, 456, 564, 400, c.AllowRemoteAuto)
+	note("Enable Automatic suggestions on the main page.\r\nSends unfinished text; usage charges may apply.\r\nAt least 3 seconds apart, with no retries.", 480, 596, 376, 48)
+
+	a.separatorIn(a.apiWindow, 24, 656, 832)
+	control("BUTTON", "Save model", idAPIApply, 24, 672, 176, 32, 0x10000)
+	control("BUTTON", "Test API (sample)", idAPITest, 212, 672, 184, 32, 0x10000)
+	control("BUTTON", "Close", idAPIClose, 736, 672, 120, 32, 0x10000)
+	a.statusText(a.apiWindow, "A new saved name adds a model; an existing name updates it. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 716, 832, 44)
 	user32.NewProc("EnableWindow").Call(a.window, 0)
 	a.updateAPIKeyStatus()
+	if !c.HasModelConnection() {
+		a.newAPIModel()
+	}
 	pShowWindow.Call(a.apiWindow, 5)
 	pSetForegroundWindow.Call(a.apiWindow)
 }
@@ -175,10 +194,11 @@ func (a *app) updateAPIKeyStatus() {
 	}
 	c := a.apiConnectionFields()
 	c.AllowRemote = true // Only normalization for an on-screen status. Never a send.
-	text := "No saved key for this endpoint. Enter one, or set the environment variable below."
+	text := "No saved key for this endpoint. Enter one, or use the environment variable below."
 	if u, err := c.RequestURL(); err == nil && c.EncryptedAPIKeys[u.String()] != "" {
 		text = "A key is saved for this endpoint. Leave blank to keep it, or enter a replacement."
 	}
+	text += "\r\nSaved keys are encrypted for your Windows account and take priority over the environment variable."
 	setControlText(a.controls[ctrlAPIKeyStatus], text)
 }
 func (a *app) newAPIModel() {
@@ -321,8 +341,14 @@ func (a *app) saveAPI() bool {
 }
 
 func (a *app) connectionSummary() string {
+	if !a.cfg.HasModelConnection() {
+		return "No saved model. Open API settings to add a model."
+	}
 	if reason := automaticBlockReason(a.cfg); reason != "" {
 		return reason
+	}
+	if err := a.cfg.CheckConsent(); err != nil {
+		return err.Error()
 	}
 	if !a.cfg.IsRemote() {
 		return "Local endpoint active. Your local server must also be configured not to forward requests."
@@ -340,8 +366,14 @@ func (a *app) refreshConnectionUI() {
 	if a.cfg.IsRemote() {
 		text = "REMOTE API active: textbox context leaves this PC. Use API settings to change access."
 	}
+	if err := a.cfg.CheckConsent(); err != nil {
+		text = err.Error()
+	}
 	if reason := automaticBlockReason(a.cfg); reason != "" {
 		text = reason
+	}
+	if !a.cfg.HasModelConnection() {
+		text = a.connectionSummary()
 	}
 	setControlText(a.connectionLabel, text)
 }

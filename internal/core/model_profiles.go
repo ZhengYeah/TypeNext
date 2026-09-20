@@ -50,7 +50,7 @@ func (p ModelProfile) apply(c *Config) {
 // EnsureModelProfiles migrates a configuration predating saved connections.
 // Existing collections are left intact so malformed entries can be reported.
 func (c *Config) EnsureModelProfiles() {
-	if len(c.ModelProfiles) != 0 || c.ActiveModelProfile != "" {
+	if c.ModelProfiles != nil || c.ActiveModelProfile != "" {
 		return
 	}
 	name := strings.TrimSpace(c.Model)
@@ -62,6 +62,12 @@ func (c *Config) EnsureModelProfiles() {
 	}
 	c.ModelProfiles = []ModelProfile{c.currentModelProfile(name)}
 	c.ActiveModelProfile = name
+}
+
+// HasModelConnection distinguishes legacy top-level connections from an
+// explicitly empty saved collection after the last model has been removed.
+func (c Config) HasModelConnection() bool {
+	return c.ModelProfiles == nil || len(c.ModelProfiles) > 0
 }
 
 // SaveModelProfile saves the current connection under a name. Reusing a name
@@ -98,6 +104,33 @@ func (c *Config) UseModelProfile(name string) error {
 	profile := next.ModelProfiles[index]
 	profile.apply(&next)
 	next.ActiveModelProfile = profile.Name
+	if err := next.Validate(); err != nil {
+		return err
+	}
+	*c = next
+	return nil
+}
+
+// RemoveModelProfile removes one saved connection. Removing the active model
+// selects the first remaining profile with its saved settings and consent.
+// Removing the last model clears the connection without changing global settings.
+func (c *Config) RemoveModelProfile(name string) error {
+	index := c.modelProfileIndex(strings.TrimSpace(name))
+	if index < 0 {
+		return fmt.Errorf("saved model %q was not found", name)
+	}
+	next := c.Clone()
+	wasActive := strings.EqualFold(next.ActiveModelProfile, next.ModelProfiles[index].Name)
+	next.ModelProfiles = append(next.ModelProfiles[:index], next.ModelProfiles[index+1:]...)
+	if len(next.ModelProfiles) == 0 {
+		next.ModelProfiles = []ModelProfile{}
+		next.ActiveModelProfile = ""
+		DefaultConfig().currentModelProfile("").apply(&next)
+	} else if wasActive {
+		profile := next.ModelProfiles[0]
+		profile.apply(&next)
+		next.ActiveModelProfile = profile.Name
+	}
 	if err := next.Validate(); err != nil {
 		return err
 	}
@@ -153,7 +186,7 @@ func (c Config) validateModelProfiles() error {
 		}
 	}
 	if len(c.ModelProfiles) == 0 && c.ActiveModelProfile == "" {
-		return nil // Legacy top-level-only configuration.
+		return nil // Legacy top-level connection or an intentionally empty collection.
 	}
 	if c.modelProfileIndex(c.ActiveModelProfile) < 0 {
 		return errors.New("active model configuration must refer to a saved model")

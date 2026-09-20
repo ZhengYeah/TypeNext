@@ -1,14 +1,207 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestRemoveInactiveModelProfile(t *testing.T) {
+	c := DefaultConfig()
+	for _, name := range []string{"First", "Second", "Third"} {
+		c.Model = strings.ToLower(name)
+		if err := c.SaveModelProfile(name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Unsaved edits to the active connection must survive removing another entry.
+	c.Model = "edited-third"
+	before := c.Clone()
+	shared := c
+	if err := c.RemoveModelProfile(" sEcOnD "); err != nil {
+		t.Fatal(err)
+	}
+	want := before.Clone()
+	want.ModelProfiles = []ModelProfile{before.ModelProfiles[0], before.ModelProfiles[2]}
+	if !reflect.DeepEqual(c, want) {
+		t.Fatalf("removing an inactive model changed other settings: %+v", c)
+	}
+	if !reflect.DeepEqual(shared.ModelProfiles, before.ModelProfiles) {
+		t.Fatal("removal mutated the backing slice used by an existing configuration")
+	}
+}
+
+func TestRemoveActiveModelProfileRestoresSavedConnection(t *testing.T) {
+	for _, approved := range []bool{true, false} {
+		t.Run(fmt.Sprintf("approved=%t", approved), func(t *testing.T) {
+			c := remoteConfig("https://api.example.com/v1")
+			c.Auto, c.AllowRemoteAuto = true, true
+			c.APIKeyEnv = "REMOTE_KEY"
+			c.TokenParameter, c.ReasoningEffort = "max_completion_tokens", "high"
+			c.SendTemperature, c.DisableThinking = false, false
+			c.MaxTokens, c.TimeoutSeconds = 256, 90
+			c.EncryptedAPIKeys = map[string]string{c.RemoteConsent: "dpapi:shared-key"}
+			if !approved {
+				c.Endpoint = "https://changed.example.com/v1"
+			}
+			if err := c.SaveModelProfile("Remote"); err != nil {
+				t.Fatal(err)
+			}
+			remote := c.ModelProfiles[0]
+			DefaultConfig().currentModelProfile("Local").apply(&c)
+			if err := c.SaveModelProfile("Local"); err != nil {
+				t.Fatal(err)
+			}
+			c.Model = "other-local"
+			if err := c.SaveModelProfile("Other"); err != nil {
+				t.Fatal(err)
+			}
+			if err := c.UseModelProfile("Local"); err != nil {
+				t.Fatal(err)
+			}
+			before := c.Clone()
+			if err := c.RemoveModelProfile(" LOCAL "); err != nil {
+				t.Fatal(err)
+			}
+			want := before.Clone()
+			want.ModelProfiles = []ModelProfile{remote, before.ModelProfiles[2]}
+			remote.apply(&want)
+			want.ActiveModelProfile = remote.Name
+			if !reflect.DeepEqual(c, want) {
+				t.Fatal("active removal did not restore the first remaining connection and preserve globals")
+			}
+			if (c.CheckConsent() == nil) != approved || c.AutomaticAllowed() != approved {
+				t.Fatal("active removal changed the fallback model's existing consent")
+			}
+		})
+	}
+}
+
+func TestRemoveLastModelProfilePersistsEmptyState(t *testing.T) {
+	c := remoteConfig("https://api.example.com/v1")
+	c.AllowRemoteAuto, c.Auto = true, true
+	c.APIKeyEnv, c.ReasoningEffort = "REMOTE_KEY", "high"
+	c.TokenParameter = "max_completion_tokens"
+	c.SendTemperature, c.DisableThinking = false, false
+	c.MaxTokens, c.TimeoutSeconds = 512, 100
+	c.DebounceMS, c.PrefixChars, c.SuffixChars = 1500, 1200, 250
+	c.MaxSuggestionChars = 400
+	c.AcceptTab = false
+	c.SuggestHotkey = "Ctrl+Alt+N"
+	c.AllowedApps = []string{"notepad.exe"}
+	c.EncryptedAPIKeys = map[string]string{c.RemoteConsent: "dpapi:keep-key"}
+	if err := c.SaveModelProfile("Only"); err != nil {
+		t.Fatal(err)
+	}
+	before := c.Clone()
+	if err := c.RemoveModelProfile("Only"); err != nil {
+		t.Fatal(err)
+	}
+	want := before.Clone()
+	want.ModelProfiles, want.ActiveModelProfile = []ModelProfile{}, ""
+	DefaultConfig().currentModelProfile("").apply(&want)
+	if !reflect.DeepEqual(c, want) {
+		t.Fatal("last removal did not reset only connection fields while preserving globals and keys")
+	}
+	if c.HasModelConnection() || c.AutomaticAllowed() || c.CheckConsent() == nil {
+		t.Fatal("last removal left inference enabled")
+	}
+	clone := c.Clone()
+	clone.EnsureModelProfiles()
+	if clone.ModelProfiles == nil || clone.HasModelConnection() {
+		t.Fatal("cloning or migration recreated a removed model")
+	}
+	clone.AllowedApps[0] = "winword.exe"
+	for scope := range clone.EncryptedAPIKeys {
+		clone.EncryptedAPIKeys[scope] = "dpapi:changed"
+	}
+	if !reflect.DeepEqual(c, want) {
+		t.Fatal("cloning shared mutable global settings")
+	}
+	path := filepath.Join(t.TempDir(), "config.json")
+	for i := 0; i < 2; i++ {
+		if err := SaveConfig(path, c); err != nil {
+			t.Fatal(err)
+		}
+		data, err := os.ReadFile(path)
+		if err != nil || !strings.Contains(string(data), `"model_profiles": []`) {
+			t.Fatalf("empty saved collection was not persisted: %s, %v", data, err)
+		}
+		c, err = LoadConfig(path)
+		if err != nil || !reflect.DeepEqual(c, want) || c.HasModelConnection() {
+			t.Fatalf("loading recreated a removed model or changed preferences: %+v, %v", c, err)
+		}
+	}
+	if err := c.SaveModelProfile("New model"); err != nil {
+		t.Fatal(err)
+	}
+	if !c.HasModelConnection() || len(c.ModelProfiles) != 1 || c.ActiveModelProfile != "New model" || c.CheckConsent() != nil {
+		t.Fatal("could not save a new model after removing every model")
+	}
+}
+
+func TestRemoveModelProfileFailureIsAtomic(t *testing.T) {
+	base := DefaultConfig()
+	for _, name := range []string{"First", "Second"} {
+		if err := base.SaveModelProfile(name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, tc := range []struct {
+		name, remove string
+		mutate       func(*Config)
+	}{
+		{"unknown", "missing", func(*Config) {}},
+		{"empty name", "  ", func(*Config) {}},
+		{"invalid fallback", "Second", func(c *Config) { c.ModelProfiles[0].Model = "" }},
+		{"invalid preferences", "First", func(c *Config) { c.DebounceMS = 0 }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := base.Clone()
+			tc.mutate(&c)
+			before := c.Clone()
+			if err := c.RemoveModelProfile(tc.remove); err == nil || !reflect.DeepEqual(c, before) {
+				t.Fatal("failed removal modified the configuration or was accepted")
+			}
+		})
+	}
+}
+
+func TestEmptyModelProfilesRejectRequestsBeforeNetworkOrKey(t *testing.T) {
+	c := DefaultConfig()
+	if !c.HasModelConnection() || !c.Clone().HasModelConnection() || c.CheckConsent() != nil {
+		t.Fatal("legacy top-level-only connections must remain compatible")
+	}
+	c.ModelProfiles = []ModelProfile{}
+	c.Auto = true
+	u, err := c.RequestURL()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.EncryptedAPIKeys = map[string]string{u.String(): "dpapi:unused"}
+	called := false
+	client := &Client{
+		HTTP: &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+			called = true
+			return nil, errors.New("must not send")
+		})},
+		DecryptKey: func(string, string) (string, error) {
+			called = true
+			return "", nil
+		},
+	}
+	_, err = client.Complete(context.Background(), c, TextContext{Prefix: "private text"}, nil)
+	if err == nil || !strings.Contains(err.Error(), "no saved model") || called || c.AutomaticAllowed() {
+		t.Fatalf("empty configuration was not rejected before network and key access: called=%t err=%v", called, err)
+	}
+}
 
 func TestModelProfileMigration(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.json")

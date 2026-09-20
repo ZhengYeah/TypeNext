@@ -13,7 +13,7 @@ import (
 const Version = "0.1.0"
 
 type Config struct {
-	ModelProfiles      []ModelProfile `json:"model_profiles,omitempty"`
+	ModelProfiles      []ModelProfile `json:"model_profiles"`
 	ActiveModelProfile string         `json:"active_model_profile,omitempty"`
 
 	// Remote networking is opt-in. Consent and encrypted keys are bound to the
