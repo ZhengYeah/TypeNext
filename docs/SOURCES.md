@@ -2,7 +2,17 @@
 
 Engineering references for the implementation. These describe API contracts; application compatibility requires testing on Windows.
 
+The UI Automation implementation and its tests are in [internal/win/uia](../internal/win/uia). The application supplies Windows and PowerPoint callbacks through [accessibility_windows.go](../internal/win/accessibility_windows.go); UIA and the [PowerPoint adapter](../internal/win/powerpoint_windows.go) share [COM helpers](../internal/win/com/com_windows.go).
+
 - Microsoft, UI Automation TextPattern overview: https://learn.microsoft.com/en-us/dotnet/framework/ui-automation/ui-automation-textpattern-overview
+- Microsoft, implementing Text and TextRange (TextPattern is not restricted to Edit/Document controls): https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-implementingtextandtextrange
+- Microsoft, UI Automation text attributes (IsReadOnly identifies editable text): https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-textattribute-ids
+- Microsoft, TextChild container and range: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nn-uiautomationclient-iuiautomationtextchildpattern
+- Microsoft, embedded objects and text-range boundaries: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-textpattern-and-embedded-objects-overview
+- Microsoft, distinguishing the reserved unsupported attribute: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomation-checknotsupported
+- Microsoft, ValuePattern editability metadata: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nn-uiautomationclient-iuiautomationvaluepattern
+- Microsoft, pattern availability properties: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-control-pattern-availability-propids
+- Chromium, Windows accessibility role and pattern mapping (editable text comboboxes use UIA_ComboBoxControlTypeId): https://chromium.googlesource.com/chromium/src/+/refs/heads/main/ui/accessibility/platform/ax_platform_node_win.cc
 - Microsoft, UI Automation threading: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-threading
 - Microsoft, IUIAutomationTextRange::MoveEndpointByUnit: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-moveendpointbyunit
 - Microsoft, IUIAutomationTextRange::GetText (bounded, potentially truncated text): https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-gettext

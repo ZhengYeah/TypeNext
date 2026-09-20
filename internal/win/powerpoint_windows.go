@@ -21,7 +21,7 @@ var (
 	pPPTGetParent                  = user32.NewProc("GetParent")
 	pPPTGetAncestor                = user32.NewProc("GetAncestor")
 	pPPTGetWindowRect              = user32.NewProc("GetWindowRect")
-	iidPPTDispatch                 = guid{0x00020400, 0, 0, [8]byte{0xc0, 0, 0, 0, 0, 0, 0, 0x46}}
+	iidPPTDispatch                 = guid{A: 0x00020400, B: 0, C: 0, D: [8]byte{0xc0, 0, 0, 0, 0, 0, 0, 0x46}}
 )
 
 type pptDispatchParams struct {

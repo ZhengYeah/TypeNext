@@ -1,6 +1,6 @@
 //go:build windows && amd64
 
-package win
+package uia
 
 import (
 	"fmt"
@@ -240,7 +240,7 @@ func TestStableCaretOffsetRejectsMissingInterfaces(t *testing.T) {
 
 func TestStableCaretOffsetWithWindowsProvider(t *testing.T) {
 	edit, update := testPadControl(t)
-	w, err := newUIA()
+	w, err := newUIA(Host{})
 	if err != nil {
 		t.Fatal(err)
 	}

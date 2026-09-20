@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 	"typenext/internal/core"
+	"typenext/internal/win/uia"
 	"unsafe"
 )
 
@@ -78,7 +79,7 @@ type app struct {
 	hotkeys                                              *core.HotkeySet
 	hotkeyStates                                         []core.HotkeyStatus
 	jobs                                                 chan func()
-	worker                                               *uiaWorker
+	worker                                               *uia.Worker
 	client                                               *core.Client
 	revision                                             atomic.Uint64
 	cancel                                               context.CancelFunc
@@ -110,7 +111,7 @@ func Run() error {
 		return e
 	}
 	cfg, configErr := core.LoadConfig(path)
-	worker, e := newUIA()
+	worker, e := newAccessibilityWorker()
 	if e != nil {
 		return e
 	}
@@ -663,16 +664,16 @@ func (a *app) inspect() {
 	cfg, pad := a.cfg, a.pad
 	a.invalidate(false)
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		s, e := a.worker.CaptureInitial(ctx, cfg, pad)
+		detail, e := a.worker.Inspect(ctx, cfg, pad)
 		a.post(func() {
 			if e != nil {
 				a.setStatus(e.Error())
-				a.notify(e.Error())
-				return
+				if detail == "" {
+					detail = e.Error()
+				}
 			}
-			detail := fmt.Sprintf("Application: %s\nReader: %s\nBefore caret: %d characters\nAfter caret: %d characters\n\nThe following was read on your explicit request. It is not saved or sent to the model.\n\n%s\n[CARET]\n%s", s.Process, s.PositionSource, len([]rune(s.Prefix)), len([]rune(s.Suffix)), core.Tail(s.Prefix, 1400), core.Head(s.Suffix, 300))
 			pMessageBox.Call(a.window, uintptr(unsafe.Pointer(u16(detail))), uintptr(unsafe.Pointer(u16("TypeNext — textbox inspection"))), 0x40)
 		})
 	}()

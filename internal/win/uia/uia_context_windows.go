@@ -1,10 +1,11 @@
 //go:build windows && amd64
 
-package win
+package uia
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"typenext/internal/core"
 	"unicode/utf16"
 	"unsafe"
@@ -32,7 +33,7 @@ func boundedRangeText(r *comObject, max int) (text string, complete bool, err er
 		defer pSysFreeString.Call(uintptr(unsafe.Pointer(b)))
 	}
 	if failed(hr) {
-		return "", false, errors.New("textbox text could not be read")
+		return "", false, fmt.Errorf("TextRange.GetText failed (0x%08x)", uint32(hr))
 	}
 	if b == nil {
 		return "", true, nil
@@ -48,11 +49,18 @@ func boundedRangeText(r *comObject, max int) (text string, complete bool, err er
 // prefix loses its adjacency to the caret. Shorten only the backward probe until
 // its complete text fits; never compensate by reading an unbounded document.
 func readCaretSide(ctx context.Context, caret *comObject, endpoint, chars int) (string, error) {
+	return readCaretSideWithin(ctx, caret, nil, endpoint, chars)
+}
+
+func readCaretSideWithin(ctx context.Context, caret, boundary *comObject, endpoint, chars int) (string, error) {
 	if endpoint < 0 || endpoint > 1 || chars < 0 || chars > 8000 {
 		return "", errors.New("invalid textbox context limit")
 	}
 	if chars == 0 {
 		return "", nil
+	}
+	if err := rangeWithinBoundary(caret, boundary); err != nil {
+		return "", err
 	}
 	limit := chars*2 + 4
 	for units, attempt := chars, 0; units > 0 && attempt < maxUIAPrefixReads; units, attempt = units/2, attempt+1 {
@@ -68,6 +76,17 @@ func readCaretSide(ctx context.Context, caret *comObject, endpoint, chars int) (
 			count = -count
 		}
 		err = moveEnd(r, endpoint, count)
+		if err == nil {
+			err = clampRangeToBoundary(r, boundary)
+		}
+		if err == nil && boundary != nil {
+			// Clamping or a faulty provider must not separate the probe from its caret.
+			var comparison int32
+			comparison, err = compareEndpoint(r, 1-endpoint, caret, 1-endpoint)
+			if err == nil && comparison != 0 {
+				err = errors.New("textbox context range lost its caret boundary")
+			}
+		}
 		if err == nil {
 			err = ctx.Err()
 		}
@@ -98,39 +117,48 @@ func collapsedSelection(pat *comObject) (*comObject, error) {
 	hr := comCall(pat, 5, uintptr(unsafe.Pointer(&selections)))
 	defer release(selections)
 	if failed(hr) || selections == nil {
-		return nil, errors.New("textbox does not expose a reliable selection/caret; no end-of-text guess is made")
+		return nil, fmt.Errorf("TextPattern.GetSelection unavailable (0x%08x); no end-of-text guess is made", uint32(hr))
 	}
 	count, err := scalar(selections, 3)
-	if err != nil || count != 1 {
+	if err != nil {
+		return nil, fmt.Errorf("TextRangeArray.Length: %w", err)
+	}
+	if count != 1 {
 		return nil, errors.New("place one caret in the textbox without selecting text")
 	}
 	var caret *comObject
 	hr = comCall(selections, 4, 0, uintptr(unsafe.Pointer(&caret)))
 	if failed(hr) || caret == nil {
 		release(caret)
-		return nil, errors.New("caret range unavailable")
+		return nil, fmt.Errorf("TextRangeArray.GetElement(0) unavailable (0x%08x)", uint32(hr))
 	}
 	var compare int32
 	hr = comCall(caret, 5, 0, uintptr(unsafe.Pointer(caret)), 1, uintptr(unsafe.Pointer(&compare)))
-	if failed(hr) || compare != 0 {
+	if failed(hr) {
+		release(caret)
+		return nil, fmt.Errorf("caret CompareEndpoints failed (0x%08x)", uint32(hr))
+	}
+	if compare != 0 {
 		release(caret)
 		return nil, errors.New("selected text is not replaced; clear the selection first")
 	}
 	return caret, nil
 }
 
-func verifyCaretSelection(pat, expected *comObject) error {
+// Returns an owned fresh caret so the caller can also check scope/editability.
+func verifyCaretSelection(pat, expected *comObject) (*comObject, error) {
 	current, err := collapsedSelection(pat)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer release(current)
 	same, err := compareRangeEndpoints(expected, current)
 	if err != nil {
-		return err
+		release(current)
+		return nil, err
 	}
 	if !same {
-		return errors.New("caret changed while reading; try again")
+		release(current)
+		return nil, errors.New("caret changed while reading; try again")
 	}
-	return nil
+	return current, nil
 }

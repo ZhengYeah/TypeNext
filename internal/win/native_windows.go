@@ -16,7 +16,6 @@ import (
 var (
 	user32                     = syscall.NewLazyDLL("user32.dll")
 	kernel32                   = syscall.NewLazyDLL("kernel32.dll")
-	ole32                      = syscall.NewLazyDLL("ole32.dll")
 	oleaut32                   = syscall.NewLazyDLL("oleaut32.dll")
 	gdi32                      = syscall.NewLazyDLL("gdi32.dll")
 	shell32                    = syscall.NewLazyDLL("shell32.dll")
@@ -31,14 +30,6 @@ var (
 	pQueryFullProcessImageName = kernel32.NewProc("QueryFullProcessImageNameW")
 	pCloseHandle               = kernel32.NewProc("CloseHandle")
 	pGetModuleHandle           = kernel32.NewProc("GetModuleHandleW")
-	pCoInitializeEx            = ole32.NewProc("CoInitializeEx")
-	pCoUninitialize            = ole32.NewProc("CoUninitialize")
-	pCoCreateInstance          = ole32.NewProc("CoCreateInstance")
-	pSafeArrayGetLBound        = oleaut32.NewProc("SafeArrayGetLBound")
-	pSafeArrayGetUBound        = oleaut32.NewProc("SafeArrayGetUBound")
-	pSafeArrayAccessData       = oleaut32.NewProc("SafeArrayAccessData")
-	pSafeArrayUnaccessData     = oleaut32.NewProc("SafeArrayUnaccessData")
-	pSafeArrayDestroy          = oleaut32.NewProc("SafeArrayDestroy")
 	pSysStringLen              = oleaut32.NewProc("SysStringLen")
 	pSysFreeString             = oleaut32.NewProc("SysFreeString")
 	pVariantClear              = oleaut32.NewProc("VariantClear")
@@ -150,12 +141,6 @@ type input struct {
 	Extra       uintptr
 	_           [8]byte // INPUT's union is 32 bytes on Windows x64.
 }
-type guid struct {
-	A    uint32
-	B, C uint16
-	D    [8]byte
-}
-
 type notifyIconData struct {
 	Size                uint32
 	Window              uintptr

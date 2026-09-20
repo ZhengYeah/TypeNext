@@ -1,6 +1,6 @@
 //go:build windows && amd64
 
-package win
+package uia
 
 import (
 	"context"
@@ -249,7 +249,8 @@ func TestVerifyCaretSelectionAfterRead(t *testing.T) {
 			p := newTestSelection(current)
 			p.selection.count, p.failure = tc.count, tc.failure
 			expected.unavailable = tc.failure == "comparison unavailable"
-			err := verifyCaretSelection(&p.comObject, &expected.comObject)
+			verified, err := verifyCaretSelection(&p.comObject, &expected.comObject)
+			release(verified)
 			if (err != nil) != tc.wantError {
 				t.Fatalf("selection verification = %v, want error=%v", err, tc.wantError)
 			}

@@ -1,6 +1,6 @@
 //go:build windows && amd64
 
-package win
+package uia
 
 import (
 	"context"
@@ -9,41 +9,13 @@ import (
 	"runtime"
 	"strings"
 	"sync/atomic"
-	"syscall"
 	"time"
 	"typenext/internal/core"
 	"unsafe"
 )
 
 // COM vtable slots follow Microsoft's UIAutomationClient.h; see docs/SOURCES.md.
-// Only the focused element is inspected. No parent/document tree is traversed.
-type comObject struct{ VTable *[96]uintptr }
-
-//go:uintptrescapes
-func comCall(o *comObject, slot int, args ...uintptr) uintptr {
-	if o == nil {
-		return 0x80004003
-	}
-	// UIA and IDispatch calls need at most eight explicit arguments. Keep
-	// their argument storage on the stack instead of allocating for each call.
-	var storage [9]uintptr
-	argv := storage[:]
-	if len(args)+1 > len(argv) {
-		argv = make([]uintptr, len(args)+1)
-	}
-	argv = argv[:len(args)+1]
-	argv[0] = uintptr(unsafe.Pointer(o))
-	copy(argv[1:], args)
-	hr, _, _ := syscall.SyscallN(o.VTable[slot], argv...)
-	runtime.KeepAlive(o)
-	return hr
-}
-func failed(hr uintptr) bool { return int32(hr) < 0 }
-func release(o *comObject) {
-	if o != nil {
-		comCall(o, 2)
-	}
-}
+// TextChild resolution uses an explicit provider relationship, not a tree search.
 func scalar(o *comObject, slot int) (int32, error) {
 	var v int32
 	hr := comCall(o, slot, uintptr(unsafe.Pointer(&v)))
@@ -52,46 +24,56 @@ func scalar(o *comObject, slot int) (int32, error) {
 	}
 	return v, nil
 }
+
+type uiaPatternError struct {
+	id int
+	hr uintptr
+}
+
+func (e *uiaPatternError) Error() string {
+	return fmt.Sprintf("GetCurrentPatternAs(%d) unavailable (0x%08x)", e.id, uint32(e.hr))
+}
+
+func patternUnavailable(err error) bool {
+	var e *uiaPatternError
+	if !errors.As(err, &e) {
+		return false
+	}
+	return e.hr == 0 || uint32(e.hr) == 0x80004002 || uint32(e.hr) == 0x80040204 // E_NOINTERFACE, UIA_E_NOTSUPPORTED
+}
+
 func pattern(o *comObject, id int, iid guid) (*comObject, error) {
 	var out *comObject
 	// GetCurrentPatternAs returns the requested interface, not merely IUnknown.
 	hr := comCall(o, 14, uintptr(id), uintptr(unsafe.Pointer(&iid)), uintptr(unsafe.Pointer(&out)))
 	if failed(hr) || out == nil {
-		return nil, errors.New("this textbox does not expose the required accessibility text pattern")
+		release(out)
+		return nil, &uiaPatternError{id: id, hr: hr}
 	}
 	return out, nil
 }
 
 var (
-	clsidUIA = guid{0xff48dba4, 0x60ef, 0x4201, [8]byte{0xaa, 0x87, 0x54, 0x10, 0x3e, 0xef, 0x59, 0x4e}}
-	iidUIA   = guid{0x30cbe57d, 0xd9d0, 0x452a, [8]byte{0xab, 0x13, 0x7a, 0xc5, 0xac, 0x48, 0x25, 0xee}}
-	iidText  = guid{0x32eba289, 0x3583, 0x42c9, [8]byte{0x9c, 0x59, 0x3b, 0x6d, 0x9a, 0x1e, 0x9b, 0x6a}}
-	iidText2 = guid{0x506a921a, 0xfcc9, 0x409f, [8]byte{0xb2, 0x3b, 0x37, 0xeb, 0x74, 0x10, 0x68, 0x72}}
+	clsidUIA = guid{A: 0xff48dba4, B: 0x60ef, C: 0x4201, D: [8]byte{0xaa, 0x87, 0x54, 0x10, 0x3e, 0xef, 0x59, 0x4e}}
+	iidUIA   = guid{A: 0x30cbe57d, B: 0xd9d0, C: 0x452a, D: [8]byte{0xab, 0x13, 0x7a, 0xc5, 0xac, 0x48, 0x25, 0xee}}
+	iidText  = guid{A: 0x32eba289, B: 0x3583, C: 0x42c9, D: [8]byte{0x9c, 0x59, 0x3b, 0x6d, 0x9a, 0x1e, 0x9b, 0x6a}}
+	iidText2 = guid{A: 0x506a921a, B: 0xfcc9, C: 0x409f, D: [8]byte{0xb2, 0x3b, 0x37, 0xeb, 0x74, 0x10, 0x68, 0x72}}
 )
 
-type variant struct {
-	VT, R1, R2, R3 uint16
-	Data           [16]byte
-}
-
-func rangeReadonly(r *comObject) bool {
-	var v variant
-	hr := comCall(r, 9, 40015, uintptr(unsafe.Pointer(&v))) // UIA_IsReadOnlyAttributeId
-	defer pVariantClear.Call(uintptr(unsafe.Pointer(&v)))
-	return !failed(hr) && v.VT == 11 && (*(*int16)(unsafe.Pointer(&v.Data[0]))) != 0
-}
 func cloneRange(r *comObject) (*comObject, error) {
 	var c *comObject
-	if failed(comCall(r, 3, uintptr(unsafe.Pointer(&c)))) || c == nil {
+	hr := comCall(r, 3, uintptr(unsafe.Pointer(&c)))
+	if failed(hr) || c == nil {
 		release(c)
-		return nil, errors.New("could not clone the caret range")
+		return nil, fmt.Errorf("TextRange.Clone unavailable (0x%08x)", uint32(hr))
 	}
 	return c, nil
 }
 func moveEnd(r *comObject, end int, count int) error {
 	var moved int32
-	if failed(comCall(r, 14, uintptr(end), 0, uintptr(int64(count)), uintptr(unsafe.Pointer(&moved)))) {
-		return errors.New("textbox does not support reading around the caret")
+	hr := comCall(r, 14, uintptr(end), 0, uintptr(int64(count)), uintptr(unsafe.Pointer(&moved)))
+	if failed(hr) {
+		return fmt.Errorf("TextRange.MoveEndpointByUnit failed (0x%08x)", uint32(hr))
 	}
 	return nil
 }
@@ -114,8 +96,12 @@ func safeArrayData(sa uintptr) (unsafe.Pointer, int, func(), error) {
 }
 func focusID(el *comObject) (string, error) {
 	var sa uintptr
-	if failed(comCall(el, 4, uintptr(unsafe.Pointer(&sa)))) || sa == 0 {
-		return "", errors.New("textbox has no stable accessibility identity")
+	hr := comCall(el, 4, uintptr(unsafe.Pointer(&sa)))
+	if failed(hr) || sa == 0 {
+		if sa != 0 {
+			pSafeArrayDestroy.Call(sa)
+		}
+		return "", fmt.Errorf("GetRuntimeId unavailable (0x%08x)", uint32(hr))
 	}
 	p, n, done, e := safeArrayData(sa)
 	if e != nil {
@@ -145,13 +131,15 @@ func rangeRect(r *comObject) (rect, bool) {
 	return rect{int32(v[0]), int32(v[1]), int32(v[0] + v[2]), int32(v[1] + v[3])}, true
 }
 
-type uiaWorker struct {
+// Worker serializes accessibility operations on a dedicated COM thread.
+type Worker struct {
 	jobs  chan func(*comObject)
 	caret caretIdentity // accessed only on the dedicated COM thread
+	host  Host
 }
 
-func newUIA() (*uiaWorker, error) {
-	w := &uiaWorker{jobs: make(chan func(*comObject), 1)}
+func newUIA(host Host) (*Worker, error) {
+	w := &Worker{jobs: make(chan func(*comObject), 1), host: host}
 	ready := make(chan error, 1)
 	go func() {
 		runtime.LockOSThread()
@@ -180,17 +168,17 @@ func newUIA() (*uiaWorker, error) {
 	return w, nil
 }
 
-func (w *uiaWorker) Capture(ctx context.Context, c core.Config, padWindow uintptr) (core.TextContext, error) {
+func (w *Worker) Capture(ctx context.Context, c core.Config, padWindow uintptr) (core.TextContext, error) {
 	return w.capture(ctx, c, padWindow, false)
 }
 
 // A new request must not inherit a stale provider range from a previous one.
 // Verification and insertion retain the baseline established by this capture.
-func (w *uiaWorker) CaptureInitial(ctx context.Context, c core.Config, padWindow uintptr) (core.TextContext, error) {
+func (w *Worker) CaptureInitial(ctx context.Context, c core.Config, padWindow uintptr) (core.TextContext, error) {
 	return w.capture(ctx, c, padWindow, true)
 }
 
-func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintptr, initial bool) (core.TextContext, error) {
+func (w *Worker) capture(ctx context.Context, c core.Config, padWindow uintptr, initial bool) (core.TextContext, error) {
 	type result struct {
 		t core.TextContext
 		e error
@@ -204,7 +192,7 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 		if initial {
 			w.caret.close()
 		}
-		t, e := readContext(ctx, a, c, padWindow, &w.caret, true)
+		t, e := w.readContext(ctx, a, c, padWindow, &w.caret, true)
 		reply <- result{t, e}
 	}
 	select {
@@ -220,58 +208,39 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 	}
 }
 
-func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity, includePosition bool) (core.TextContext, error) {
+func (w *Worker) readContext(ctx context.Context, a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity, includePosition bool) (core.TextContext, error) {
 	var result core.TextContext
 	if err := ctx.Err(); err != nil {
 		return result, err
 	}
-	window := foreground()
-	_, process, err := processOf(window)
+	window := w.host.Foreground()
+	_, process, err := w.host.ProcessOf(window)
 	if err != nil {
 		return result, err
 	}
 	if window != padWindow && !c.Allows(process) {
 		return result, fmt.Errorf("%s is not approved; add its executable name in Settings before reading it", process)
 	}
-	if composing(window) {
+	if w.host.Composing(window) {
 		return result, errors.New("finish the current IME composition first")
 	}
 	// Slide text is exposed by PowerPoint's native object model, rather than a standard UIA Edit.
 	// The adapter remains behind the same executable approval.
 	if strings.EqualFold(process, "powerpnt.exe") {
-		return readPowerPointContext(c, window, process)
+		return w.host.ReadPowerPoint(c, window, process)
 	}
 	var el *comObject
 	if failed(comCall(a, 8, uintptr(unsafe.Pointer(&el)))) || el == nil {
+		release(el)
 		return result, errors.New("no accessible focused textbox")
 	}
 	defer release(el)
-	// Do not ask for Name/Value before checking password protection.
-	password, err := scalar(el, 35)
-	if err != nil || password != 0 {
-		return result, errors.New("password/protected field: text access disabled")
-	}
-	focused, err := scalar(el, 26)
-	if err != nil || focused == 0 {
-		return result, errors.New("textbox does not have keyboard focus")
-	}
-	enabled, err := scalar(el, 28)
-	if err != nil || enabled == 0 {
-		return result, errors.New("textbox is not enabled")
-	}
-	control, err := scalar(el, 21)
-	if err != nil || (control != 50004 && control != 50030) {
-		return result, errors.New("focused control is not an accessible Edit or Document; no text was read")
-	}
-	id, err := focusID(el)
+	target, err := resolveTextTarget(ctx, a, el)
 	if err != nil {
 		return result, err
 	}
-	pat, err := pattern(el, 10014, iidText)
-	if err != nil {
-		return result, err
-	}
-	defer release(pat)
+	defer target.close()
+	pat, id := target.pattern, target.identity()
 	if err = ctx.Err(); err != nil {
 		return result, err
 	}
@@ -280,10 +249,13 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 		return result, err
 	}
 	defer func() { release(caret) }()
-	source := "TextPattern selection"
+	if err = rangeWithinBoundary(caret, target.boundary); err != nil {
+		return result, err
+	}
+	source := target.via + " selection"
 	// Prefer TextPattern2's active caret when available,
 	// but still require a collapsed selection above so accepting can never replace selected text.
-	if p2, e := pattern(el, 10024, iidText2); e == nil {
+	if p2, e := pattern(target.owner, 10024, iidText2); e == nil {
 		var active int32
 		var r2 *comObject
 		hr := comCall(p2, 10, uintptr(unsafe.Pointer(&active)), uintptr(unsafe.Pointer(&r2)))
@@ -293,7 +265,7 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 			if sameRangeEndpoints(caret, r2) {
 				release(caret)
 				caret = r2
-				source = "TextPattern2 caret"
+				source = target.via + " / TextPattern2 caret"
 			} else {
 				release(r2)
 			}
@@ -302,28 +274,28 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 		}
 		release(p2)
 	}
-	if rangeReadonly(caret) {
-		return result, errors.New("read-only text: completion disabled")
+	if _, err = caretEditability(a, el, caret); err != nil {
+		return result, err
 	}
-	prefix, err := readCaretSide(ctx, caret, 0, c.PrefixChars)
+	prefix, err := readCaretSideWithin(ctx, caret, target.boundary, 0, c.PrefixChars)
 	if err != nil {
 		return result, err
 	}
-	suffix, err := readCaretSide(ctx, caret, 1, c.SuffixChars)
+	suffix, err := readCaretSideWithin(ctx, caret, target.boundary, 1, c.SuffixChars)
 	if err != nil {
 		return result, err
 	}
 	var x, y, h int32
 	if includePosition {
 		var ok bool
-		x, y, h, ok = nativeCaret(window)
+		x, y, h, ok = w.host.NativeCaret(window)
 		if !ok {
 			if r, yes := rangeRect(caret); yes {
 				x, y, h, ok = r.Left, r.Bottom, r.Bottom-r.Top, true
 			}
 		}
 		if !ok {
-			x, y, h, ok = adjacentCaretPosition(ctx, caret)
+			x, y, h, ok = adjacentCaretPositionWithin(ctx, caret, target.boundary)
 		}
 		if err = ctx.Err(); err != nil {
 			return result, err
@@ -341,7 +313,7 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 	if err = ctx.Err(); err != nil {
 		return result, err
 	}
-	if foreground() != window {
+	if w.host.Foreground() != window {
 		return result, errors.New("focus changed while reading; try again")
 	}
 	var current *comObject
@@ -350,18 +322,8 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 		return result, errors.New("focus disappeared")
 	}
 	defer release(current)
-	currentID, e := focusID(current)
-	if e != nil || currentID != id {
-		return result, errors.New("textbox changed while reading; try again")
-	}
-	// Focus identity alone does not catch selection or caret changes within a field.
-	// Ask the current provider again after reading text and positioning the popup.
-	currentPattern, err := pattern(current, 10014, iidText)
-	if err != nil {
-		return result, err
-	}
-	defer release(currentPattern)
-	if err = verifyCaretSelection(currentPattern, caret); err != nil {
+	// Re-resolve the same focused field and provider, including its boundary.
+	if err = verifyTextTarget(ctx, a, current, target, caret); err != nil {
 		return result, err
 	}
 	if err = ctx.Err(); err != nil {
@@ -370,22 +332,28 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 	// Browser providers may replace their range objects when unrelated page content refreshes.
 	// Prefer an exact offset derived entirely from this read; retain a range only when needed.
 	// Update identity only after selection validation.
-	caretID, err := identity.identifyInPattern(window, id, pat, caret)
+	var caretID string
+	if target.boundary == nil {
+		caretID, err = identity.identifyInPattern(window, id, pat, caret)
+	} else {
+		// Retain a scoped caret instead of deriving an offset from the parent page.
+		caretID, err = identity.identify(window, id, caret)
+	}
 	if err != nil {
 		return result, err
 	}
 	if err = ctx.Err(); err != nil {
 		return result, err
 	}
-	if foreground() != window {
+	if w.host.Foreground() != window {
 		return result, errors.New("focus changed while reading; try again")
 	}
 	result = core.TextContext{Window: uint64(window), FocusID: id, CaretID: caretID, Process: process, Prefix: prefix, Suffix: suffix, X: x, Y: y, CaretHeight: h, PositionSource: source}
 	return result, nil
 }
 
-func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr, expected core.TextContext, text string, revision *atomic.Uint64, expectedRevision uint64, acceptVK uint32) error {
-	if !waitRelease(1200*time.Millisecond, uintptr(acceptVK)) {
+func (w *Worker) Insert(ctx context.Context, c core.Config, padWindow uintptr, expected core.TextContext, text string, revision *atomic.Uint64, expectedRevision uint64, acceptVK uint32) error {
+	if !w.host.WaitRelease(1200*time.Millisecond, uintptr(acceptVK)) {
 		return errors.New("release the shortcut keys and try accepting again")
 	}
 	reply := make(chan error, 1)
@@ -399,7 +367,7 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 			return
 		}
 		// UIA insertion checks use logical caret identity; popup geometry is unused.
-		actual, err := readContext(ctx, a, c, padWindow, &w.caret, false)
+		actual, err := w.readContext(ctx, a, c, padWindow, &w.caret, false)
 		if err != nil {
 			reply <- err
 			return
@@ -408,11 +376,11 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 			reply <- errors.New("textbox/caret changed; request a new suggestion")
 			return
 		}
-		if composing(uintptr(expected.Window)) {
+		if w.host.Composing(uintptr(expected.Window)) {
 			reply <- errors.New("finish the IME composition before accepting")
 			return
 		}
-		if ctx.Err() != nil || revision.Load() != expectedRevision || foreground() != uintptr(expected.Window) || modifiersDown() {
+		if ctx.Err() != nil || revision.Load() != expectedRevision || w.host.Foreground() != uintptr(expected.Window) || w.host.ModifiersDown() {
 			reply <- errors.New("input context changed; insertion cancelled")
 			return
 		}
@@ -423,7 +391,7 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 		}
 		// Read/check/inject cannot be atomic across arbitrary third-party apps.
 		// This narrows the race; a native TSF edit session is needed to eliminate it.
-		reply <- sendUnicode(safe)
+		reply <- w.host.SendUnicode(safe)
 	}
 	select {
 	case w.jobs <- job:

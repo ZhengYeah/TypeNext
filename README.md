@@ -26,7 +26,6 @@ https://github.com/user-attachments/assets/ca52d078-7969-4951-a03c-18c22873f3fe
 2. Open **API settings…**, choose a provider and **Use preset**, enter your model ID and key, and enable **Allow remote HTTPS API requests**.
 3. Click **Test API (sample)** and approve the exact endpoint. The test sends a fixed sample, not application text. API usage can still be charged.
 4. Close API settings, open the test pad, and request a continuation with **Ctrl+Space**. Accept the completed preview with **Ctrl+Shift+F10**.
-5. (Optional) Use **Inspect in 3s** in real applications before enabling automatic suggestions. Inspection displays accessible context locally and does not call the model.
 
 ## Start with a local model
 
@@ -67,7 +66,8 @@ winword.exe
 powerpnt.exe
 ```
 
-This grants permission to attempt a read; it is **not a tested compatibility list**. Browser approval (`chrome.exe` or `msedge.exe`) applies to accessible textboxes across that browser, not one website. The built-in test pad is separately allowed.
+This grants permission to attempt a read; it is **not a tested compatibility list**. Browser approval (`chrome.exe` or `msedge.exe`) applies to accessible textboxes across that browser, not one website.
+Text fields are recognized by their accessibility text and caret support, including editable search comboboxes and custom editors. TypeNext also supports TextChild providers when the focused field exposes a writable value and a verifiable field boundary inside its text container. Reads stay within that boundary. An unsupported text editability attribute can fall back to the same field's ValuePattern metadata; read-only, mixed, or failed attributes remain blocked. Fields with selected text, protected fields, and controls exposing only a value without a reliable caret are not supported.
 
 Password-manager applications, credential dialogs, and terminal hosts on the built-in blocklist remain blocked even if added. This list is not exhaustive, and ordinary textboxes can contain sensitive material. TypeNext's own API-settings fields are not used as completion context.
 

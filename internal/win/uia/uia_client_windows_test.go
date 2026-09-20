@@ -1,6 +1,6 @@
 //go:build windows && amd64
 
-package win
+package uia
 
 import (
 	"fmt"
@@ -90,7 +90,7 @@ func TestUIAutomationInitialization(t *testing.T) {
 }
 
 func TestUIAutomationNativeTimeouts(t *testing.T) {
-	w, err := newUIA()
+	w, err := newUIA(Host{})
 	if err != nil {
 		t.Fatal(err)
 	}
