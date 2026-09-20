@@ -71,10 +71,6 @@ func (a *app) openAPI() {
 		return a.controlIn(a.apiWindow, class, text, id, x, y, w, h, style)
 	}
 	label := func(text string, x, y, w, h int) { control("STATIC", text, 0, x, y, w, h, 0) }
-	note := func(text string, x, y, w, h int) {
-		label := control("STATIC", text, 0, x, y, w, h, 0)
-		pSendMessage.Call(label, 0x30, a.smallFont, 1)
-	}
 	check := func(text string, id, x, y, w int, on bool) {
 		setCheck(control("BUTTON", text, id, x, y, w, 26, 0x10003), on)
 	}
@@ -115,9 +111,9 @@ func (a *app) openAPI() {
 	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 408, 364, 28, 0x10080)
 	check("Remove this endpoint's key", ctrlAPIClear, 544, 408, 312, false)
 
-	// Two option groups share the remaining space instead of extending the form
-	// into a long stack. Match the main window's margins and section spacing.
-	label("3  Request options", 24, 464, 404, 24)
+	// Keep request fields on one row and their toggles below, leaving a
+	// full-width section for remote access within the existing window height.
+	label("3  Request options", 24, 464, 832, 24)
 	label("Output tokens", 24, 504, 100, 24)
 	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 132, 500, 64, 28, 0x12000)
 	idx = 0
@@ -125,9 +121,9 @@ func (a *app) openAPI() {
 		idx = 1
 	}
 	combo(ctrlAPITokenParam, 208, 500, 220, []string{"max_tokens", "max_completion_tokens"}, idx)
-	label("Timeout (s)", 24, 544, 88, 24)
-	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 120, 540, 64, 28, 0x12000)
-	label("Reasoning", 196, 544, 88, 24)
+	label("Timeout (s)", 452, 504, 88, 24)
+	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 548, 500, 64, 28, 0x12000)
+	label("Reasoning", 636, 504, 84, 24)
 	efforts := []string{"(default)", "none", "minimal", "low", "medium", "high"}
 	idx = 0
 	for i, v := range efforts {
@@ -135,15 +131,16 @@ func (a *app) openAPI() {
 			idx = i
 		}
 	}
-	combo(ctrlAPIReasoning, 292, 540, 136, efforts, idx)
-	check("Non-thinking mode (Ollama / official DeepSeek)", ctrlAPIThinking, 24, 584, 404, c.DisableThinking)
-	check("Send temperature = 0.2", ctrlAPITemperature, 24, 616, 404, c.SendTemperature)
+	combo(ctrlAPIReasoning, 728, 500, 128, efforts, idx)
+	// Checkbox bounds include the blank area after the label. Leave a gap
+	// before the next checkbox so painting and mouse hits cannot overlap.
+	const checkboxGap, temperatureX, autoRemoteX = 12, 350, 310
+	check("Non-thinking mode (eager completion)", ctrlAPIThinking, 24, 540, temperatureX-24-checkboxGap, c.DisableThinking)
+	check("Send temperature = 0.2", ctrlAPITemperature, temperatureX, 540, 312, c.SendTemperature)
 
-	label("4  Remote access", 456, 464, 400, 24)
-	check("Allow remote HTTPS API requests", ctrlAPIRemote, 456, 500, 400, c.AllowRemote)
-	note("Sends textbox context off this PC.", 486, 532, 376, 20)
-	check("Allow automatic remote requests", ctrlAPIAutoRemote, 456, 564, 400, c.AllowRemoteAuto)
-	note("Enable Automatic suggestions on the main page.\r\nSends unfinished text; usage charges may apply.\r\nAt least 3 seconds apart, with no retries.", 486, 596, 376, 48)
+	label("4  Remote access", 24, 584, 832, 24)
+	check("Allow remote HTTPS API requests", ctrlAPIRemote, 24, 620, autoRemoteX-24-checkboxGap, c.AllowRemote)
+	check("Allow automatic remote requests", ctrlAPIAutoRemote, autoRemoteX, 620, 400, c.AllowRemoteAuto)
 
 	a.separatorIn(a.apiWindow, 24, 656, 832)
 	control("BUTTON", "Save model", idAPIApply, 24, 672, 176, 32, 0x10000)
