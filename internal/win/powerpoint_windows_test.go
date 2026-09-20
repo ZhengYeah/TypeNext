@@ -15,8 +15,8 @@ import (
 )
 
 // A small actual IDispatch vtable exercises the Windows ABI, reverse argument
-// order, VARIANT ownership, and the bounded native-object-model read path. It
-// never attaches to PowerPoint or reads user documents.
+// order, VARIANT ownership, and the bounded native-object-model read path.
+// It never attaches to PowerPoint or reads user documents.
 type pptFakeDispatch struct {
 	VTable *[96]uintptr
 	values map[string]variant

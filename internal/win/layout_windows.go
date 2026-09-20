@@ -20,8 +20,8 @@ var (
 	pGetWindowLongPtr   = user32.NewProc("GetWindowLongPtrW")
 )
 
-// Layout dimensions describe the client area; caption and borders are added
-// separately so bottom padding does not depend on the Windows frame metrics.
+// Layout dimensions describe the client area;
+// caption and borders are added separately so bottom padding does not depend on the Windows frame metrics.
 func (a *app) createSettingsWindow(title string, x, y, clientW, clientH int, owner uintptr) (uintptr, error) {
 	const style, extended = 0x00CA0000, 0x00010000
 	bounds := rect{Right: int32(a.s(clientW)), Bottom: int32(a.s(clientH))}
@@ -41,8 +41,8 @@ func (a *app) separatorIn(parent uintptr, x, y, w int) {
 }
 
 // Keep native accessible static text while giving each status surface padding.
-// The marker belongs to the HWND, so destroying a dialog cannot leave stale
-// handle entries that accidentally color controls in a later dialog.
+// The marker belongs to the HWND, so destroying a dialog cannot leave
+// stale handle entries that accidentally color controls in a later dialog.
 func (a *app) statusText(parent uintptr, text string, id, x, y, w, h int) uintptr {
 	// Padding strips do not overlap the text HWND.
 	// Overlapping static siblings can repaint over one another during native window redraw/capture.

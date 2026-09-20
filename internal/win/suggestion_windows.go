@@ -11,8 +11,8 @@ import (
 
 var errSuggestionContextChanged = errors.New("textbox or caret changed during generation")
 
-// Retry only unavailable reads, within the caller's existing deadline. A real
-// context mismatch is final, and no retry makes another model request.
+// Retry only unavailable reads, within the caller's existing deadline.
+// A real context mismatch is final, and no retry makes another model request.
 func verifySuggestionContext(ctx context.Context, expected core.TextContext, capture func(context.Context) (core.TextContext, error)) (core.TextContext, error) {
 	var err error
 	for attempt := 0; attempt < 3; attempt++ {

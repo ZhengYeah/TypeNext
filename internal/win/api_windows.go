@@ -141,9 +141,9 @@ func (a *app) openAPI() {
 
 	label("4  Remote access", 456, 464, 400, 24)
 	check("Allow remote HTTPS API requests", ctrlAPIRemote, 456, 500, 400, c.AllowRemote)
-	note("Sends textbox context off this PC.", 480, 532, 376, 20)
+	note("Sends textbox context off this PC.", 486, 532, 376, 20)
 	check("Allow automatic remote requests", ctrlAPIAutoRemote, 456, 564, 400, c.AllowRemoteAuto)
-	note("Enable Automatic suggestions on the main page.\r\nSends unfinished text; usage charges may apply.\r\nAt least 3 seconds apart, with no retries.", 480, 596, 376, 48)
+	note("Enable Automatic suggestions on the main page.\r\nSends unfinished text; usage charges may apply.\r\nAt least 3 seconds apart, with no retries.", 486, 596, 376, 48)
 
 	a.separatorIn(a.apiWindow, 24, 656, 832)
 	control("BUTTON", "Save model", idAPIApply, 24, 672, 176, 32, 0x10000)
