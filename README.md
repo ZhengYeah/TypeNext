@@ -23,7 +23,7 @@ https://github.com/user-attachments/assets/ca52d078-7969-4951-a03c-18c22873f3fe
 ## Start with an API
 
 1. Run `TypeNext.exe` on Windows x64. TypeNext itself needs no Python, Node, Go, or .NET runtime installation.
-2. Open **API settings…**, choose a provider and **Use preset**, enter your model ID and key, and enable **Allow remote HTTPS API requests**.
+2. Open **API settings…** in **1 Connect a model**. Enter a **Saved name**, select the **Protocol**, and enter your provider's **API URL**, **Model ID**, and **API key**. Set request options as required by your provider, then enable **Allow remote HTTPS API requests**.
 3. Click **Test API (sample)** and approve the exact endpoint. The test sends a fixed sample, not application text. API usage can still be charged.
 4. Close API settings, open the test pad, and request a continuation with **Ctrl+Space**. Accept the completed preview with **Ctrl+Shift+F10**.
 
@@ -35,11 +35,15 @@ Install and start Ollama separately. For the existing example configuration, run
 ollama pull qwen3:4b
 ```
 
-Set Provider to `ollama`, Model to `qwen3:4b` (or another installed model), and Server URL to `http://127.0.0.1:11434`. Click **Test model**. It sends a fixed sample. TypeNext does not download or start models for you. A local server must also be configured not to forward prompts to cloud services.
+Open **API settings…** in **1 Connect a model**. Enter a **Saved name** you like, set Protocol to `ollama`, Model ID to `qwen3:4b` (or another installed model), and API URL to `http://127.0.0.1:11434`, then click **Save model**. Close API settings and click **Test model**. It sends a fixed sample. TypeNext does not download or start models for you. A local server must also be configured not to forward prompts to cloud services.
 
 For an OpenAI-compatible local server, select `openai-compatible`, enter its base URL (for example `http://127.0.0.1:1234/v1`), and use its exact loaded model ID. API settings also accepts a full `/chat/completions` endpoint. Local servers needing authentication can use the same saved-key or environment-key settings.
 
+Choose a **Saved model** on the main page to switch connections immediately; the selection is saved for the next launch. Your existing connection is added to this list automatically. In **API settings…**, edit the selected model and click **Save model** to update it, or click **New model** to start with an empty name, API URL, model ID, and API key. Select the protocol and fill in your connection details manually. Saving under a different name keeps the previous configuration. Each saved model remembers its request options and remote permissions; API keys remain tied to their endpoint. Typing behavior, shortcuts, and approved applications are shared across models, and **Save settings** applies changes to the main page's controls.
+
 ## Controls
+
+Use **Pause** at the top of the main window to stop suggestions; click **Resume** to enable them again. The button stays in sync with the tray action and pause/resume shortcut.
 
 | Action | Default shortcut |
 |---|---|

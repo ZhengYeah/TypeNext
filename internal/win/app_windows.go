@@ -38,15 +38,12 @@ const (
 	ctrlHotkeyPause   = 213
 	ctrlHotkeyStatus1 = 214
 	ctrlHotkeyMessage = 217
-	ctrlEndpoint      = 201
-	ctrlModel         = 202
-	ctrlProvider      = 203
+	ctrlSavedModel    = 201
 	ctrlPause         = 204
 	ctrlPrefix        = 205
 	ctrlSuffix        = 206
 	ctrlAuto          = 207
 	ctrlTab           = 208
-	ctrlThinking      = 209
 	ctrlAllowed       = 210
 )
 
@@ -63,6 +60,8 @@ type app struct {
 	apiWindow         uintptr
 	apiDraft          core.Config
 	connectionLabel   uintptr
+	modelDetailsLabel uintptr
+	endpointLabel     uintptr
 	lastRemoteRequest time.Time
 	testRunning       bool
 
@@ -111,6 +110,7 @@ func Run() error {
 		return e
 	}
 	cfg, configErr := core.LoadConfig(path)
+	cfg.EnsureModelProfiles()
 	worker, e := newAccessibilityWorker()
 	if e != nil {
 		return e
@@ -159,14 +159,14 @@ func Run() error {
 	if v, _, err := pRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc))); v == 0 {
 		return fmt.Errorf("register window: %v", err)
 	}
-	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 752, 776, 0)
+	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 752, 784, 0)
 	if a.window == 0 {
 		return fmt.Errorf("create settings window: %v", e)
 	}
 	a.hotkeys = core.NewHotkeySet(windowsHotkeyRegistrar{window: a.window})
 	defer a.hotkeys.Close()
 	a.buildSettings()
-	a.refreshConnectionUI()
+	a.refreshModelProfiles()
 	a.overlay, _, e = pCreateWindowEx.Call(0x08000088, uintptr(unsafe.Pointer(className)), uintptr(unsafe.Pointer(u16("TypeNext suggestion"))), 0x80000000, 0, 0, uintptr(a.s(560)), uintptr(a.s(180)), 0, 0, inst, 0)
 	if a.overlay == 0 {
 		return fmt.Errorf("create suggestion window: %v", e)
@@ -280,53 +280,48 @@ func (a *app) separator(x, y, w int) {
 }
 
 func (a *app) buildSettings() {
-	h := a.label("TypeNext", 24, 20, 280, 34)
+	h := a.label("TypeNext", 24, 24, 280, 32)
 	pSendMessage.Call(h, 0x30, a.heading, 1)
-	a.button("API settings…", idAPI, 344, 24, 140)
-	a.button("Shortcuts…", idHotkeys, 496, 24, 130)
-	a.button("Quit", idQuit, 638, 24, 90)
+	a.button("Shortcuts…", idHotkeys, 376, 24, 128)
+	a.button("Pause", idPause, 520, 24, 96)
+	a.button("Quit", idQuit, 632, 24, 96)
+	a.refreshPauseUI()
 	a.label("Writing completion  /  Local model or API  /  "+core.Version, 24, 64, 704, 22)
-	a.separator(24, 98, 704)
-	a.label("1  Connect a model", 24, 114, 704, 24)
-	a.label("Provider", 24, 150, 96, 24)
-	combo := a.control("COMBOBOX", "", ctrlProvider, 132, 146, 208, 120, 0x10003)
-	for _, v := range []string{"ollama", "openai-compatible"} {
-		pSendMessage.Call(combo, 0x143, 0, uintptr(unsafe.Pointer(u16(v))))
-	}
-	idx := uintptr(0)
-	if a.cfg.Provider == "openai-compatible" {
-		idx = 1
-	}
-	pSendMessage.Call(combo, 0x14e, idx, 0)
-	a.label("Model", 364, 150, 56, 24)
-	a.control("EDIT", a.cfg.Model, ctrlModel, 432, 146, 296, 28, 0x10080)
-	a.label("Server URL", 24, 188, 96, 24)
-	a.control("EDIT", a.cfg.Endpoint, ctrlEndpoint, 132, 184, 596, 28, 0x10080)
-	a.connectionLabel = a.statusText(a.window, "", 0, 132, 222, 596, 44)
-	a.label("2  Choose the interaction", 24, 282, 704, 24)
-	a.checkbox("Automatic suggestions after a typing pause", ctrlAuto, 24, 314, 704, a.cfg.Auto)
-	a.checkbox("Tab accepts a finished suggestion (recommended)", ctrlTab, 24, 344, 704, a.cfg.AcceptTab)
-	a.checkbox("Request non-thinking mode (Ollama / official DeepSeek)", ctrlThinking, 24, 374, 704, a.cfg.DisableThinking)
-	a.label("Pause (ms)", 24, 418, 96, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.DebounceMS), ctrlPause, 132, 414, 88, 28, 0x12000)
-	a.label("Before caret", 268, 418, 100, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 376, 414, 88, 28, 0x12000)
-	a.label("After caret", 532, 418, 96, 24)
-	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 640, 414, 88, 28, 0x12000)
-	a.label("3  Approve applications", 24, 462, 704, 24)
-	h = a.label("One executable name per line", 410, 466, 318, 20)
+	a.separator(24, 96, 704)
+	a.label("1  Connect a model", 24, 118, 704, 24)
+	a.label("Saved model", 24, 156, 100, 24)
+	a.control("COMBOBOX", "", ctrlSavedModel, 132, 152, 440, 240, 0x10003)
+	a.button("API settings…", idAPI, 588, 150, 140)
+	a.label("Connection", 24, 196, 100, 24)
+	// Separate single-line labels keep native ellipsis from collapsing the URL
+	// onto the model/protocol line.
+	a.modelDetailsLabel = a.control("STATIC", "", 0, 132, 196, 596, 20, 0x4080) // SS_ENDELLIPSIS | SS_NOPREFIX
+	a.endpointLabel = a.control("STATIC", "", 0, 132, 220, 596, 20, 0x4080)
+	a.connectionLabel = a.statusText(a.window, "", 0, 24, 248, 704, 44)
+	a.label("2  Choose the interaction", 24, 308, 704, 24)
+	a.checkbox("Automatic suggestions after a typing pause", ctrlAuto, 24, 340, 704, a.cfg.Auto)
+	a.checkbox("Tab accepts a finished suggestion (recommended)", ctrlTab, 24, 372, 704, a.cfg.AcceptTab)
+	// Three equal 224-pixel groups, separated by 16-pixel gutters.
+	a.label("Pause (ms)", 24, 420, 100, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.DebounceMS), ctrlPause, 132, 416, 116, 28, 0x12000)
+	a.label("Before caret", 264, 420, 100, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 372, 416, 116, 28, 0x12000)
+	a.label("After caret", 504, 420, 100, 24)
+	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 612, 416, 116, 28, 0x12000)
+	a.label("3  Approve applications", 24, 464, 368, 24)
+	h = a.control("STATIC", "One executable name per line", 0, 408, 468, 320, 20, 2) // SS_RIGHT
 	pSendMessage.Call(h, 0x30, a.smallFont, 1)
-	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 494, 704, 80, 0x211044)
-	h = a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 584, 704, 20)
+	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 496, 704, 80, 0x211044)
+	h = a.label("Only approved apps are read. Password fields are skipped. No clipboard, OCR, or text logs.", 24, 588, 704, 20)
 	pSendMessage.Call(h, 0x30, a.smallFont, 1)
-	a.separator(24, 618, 704)
-	a.button("Save settings", idSave, 24, 634, 137)
-	a.button("Test model", idTest, 173, 634, 120)
-	a.button("Open test pad", idPad, 305, 634, 133)
-	a.button("Inspect in 3s", idInspect, 450, 634, 122)
-	a.button("Hide to tray", idHide, 584, 634, 144)
-	a.statusLabel = a.statusText(a.window, "", 0, 24, 682, 704, 44)
-	a.shortcutLabel = a.statusText(a.window, "", 0, 24, 726, 704, 28)
+	a.separator(24, 624, 704)
+	a.button("Save settings", idSave, 24, 640, 128)
+	a.button("Test model", idTest, 168, 640, 128)
+	a.button("Open test pad", idPad, 312, 640, 128)
+	a.button("Inspect in 3s", idInspect, 456, 640, 128)
+	a.button("Hide to tray", idHide, 600, 640, 128)
+	a.statusLabel = a.statusText(a.window, "", 0, 24, 688, 704, 44)
+	a.shortcutLabel = a.statusText(a.window, "", 0, 24, 732, 704, 28)
 }
 func windowText(w uintptr) string {
 	n, _, _ := pGetWindowTextLength.Call(w)
@@ -339,14 +334,7 @@ func windowText(w uintptr) string {
 }
 func checked(w uintptr) bool { v, _, _ := pSendMessage.Call(w, 0xf0, 0, 0); return v == 1 }
 func (a *app) readSettings() (core.Config, error) {
-	c := a.cfg
-	c.Endpoint = strings.TrimSpace(windowText(a.controls[ctrlEndpoint]))
-	c.Model = strings.TrimSpace(windowText(a.controls[ctrlModel]))
-	i, _, _ := pSendMessage.Call(a.controls[ctrlProvider], 0x147, 0, 0)
-	c.Provider = "ollama"
-	if i == 1 {
-		c.Provider = "openai-compatible"
-	}
+	c := a.cfg.Clone()
 	var e error
 	for _, field := range []struct {
 		id  int
@@ -359,7 +347,6 @@ func (a *app) readSettings() (core.Config, error) {
 	}
 	c.Auto = checked(a.controls[ctrlAuto])
 	c.AcceptTab = checked(a.controls[ctrlTab])
-	c.DisableThinking = checked(a.controls[ctrlThinking])
 	c.AllowedApps = nil
 	for _, line := range strings.FieldsFunc(windowText(a.controls[ctrlAllowed]), func(r rune) bool { return r == '\r' || r == '\n' || r == ',' || r == ';' }) {
 		if s := strings.ToLower(strings.TrimSpace(line)); s != "" {
@@ -379,6 +366,10 @@ func (a *app) save() bool {
 		return false
 	}
 	if !a.approveRemote(&c, a.window) {
+		return false
+	}
+	if e = c.SaveModelProfile(c.ActiveModelProfile); e != nil {
+		a.setStatus(e.Error())
 		return false
 	}
 	if e = core.SaveConfig(a.configPath, c); e != nil {
@@ -451,7 +442,7 @@ func (a *app) request(manual bool) {
 	}
 	if !a.enabled {
 		if manual {
-			a.notify("TypeNext is paused. Use the Pause / resume tray action or your configured shortcut.")
+			a.notify("TypeNext is paused. Click Resume in the main window, use the tray action, or press your Pause shortcut.")
 		}
 		return
 	}
@@ -591,10 +582,21 @@ func (a *app) accept() {
 func (a *app) toggle() {
 	a.enabled = !a.enabled
 	a.invalidate(false)
+	a.refreshPauseUI()
 	if a.enabled {
 		a.notify("TypeNext resumed. Only approved textboxes can be read.")
 	} else {
 		a.notify("TypeNext paused. No textbox is being read.")
+	}
+}
+
+func (a *app) refreshPauseUI() {
+	if button := a.controls[idPause]; button != 0 {
+		text := "Resume"
+		if a.enabled {
+			text = "Pause"
+		}
+		setControlText(button, text)
 	}
 }
 func (a *app) tick() {
@@ -647,7 +649,7 @@ func (a *app) startModelTest() {
 			a.testRunning = false
 			oldURL, _ := cfg.RequestURL()
 			newURL, _ := a.cfg.RequestURL()
-			if newURL == nil || oldURL == nil || newURL.String() != oldURL.String() || cfg.Model != a.cfg.Model {
+			if newURL == nil || oldURL == nil || newURL.String() != oldURL.String() || cfg.Model != a.cfg.Model || cfg.ActiveModelProfile != a.cfg.ActiveModelProfile {
 				a.apiMessage("Test finished for previous settings. Test the current connection separately.")
 				return
 			}
@@ -755,8 +757,8 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 				if !a.testRunning && a.saveAPI() {
 					a.startModelTest()
 				}
-			case idAPIPreset:
-				a.useAPIPreset()
+			case idAPINew:
+				a.newAPIModel()
 			case idAPIClose, 2:
 				a.closeAPI()
 			case ctrlAPIEndpoint, ctrlAPIProvider:
@@ -835,6 +837,10 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 		case 0x111:
 			id := int(wp & 0xffff)
 			switch id {
+			case ctrlSavedModel:
+				if int((wp>>16)&0xffff) == 1 { // CBN_SELCHANGE
+					a.selectModelProfile()
+				}
 			case idAPI:
 				a.openAPI()
 			case idHotkeys:

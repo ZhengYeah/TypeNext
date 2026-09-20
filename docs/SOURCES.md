@@ -52,4 +52,4 @@ This documents duplicate registration behavior, MOD_NOREPEAT, modifiers, and F12
 - Microsoft CryptProtectData (current-user DPAPI, additional entropy and allocated-buffer ownership): https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptprotectdata
 - Microsoft CryptUnprotectData: https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptunprotectdata
 
-Provider presets are convenience defaults. Remote model IDs are supplied by the user and must be tested with their provider and account.
+Users enter the protocol, API URL, model ID, and request options in API settings. Remote connections must be tested with their provider and account.

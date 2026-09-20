@@ -140,7 +140,7 @@ func (c Config) CheckConsent() error {
 		return err
 	}
 	if c.IsRemote() && c.RemoteConsent != u.String() {
-		return errors.New("this remote endpoint has not been approved; open API settings and click Apply API settings")
+		return errors.New("this remote endpoint has not been approved; open API settings and click Save model")
 	}
 	return nil
 }
@@ -153,6 +153,7 @@ func (c Config) AutomaticAllowed() bool {
 func (c Config) Clone() Config {
 	out := c
 	out.AllowedApps = append([]string(nil), c.AllowedApps...)
+	out.ModelProfiles = append([]ModelProfile(nil), c.ModelProfiles...)
 	out.EncryptedAPIKeys = make(map[string]string, len(c.EncryptedAPIKeys))
 	for k, v := range c.EncryptedAPIKeys {
 		out.EncryptedAPIKeys[k] = v

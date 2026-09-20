@@ -13,6 +13,9 @@ import (
 const Version = "0.1.0"
 
 type Config struct {
+	ModelProfiles      []ModelProfile `json:"model_profiles,omitempty"`
+	ActiveModelProfile string         `json:"active_model_profile,omitempty"`
+
 	// Remote networking is opt-in. Consent and encrypted keys are bound to the
 	// canonical request URL, so changing providers cannot reuse either silently.
 	AllowRemote      bool              `json:"allow_remote_api"`
@@ -56,20 +59,11 @@ func (c Config) Validate() error {
 	if _, err := c.HotkeyBindings(); err != nil {
 		return err
 	}
-	if c.Provider != "ollama" && c.Provider != "openai-compatible" {
-		return errors.New("provider must be ollama or openai-compatible")
+	if err := c.validateModelConnection(); err != nil {
+		return err
 	}
-	if _, e := ServerBase(c.Endpoint, c.AllowRemote); e != nil {
-		return e
-	}
-	if strings.TrimSpace(c.Model) == "" {
-		return errors.New("model name is required")
-	}
-	if len(c.Model) > 200 || strings.ContainsAny(c.Model, "\r\n\x00") {
-		return errors.New("invalid model name")
-	}
-	if c.Provider == "ollama" && strings.HasSuffix(strings.ToLower(c.Model), "cloud") {
-		return errors.New("choose a locally installed model, not a cloud model")
+	if err := c.validateModelProfiles(); err != nil {
+		return err
 	}
 	if c.DebounceMS < 300 || c.DebounceMS > 10000 {
 		return errors.New("pause must be 300–10000 milliseconds")
@@ -80,25 +74,8 @@ func (c Config) Validate() error {
 	if c.SuffixChars < 0 || c.SuffixChars > 2000 {
 		return errors.New("suffix length must be 0–2000 characters")
 	}
-	if c.MaxTokens < 8 || c.MaxTokens > 4096 {
-		return errors.New("max_tokens must be 8–4096")
-	}
 	if c.MaxSuggestionChars < 16 || c.MaxSuggestionChars > 1000 {
 		return errors.New("max_suggestion_characters must be 16–1000")
-	}
-	if c.TimeoutSeconds < 5 || c.TimeoutSeconds > 180 {
-		return errors.New("timeout_seconds must be 5–180")
-	}
-	if c.TokenParameter != "max_tokens" && c.TokenParameter != "max_completion_tokens" {
-		return errors.New("token_parameter must be max_tokens or max_completion_tokens")
-	}
-	switch c.ReasoningEffort {
-	case "", "none", "minimal", "low", "medium", "high":
-	default:
-		return errors.New("reasoning_effort must be blank, none, minimal, low, medium, or high")
-	}
-	if len(c.APIKeyEnv) > 200 || strings.ContainsAny(c.APIKeyEnv, "=\r\n\x00") {
-		return errors.New("invalid API-key environment variable name")
 	}
 	if len(c.EncryptedAPIKeys) > 32 {
 		return errors.New("at most 32 endpoint-specific API keys can be saved")
@@ -147,6 +124,7 @@ func LoadConfig(path string) (Config, error) {
 	c := DefaultConfig()
 	data, e := os.ReadFile(path)
 	if os.IsNotExist(e) {
+		c.EnsureModelProfiles()
 		return c, nil
 	}
 	if e != nil {
@@ -158,16 +136,23 @@ func LoadConfig(path string) (Config, error) {
 	if e = json.Unmarshal(data, &c); e != nil {
 		return DefaultConfig(), errors.New("config.json is not valid JSON")
 	}
+	c.EnsureModelProfiles()
 	if e = c.Validate(); e != nil {
 		return DefaultConfig(), e
 	}
+	// Keep legacy top-level settings authoritative, including manual edits made
+	// by older versions, without changing any inactive saved connection.
+	c.syncActiveModelProfile()
 	return c, nil
 }
 
 func SaveConfig(path string, c Config) error {
+	c = c.Clone()
+	c.EnsureModelProfiles()
 	if err := c.Validate(); err != nil {
 		return err
 	}
+	c.syncActiveModelProfile()
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		return err
 	}

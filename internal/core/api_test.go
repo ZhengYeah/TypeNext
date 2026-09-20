@@ -484,29 +484,6 @@ func TestAPIKeyValidationAndConfigBounds(t *testing.T) {
 	}
 }
 
-func TestPresetsAreExplicitAndValid(t *testing.T) {
-	if len(APIPresets()) < 5 {
-		t.Fatal("missing presets")
-	}
-	for _, p := range APIPresets() {
-		t.Run(p.Name, func(t *testing.T) {
-			c := DefaultConfig()
-			c.Provider, c.Endpoint, c.TokenParameter, c.APIKeyEnv = p.Provider, p.Endpoint, p.TokenParameter, p.KeyEnv
-			c.Model = "sample-user-chosen-model"
-			if c.Endpoint == "" {
-				return
-			} // Custom is deliberately not runnable.
-			c.AllowRemote = true
-			if err := c.Validate(); err != nil {
-				t.Fatal(err)
-			}
-			if c.IsRemote() && c.CheckConsent() == nil {
-				t.Fatal("preset pre-approved remote networking")
-			}
-		})
-	}
-}
-
 func TestResponseLimits(t *testing.T) {
 	for _, tc := range []struct{ name, ctype, body string }{
 		{"json body", "application/json", strings.Repeat(" ", 2<<20) + "{}"},
