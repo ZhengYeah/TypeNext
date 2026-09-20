@@ -11,7 +11,7 @@ TypeNext started as an attempt to bring VS Code's inline completion and inline c
 TypeNext reads a bounded amount of existing text around the caret in an approved, accessible textbox, asks a model for a continuation, and shows a floating preview. The text is inserted only when you accept it. It is a desktop helper, not a registered Windows TSF IME: it uses UI Automation plus a few dedicated text adapters, such as one for PowerPoint.
 
 
-https://github.com/user-attachments/assets/ca52d078-7969-4951-a03c-18c22873f3fe
+https://github.com/user-attachments/assets/a534bd1d-bcf1-404d-9f40-c05f516756ee
 
 
 > [!WARNING]
