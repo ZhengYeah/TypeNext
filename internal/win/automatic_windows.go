@@ -7,9 +7,9 @@ import (
 	"typenext/internal/core"
 )
 
-// Shift is part of normal typing. Command modifiers still cancel pending
-// suggestions, but must not arm another request merely because a shortcut uses
-// a letter. No character contents are retained by this activity classifier.
+// Shift is part of normal typing. Command modifiers still cancel pending suggestions,
+// but must not arm another request merely because a shortcut uses a letter.
+// No character contents are retained by this activity classifier.
 func automaticTypingKey(vk, modifiers uint32) bool {
 	if modifiers&(core.ModCtrl|core.ModAlt|core.ModWin) != 0 {
 		return false
@@ -30,8 +30,8 @@ func automaticTypingKey(vk, modifiers uint32) bool {
 }
 
 func (a *app) keyboardActivity(vk, modifiers uint32, window uintptr) {
-	// Associate the input with its window immediately. Otherwise the next
-	// foreground poll can discard typing that began just after an app switch.
+	// Associate the input with its window immediately.
+	// Otherwise the next foreground poll can discard typing that began just after an app switch.
 	a.lastForeground = window
 	a.invalidate(window != 0 && automaticTypingKey(vk, modifiers))
 }
