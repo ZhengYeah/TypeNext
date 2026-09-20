@@ -71,28 +71,10 @@ func rangeReadonly(r *comObject) bool {
 	defer pVariantClear.Call(uintptr(unsafe.Pointer(&v)))
 	return !failed(hr) && v.VT == 11 && (*(*int16)(unsafe.Pointer(&v.Data[0]))) != 0
 }
-func bstrString(b *uint16) string {
-	if b == nil {
-		return ""
-	}
-	defer pSysFreeString.Call(uintptr(unsafe.Pointer(b)))
-	n, _, _ := pSysStringLen.Call(uintptr(unsafe.Pointer(b)))
-	if n > 32768 {
-		n = 32768
-	}
-	return syscall.UTF16ToString(unsafe.Slice(b, int(n)))
-}
-func rangeText(r *comObject, max int) (string, error) {
-	var b *uint16
-	hr := comCall(r, 12, uintptr(max), uintptr(unsafe.Pointer(&b)))
-	if failed(hr) {
-		return "", errors.New("textbox text could not be read")
-	}
-	return bstrString(b), nil
-}
 func cloneRange(r *comObject) (*comObject, error) {
 	var c *comObject
 	if failed(comCall(r, 3, uintptr(unsafe.Pointer(&c)))) || c == nil {
+		release(c)
 		return nil, errors.New("could not clone the caret range")
 	}
 	return c, nil
@@ -172,10 +154,9 @@ func newUIA() (*uiaWorker, error) {
 			return
 		}
 		defer pCoUninitialize.Call()
-		var automation *comObject
-		hr, _, _ = pCoCreateInstance.Call(uintptr(unsafe.Pointer(&clsidUIA)), 0, 1, uintptr(unsafe.Pointer(&iidUIA)), uintptr(unsafe.Pointer(&automation)))
-		if failed(hr) || automation == nil {
-			ready <- errors.New("Windows UI Automation is unavailable")
+		automation, err := createUIAutomation(createAutomationClass)
+		if err != nil {
+			ready <- err
 			return
 		}
 		defer release(automation)
@@ -215,7 +196,7 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 		if initial {
 			w.caret.close()
 		}
-		t, e := readContext(a, c, padWindow, &w.caret)
+		t, e := readContext(ctx, a, c, padWindow, &w.caret)
 		reply <- result{t, e}
 	}
 	select {
@@ -231,8 +212,11 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 	}
 }
 
-func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity) (core.TextContext, error) {
+func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity) (core.TextContext, error) {
 	var result core.TextContext
+	if err := ctx.Err(); err != nil {
+		return result, err
+	}
 	window := foreground()
 	_, process, err := processOf(window)
 	if err != nil {
@@ -287,24 +271,14 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 		return result, err
 	}
 	defer release(pat)
-	var selections *comObject
-	if failed(comCall(pat, 5, uintptr(unsafe.Pointer(&selections)))) || selections == nil {
-		return result, errors.New("textbox does not expose a reliable selection/caret; no end-of-text guess is made")
+	if err = ctx.Err(); err != nil {
+		return result, err
 	}
-	defer release(selections)
-	count, err := scalar(selections, 3)
-	if err != nil || count != 1 {
-		return result, errors.New("place one caret in the textbox without selecting text")
-	}
-	var caret *comObject
-	if failed(comCall(selections, 4, 0, uintptr(unsafe.Pointer(&caret)))) || caret == nil {
-		return result, errors.New("caret range unavailable")
+	caret, err := collapsedSelection(pat)
+	if err != nil {
+		return result, err
 	}
 	defer func() { release(caret) }()
-	var compare int32
-	if failed(comCall(caret, 5, 0, uintptr(unsafe.Pointer(caret)), 1, uintptr(unsafe.Pointer(&compare)))) || compare != 0 {
-		return result, errors.New("selected text is not replaced; clear the selection first")
-	}
 	source := "TextPattern selection"
 	// Prefer TextPattern2's active caret when available,
 	// but still require a collapsed selection above so accepting can never replace selected text.
@@ -330,27 +304,11 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 	if rangeReadonly(caret) {
 		return result, errors.New("read-only text: completion disabled")
 	}
-	before, err := cloneRange(caret)
+	prefix, err := readCaretSide(ctx, caret, 0, c.PrefixChars)
 	if err != nil {
 		return result, err
 	}
-	defer release(before)
-	after, err := cloneRange(caret)
-	if err != nil {
-		return result, err
-	}
-	defer release(after)
-	if err = moveEnd(before, 0, -c.PrefixChars); err != nil {
-		return result, err
-	}
-	if err = moveEnd(after, 1, c.SuffixChars); err != nil {
-		return result, err
-	}
-	prefix, err := rangeText(before, c.PrefixChars*2+4)
-	if err != nil {
-		return result, err
-	}
-	suffix, err := rangeText(after, c.SuffixChars*2+4)
+	suffix, err := readCaretSide(ctx, caret, 1, c.SuffixChars)
 	if err != nil {
 		return result, err
 	}
@@ -361,15 +319,10 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 		}
 	}
 	if !ok {
-		// A zero-length UIA range often has no rectangle; try the preceding glyph.
-		if r, e := cloneRange(caret); e == nil {
-			if moveEnd(r, 0, -1) == nil {
-				if box, yes := rangeRect(r); yes {
-					x, y, h, ok = box.Right, box.Bottom, box.Bottom-box.Top, true
-				}
-			}
-			release(r)
-		}
+		x, y, h, ok = adjacentCaretPosition(ctx, caret)
+	}
+	if err = ctx.Err(); err != nil {
+		return result, err
 	}
 	if !ok {
 		var box rect
@@ -380,11 +333,7 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 			return result, errors.New("textbox location unavailable")
 		}
 	}
-	// Browser providers may replace their range objects when unrelated page content refreshes.
-	// Prefer an exact offset derived entirely from this read;
-	// keep retained-range comparison for providers or long documents that cannot establish a bounded offset.
-	caretID, err := identity.identifyInPattern(window, id, pat, caret)
-	if err != nil {
+	if err = ctx.Err(); err != nil {
 		return result, err
 	}
 	if foreground() != window {
@@ -392,14 +341,41 @@ func readContext(a *comObject, c core.Config, padWindow uintptr, identity *caret
 	}
 	var current *comObject
 	if failed(comCall(a, 8, uintptr(unsafe.Pointer(&current)))) || current == nil {
+		release(current)
 		return result, errors.New("focus disappeared")
 	}
+	defer release(current)
 	currentID, e := focusID(current)
-	release(current)
 	if e != nil || currentID != id {
 		return result, errors.New("textbox changed while reading; try again")
 	}
-	result = core.TextContext{Window: uint64(window), FocusID: id, CaretID: caretID, Process: process, Prefix: core.Tail(prefix, c.PrefixChars), Suffix: core.Head(suffix, c.SuffixChars), X: x, Y: y, CaretHeight: h, PositionSource: source}
+	// Focus identity alone does not catch selection or caret changes within a field.
+	// Ask the current provider again after reading text and positioning the popup.
+	currentPattern, err := pattern(current, 10014, iidText)
+	if err != nil {
+		return result, err
+	}
+	defer release(currentPattern)
+	if err = verifyCaretSelection(currentPattern, caret); err != nil {
+		return result, err
+	}
+	if err = ctx.Err(); err != nil {
+		return result, err
+	}
+	// Browser providers may replace their range objects when unrelated page content refreshes.
+	// Prefer an exact offset derived entirely from this read; retain a range only when needed.
+	// Update identity only after selection validation.
+	caretID, err := identity.identifyInPattern(window, id, pat, caret)
+	if err != nil {
+		return result, err
+	}
+	if err = ctx.Err(); err != nil {
+		return result, err
+	}
+	if foreground() != window {
+		return result, errors.New("focus changed while reading; try again")
+	}
+	result = core.TextContext{Window: uint64(window), FocusID: id, CaretID: caretID, Process: process, Prefix: prefix, Suffix: suffix, X: x, Y: y, CaretHeight: h, PositionSource: source}
 	return result, nil
 }
 
@@ -417,7 +393,7 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 			reply <- errors.New("typing or focus changed; suggestion discarded")
 			return
 		}
-		actual, err := readContext(a, c, padWindow, &w.caret)
+		actual, err := readContext(ctx, a, c, padWindow, &w.caret)
 		if err != nil {
 			reply <- err
 			return

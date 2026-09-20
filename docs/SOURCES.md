@@ -5,6 +5,10 @@ Engineering references for the implementation. These describe API contracts; app
 - Microsoft, UI Automation TextPattern overview: https://learn.microsoft.com/en-us/dotnet/framework/ui-automation/ui-automation-textpattern-overview
 - Microsoft, UI Automation threading: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-threading
 - Microsoft, IUIAutomationTextRange::MoveEndpointByUnit: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-moveendpointbyunit
+- Microsoft, IUIAutomationTextRange::GetText (bounded, potentially truncated text): https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-gettext
+- Microsoft, IUIAutomationTextRange::GetBoundingRectangles (visible range geometry): https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-getboundingrectangles
+- Microsoft, IUIAutomation2::put_ConnectionTimeout: https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomation2-put_connectiontimeout
+- Microsoft, IUIAutomation2::put_TransactionTimeout (native provider calls otherwise default to twenty seconds): https://learn.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomation2-put_transactiontimeout
 - Microsoft, SendInput and its privilege/input-state restrictions: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput
 - Microsoft's Windows SDK metadata header, used to verify interface GUIDs and method order: https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/UIAutomationClient.h
 - Microsoft, UI Automation support for standard controls: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-controlsupport

@@ -3,6 +3,7 @@
 package win
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 	"testing"
@@ -173,20 +174,9 @@ func readTestPadRanges(a *comObject, handle uintptr) (prefix, suffix string, sel
 	if compare != 0 {
 		return "", "", true, nil
 	}
-	read := func(endpoint, count int) (string, error) {
-		r, err := cloneRange(caret)
-		if err != nil {
-			return "", err
-		}
-		defer release(r)
-		if err = moveEnd(r, endpoint, count); err != nil {
-			return "", err
-		}
-		return rangeText(r, 14) // Same bounded UTF-16 allowance as Capture for five characters.
-	}
-	prefix, err = read(0, -5)
+	prefix, err = readCaretSide(context.Background(), caret, 0, 5)
 	if err == nil {
-		suffix, err = read(1, 5)
+		suffix, err = readCaretSide(context.Background(), caret, 1, 5)
 	}
 	return prefix, suffix, false, err
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 type TextContext struct {
@@ -115,5 +116,61 @@ func CleanSuggestion(raw string, t TextContext, max int) string {
 	if strings.HasPrefix(strings.TrimSpace(s), "```") {
 		return ""
 	}
+	if needsSentenceSpace(t.Prefix, s) {
+		s = " " + s
+	}
 	return Head(s, max)
+}
+
+// Repair clear prose boundaries without guessing whether adjacent letters are
+// a complete word or a word fragment. The model still supplies word-boundary
+// spaces ("can" + " help"); joining letters must allow "usef" + "ul".
+func needsSentenceSpace(prefix, suggestion string) bool {
+	first, _ := utf8.DecodeRuneInString(suggestion)
+	if !unicode.Is(unicode.Latin, first) && !unicode.IsDigit(first) {
+		return false // Includes whitespace, punctuation, and unspaced scripts.
+	}
+	stem := strings.TrimRight(prefix, ".,;:!?)]}\"\u201d\u00bb")
+	if stem == prefix {
+		return false
+	}
+	last, _ := utf8.DecodeLastRuneInString(stem)
+	if !unicode.Is(unicode.Latin, last) && !unicode.IsDigit(last) {
+		return false
+	}
+	// A decimal or time can continue across punctuation without a space.
+	if unicode.IsDigit(first) && unicode.IsDigit(last) {
+		return false
+	}
+	// A dot/colon in an address is not a prose boundary.
+	token := prefix
+	if i := strings.LastIndexFunc(token, unicode.IsSpace); i >= 0 {
+		token = token[i+1:]
+	}
+	if strings.Contains(token, "://") || strings.ContainsAny(token, "@/\\") || strings.HasPrefix(strings.ToLower(token), "www.") {
+		return false
+	}
+	if strings.Contains(prefix[len(stem):], ".") {
+		// Periods also belong to abbreviations, domains, and member access.
+		// Wait for a capitalized prose word with a boundary before repairing one.
+		if !unicode.IsUpper(first) {
+			return false
+		}
+		lastWord := stem
+		if i := strings.LastIndexFunc(stem, func(r rune) bool { return !unicode.IsLetter(r) }); i >= 0 {
+			lastWord = stem[i+1:]
+		}
+		if utf8.RuneCountInString(lastWord) == 1 {
+			return false // e. + g., U. + S., and similar unfinished initials.
+		}
+		end := strings.IndexFunc(suggestion, func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' })
+		if end < 0 {
+			return false
+		}
+		boundary, _ := utf8.DecodeRuneInString(suggestion[end:])
+		if !unicode.IsSpace(boundary) && !strings.ContainsRune(".,;:!?", boundary) {
+			return false
+		}
+	}
+	return true
 }
