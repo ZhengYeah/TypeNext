@@ -10,8 +10,8 @@ import (
 )
 
 // Host supplies window and input operations owned by the Windows application.
-// Callbacks run on the worker's COM thread, except WaitRelease, which runs on the
-// caller of Insert. They must not access application UI state without locking.
+// Callbacks run on the worker's COM thread, except WaitRelease, which runs on the caller of Insert.
+// They must not access application UI state without locking.
 type Host struct {
 	Foreground     func() uintptr
 	ProcessOf      func(uintptr) (uint32, string, error)

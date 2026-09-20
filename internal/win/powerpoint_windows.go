@@ -54,8 +54,8 @@ func pptFloatArg(n float32) variant {
 	return v
 }
 
-// pptInvoke is deliberately limited to getters and read-only methods. It never
-// sets a property, selects text, activates a window, or uses the clipboard.
+// pptInvoke is deliberately limited to getters and read-only methods.
+// It never sets a property, selects text, activates a window, or uses the clipboard.
 func pptInvoke(o *comObject, name string, flags uint16, args ...variant) (variant, error) {
 	var result variant
 	if flags != 1 && flags != 2 {

@@ -24,8 +24,8 @@ func createAutomationClass(class, iid guid) (*comObject, uintptr) {
 }
 
 func createUIAutomation(create func(guid, guid) (*comObject, uintptr)) (*comObject, error) {
-	// A Go context cannot interrupt a COM call already in progress. UIA8 exposes
-	// native provider timeouts so one unresponsive app does not occupy the worker
+	// A Go context cannot interrupt a COM call already in progress.
+	// UIA8 exposes native provider timeouts so one unresponsive app does not occupy the worker
 	// for the default twenty-second transaction timeout.
 	a, hr := create(clsidUIA8, iidUIA2)
 	if !failed(hr) && a != nil {
