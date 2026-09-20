@@ -46,6 +46,33 @@ func response(contentType, body string) *http.Response {
 
 const sampleSSE = "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"works.\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
 
+func TestStreamingMetadataDoesNotRepeatPartial(t *testing.T) {
+	for _, tc := range []struct {
+		provider, contentType, body string
+	}{
+		{"openai-compatible", "text/event-stream", "data: {\"choices\":[{\"delta\":{\"role\":\"assistant\"}}]}\n\n" +
+			"data: {\"choices\":[{\"delta\":{\"content\":\"works.\"}}]}\n\n" +
+			"data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"},
+		{"ollama", "application/x-ndjson", "{\"message\":{\"content\":\"\"},\"done\":false}\n" +
+			"{\"message\":{\"content\":\"works.\"},\"done\":false}\n{\"done\":true}\n"},
+	} {
+		t.Run(tc.provider, func(t *testing.T) {
+			cfg := DefaultConfig()
+			cfg.Provider, cfg.APIKeyEnv = tc.provider, ""
+			client := &Client{HTTP: &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+				return response(tc.contentType, tc.body), nil
+			})}}
+			var partials []string
+			got, err := client.Complete(context.Background(), cfg, TextContext{}, func(s string) {
+				partials = append(partials, s)
+			})
+			if err != nil || got != "works." || len(partials) != 1 || partials[0] != got {
+				t.Fatalf("result=%q partials=%q err=%v", got, partials, err)
+			}
+		})
+	}
+}
+
 // A real HTTPS test server, with a private test CA and a test-only dialer.
 // Production certificate checking is unchanged. Nothing connects to the Internet.
 func remoteTLSServer(t *testing.T, h http.HandlerFunc) (*Client, Config, *httptest.Server) {

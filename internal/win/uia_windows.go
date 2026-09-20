@@ -24,7 +24,16 @@ func comCall(o *comObject, slot int, args ...uintptr) uintptr {
 	if o == nil {
 		return 0x80004003
 	}
-	argv := append([]uintptr{uintptr(unsafe.Pointer(o))}, args...)
+	// UIA and IDispatch calls need at most eight explicit arguments. Keep
+	// their argument storage on the stack instead of allocating for each call.
+	var storage [9]uintptr
+	argv := storage[:]
+	if len(args)+1 > len(argv) {
+		argv = make([]uintptr, len(args)+1)
+	}
+	argv = argv[:len(args)+1]
+	argv[0] = uintptr(unsafe.Pointer(o))
+	copy(argv[1:], args)
 	hr, _, _ := syscall.SyscallN(o.VTable[slot], argv...)
 	runtime.KeepAlive(o)
 	return hr
@@ -137,9 +146,8 @@ func rangeRect(r *comObject) (rect, bool) {
 }
 
 type uiaWorker struct {
-	jobs           chan func(*comObject)
-	initialization error
-	caret          caretIdentity // accessed only on the dedicated COM thread
+	jobs  chan func(*comObject)
+	caret caretIdentity // accessed only on the dedicated COM thread
 }
 
 func newUIA() (*uiaWorker, error) {
@@ -196,7 +204,7 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 		if initial {
 			w.caret.close()
 		}
-		t, e := readContext(ctx, a, c, padWindow, &w.caret)
+		t, e := readContext(ctx, a, c, padWindow, &w.caret, true)
 		reply <- result{t, e}
 	}
 	select {
@@ -212,7 +220,7 @@ func (w *uiaWorker) capture(ctx context.Context, c core.Config, padWindow uintpt
 	}
 }
 
-func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity) (core.TextContext, error) {
+func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uintptr, identity *caretIdentity, includePosition bool) (core.TextContext, error) {
 	var result core.TextContext
 	if err := ctx.Err(); err != nil {
 		return result, err
@@ -255,13 +263,6 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 	if err != nil || (control != 50004 && control != 50030) {
 		return result, errors.New("focused control is not an accessible Edit or Document; no text was read")
 	}
-	pid, err := scalar(el, 20)
-	if err != nil {
-		return result, err
-	}
-	// Some browser accessibility nodes belong to a renderer process.
-	// The visible foreground executable is the allowlist boundary; focus is rechecked below.
-	_ = pid
 	id, err := focusID(el)
 	if err != nil {
 		return result, err
@@ -312,25 +313,29 @@ func readContext(ctx context.Context, a *comObject, c core.Config, padWindow uin
 	if err != nil {
 		return result, err
 	}
-	x, y, h, ok := nativeCaret(window)
-	if !ok {
-		if r, yes := rangeRect(caret); yes {
-			x, y, h, ok = r.Left, r.Bottom, r.Bottom-r.Top, true
+	var x, y, h int32
+	if includePosition {
+		var ok bool
+		x, y, h, ok = nativeCaret(window)
+		if !ok {
+			if r, yes := rangeRect(caret); yes {
+				x, y, h, ok = r.Left, r.Bottom, r.Bottom-r.Top, true
+			}
 		}
-	}
-	if !ok {
-		x, y, h, ok = adjacentCaretPosition(ctx, caret)
-	}
-	if err = ctx.Err(); err != nil {
-		return result, err
-	}
-	if !ok {
-		var box rect
-		if !failed(comCall(el, 43, uintptr(unsafe.Pointer(&box)))) && box.Right > box.Left {
-			x, y, h = box.Left+12, box.Top+28, 20
-			source += " (field-corner positioning)"
-		} else {
-			return result, errors.New("textbox location unavailable")
+		if !ok {
+			x, y, h, ok = adjacentCaretPosition(ctx, caret)
+		}
+		if err = ctx.Err(); err != nil {
+			return result, err
+		}
+		if !ok {
+			var box rect
+			if !failed(comCall(el, 43, uintptr(unsafe.Pointer(&box)))) && box.Right > box.Left {
+				x, y, h = box.Left+12, box.Top+28, 20
+				source += " (field-corner positioning)"
+			} else {
+				return result, errors.New("textbox location unavailable")
+			}
 		}
 	}
 	if err = ctx.Err(); err != nil {
@@ -393,7 +398,8 @@ func (w *uiaWorker) Insert(ctx context.Context, c core.Config, padWindow uintptr
 			reply <- errors.New("typing or focus changed; suggestion discarded")
 			return
 		}
-		actual, err := readContext(ctx, a, c, padWindow, &w.caret)
+		// UIA insertion checks use logical caret identity; popup geometry is unused.
+		actual, err := readContext(ctx, a, c, padWindow, &w.caret, false)
 		if err != nil {
 			reply <- err
 			return

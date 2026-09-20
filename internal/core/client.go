@@ -124,6 +124,9 @@ func (c *Client) Complete(ctx context.Context, cfg Config, t TextContext, onPart
 
 	var raw strings.Builder
 	emit := func(piece string) error {
+		if piece == "" {
+			return nil
+		}
 		if raw.Len()+len(piece) > 65536 {
 			return errors.New("model response exceeded the safety limit")
 		}

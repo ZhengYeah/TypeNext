@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 type TextContext struct {
@@ -38,18 +39,51 @@ func (t TextContext) Fingerprint() [32]byte {
 }
 
 func Head(s string, n int) string {
-	r := []rune(s)
-	if len(r) > n {
-		return string(r[:n])
+	if n < 0 {
+		panic("negative text limit")
+	}
+	if n >= len(s) {
+		return s
+	}
+	invalid := false
+	for i, r := range s {
+		if n == 0 {
+			if invalid {
+				return string([]rune(s[:i]))
+			}
+			// Keep the bounded result from retaining the entire document.
+			return strings.Clone(s[:i])
+		}
+		if r == utf8.RuneError {
+			_, size := utf8.DecodeRuneInString(s[i:])
+			invalid = invalid || size == 1
+		}
+		n--
 	}
 	return s
 }
 func Tail(s string, n int) string {
-	r := []rune(s)
-	if len(r) > n {
-		return string(r[len(r)-n:])
+	if n < 0 {
+		panic("negative text limit")
 	}
-	return s
+	if n >= len(s) {
+		return s
+	}
+	start := len(s)
+	invalid := false
+	for n > 0 && start > 0 {
+		r, size := utf8.DecodeLastRuneInString(s[:start])
+		invalid = invalid || r == utf8.RuneError && size == 1
+		start -= size
+		n--
+	}
+	if start == 0 {
+		return s
+	}
+	if invalid {
+		return string([]rune(s[start:]))
+	}
+	return strings.Clone(s[start:])
 }
 
 const SystemPrompt = `You are TypeNext, an inline text completion engine, not a chatbot.
@@ -95,11 +129,19 @@ func CleanSuggestion(raw string, t TextContext, max int) string {
 	}
 	// Remove an exact repeated suffix only at the very end; short overlaps can be legitimate (e.g. punctuation),
 	// so do not apply fuzzy overlap matching.
-	if len([]rune(t.Suffix)) >= 4 && strings.HasSuffix(s, t.Suffix) {
+	if strings.HasSuffix(s, t.Suffix) && utf8.RuneCountInString(t.Suffix) >= 4 {
 		s = strings.TrimSuffix(s, t.Suffix)
 	}
-	s = strings.ReplaceAll(strings.ReplaceAll(s, "\r\n", " "), "\n", " ")
+	previousCR := false
 	s = strings.Map(func(r rune) rune {
+		wasCR := previousCR
+		previousCR = r == '\r'
+		if r == '\n' {
+			if wasCR {
+				return -1
+			}
+			return ' '
+		}
 		if r == '\r' || r == '\t' || r == '\u2028' || r == '\u2029' {
 			return ' '
 		}
@@ -109,10 +151,8 @@ func CleanSuggestion(raw string, t TextContext, max int) string {
 		return r
 	}, s)
 	s = strings.TrimRightFunc(s, unicode.IsSpace)
-	if strings.TrimSpace(s) == "" {
-		return ""
-	}
-	if strings.HasPrefix(strings.TrimSpace(s), "```") {
+	trimmed := strings.TrimSpace(s)
+	if trimmed == "" || strings.HasPrefix(trimmed, "```") {
 		return ""
 	}
 	return Head(s, max)

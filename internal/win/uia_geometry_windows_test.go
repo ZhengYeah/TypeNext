@@ -6,8 +6,43 @@ import (
 	"context"
 	"syscall"
 	"testing"
+	"typenext/internal/core"
 	"unsafe"
 )
+
+func TestUIACaretFingerprintWithoutPosition(t *testing.T) {
+	for _, mode := range []string{"offset", "retained range"} {
+		t.Run(mode, func(t *testing.T) {
+			var identity caretIdentity
+			defer identity.close()
+			p := newTestPositionProvider(0, 4)
+			if mode == "retained range" {
+				p.failure = "document unavailable"
+			}
+			id, err := identity.identifyInPattern(7, "edit", &p.comObject, &p.caret.comObject)
+			if err != nil || id == "" {
+				t.Fatalf("missing capture identity: %q, %v", id, err)
+			}
+			expected := core.TextContext{Window: 7, FocusID: "edit", CaretID: id,
+				Prefix: "same", Suffix: " passage", X: 100, Y: 220, CaretHeight: 20,
+				PositionSource: "TextPattern selection"}
+			actual := expected
+			actual.X, actual.Y, actual.CaretHeight, actual.PositionSource = 0, 0, 0, ""
+			actual.CaretID, err = identity.identifyInPattern(7, "edit", &p.comObject, &p.caret.comObject)
+			if err != nil || actual.Fingerprint() != expected.Fingerprint() {
+				t.Fatalf("insertion without popup geometry rejected an unchanged caret: %v", err)
+			}
+			// Repeated text at another caret still fails verification without geometry.
+			p.caret.start, p.caret.end = 9, 9
+			actual.CaretID, err = identity.identifyInPattern(7, "edit", &p.comObject, &p.caret.comObject)
+			if err != nil || actual.Fingerprint() == expected.Fingerprint() {
+				t.Fatalf("insertion without popup geometry accepted a moved caret: %v", err)
+			}
+			identity.close()
+			p.assertOwnership(t, 0, 9)
+		})
+	}
+}
 
 type testGeometryRange struct {
 	comObject

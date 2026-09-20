@@ -72,7 +72,7 @@ func TestFailedSuggestionStaysVisibleButCannotBeAcceptedOrRevived(t *testing.T) 
 	expected := core.TextContext{Window: 42, FocusID: "search", CaretID: "uia-offset:4", Prefix: "what"}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	a := &app{requestID: 7, running: true, cancel: cancel, snapshot: &expected, suggestion: "partial", overlayText: "partial"}
+	a := &app{running: true, cancel: cancel, snapshot: &expected, suggestion: "partial", overlayText: "partial"}
 	a.revision.Store(3)
 	attempts := 0
 	readErr := errors.New("provider unavailable")
@@ -83,7 +83,7 @@ func TestFailedSuggestionStaysVisibleButCannotBeAcceptedOrRevived(t *testing.T) 
 	if !errors.Is(err, readErr) || attempts != 3 {
 		t.Fatalf("verification was not bounded: attempts=%d err=%v", attempts, err)
 	}
-	a.updateRequest(7, 3, 42, 42, func() { a.failSuggestion(expected, "model", err.Error()) })
+	a.updateRequest(3, 42, 42, func() { a.failSuggestion(expected, "model", err.Error()) })
 	if a.running || a.candidateReady || a.snapshot != nil || a.suggestion != "" || a.autoArmed || ctx.Err() != context.Canceled {
 		t.Fatal("failed preview left an acceptable or pending request")
 	}
@@ -91,7 +91,7 @@ func TestFailedSuggestionStaysVisibleButCannotBeAcceptedOrRevived(t *testing.T) 
 		t.Fatal("failure disappeared without a visible reason")
 	}
 	a.accept() // A failure card must not start insertion, even via a shortcut.
-	a.updateRequest(7, 3, 42, 42, func() { t.Fatal("late stream update revived failed request") })
+	a.updateRequest(3, 42, 42, func() { t.Fatal("late stream update revived failed request") })
 	if !a.dismissSuggestion() || a.overlayText != "" || a.dismissSuggestion() {
 		t.Fatal("Escape did not dismiss the failure exactly once")
 	}
@@ -100,9 +100,9 @@ func TestFailedSuggestionStaysVisibleButCannotBeAcceptedOrRevived(t *testing.T) 
 func TestRequestUpdatesCannotFlashAfterFocusChanges(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	a := &app{requestID: 7, running: true, cancel: cancel}
+	a := &app{running: true, cancel: cancel}
 	a.revision.Store(3)
-	a.updateRequest(7, 3, 42, 42, func() {
+	a.updateRequest(3, 42, 42, func() {
 		a.snapshot = &core.TextContext{Window: 42}
 		a.overlayText = "generating"
 	})
@@ -112,10 +112,10 @@ func TestRequestUpdatesCannotFlashAfterFocusChanges(t *testing.T) {
 
 	// The model finishes after focus moves but before the foreground timer
 	// fires. Neither its result nor an already queued partial may be displayed.
-	a.updateRequest(7, 3, 42, 99, func() {
+	a.updateRequest(3, 42, 99, func() {
 		t.Fatal("result from the previous foreground window was displayed")
 	})
-	a.updateRequest(7, 3, 42, 42, func() {
+	a.updateRequest(3, 42, 42, func() {
 		t.Fatal("a queued update revived the canceled request")
 	})
 	if ctx.Err() != context.Canceled || a.running || a.candidateReady || a.snapshot != nil || a.overlayText != "" {
@@ -126,18 +126,18 @@ func TestRequestUpdatesCannotFlashAfterFocusChanges(t *testing.T) {
 func TestSupersededRequestCannotCancelCurrentSuggestion(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	a := &app{requestID: 8, running: true, cancel: cancel}
+	a := &app{running: true, cancel: cancel}
 	a.revision.Store(4)
-	a.updateRequest(8, 4, 99, 99, func() {
+	a.updateRequest(4, 99, 99, func() {
 		a.running = false
 		a.candidateReady = true
 		a.suggestion = "current result"
 	})
 	// An old completion/error can arrive after the replacement became ready.
-	a.updateRequest(7, 3, 42, 99, func() {
+	a.updateRequest(3, 42, 99, func() {
 		t.Fatal("a superseded callback was applied")
 	})
-	if ctx.Err() != nil || !a.candidateReady || a.suggestion != "current result" || a.requestID != 8 {
+	if ctx.Err() != nil || !a.candidateReady || a.suggestion != "current result" || a.revision.Load() != 4 {
 		t.Fatal("the old callback disturbed the current suggestion")
 	}
 }
@@ -145,19 +145,22 @@ func TestSupersededRequestCannotCancelCurrentSuggestion(t *testing.T) {
 func TestRequestUpdateRejectsInputRevisionAndMissingWindow(t *testing.T) {
 	for _, tc := range []struct {
 		name           string
-		revision       uint64
+		inputChanged   bool
 		window, active uintptr
 	}{
-		{"input changed", 4, 42, 42},
-		{"no foreground", 3, 42, 0},
-		{"no request window", 3, 0, 0},
+		{"input changed", true, 42, 42},
+		{"no foreground", false, 42, 0},
+		{"no request window", false, 0, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			a := &app{requestID: 7, running: true, cancel: cancel}
-			a.revision.Store(tc.revision)
-			a.updateRequest(7, 3, tc.window, tc.active, func() {
+			a := &app{running: true, cancel: cancel}
+			a.revision.Store(3)
+			if tc.inputChanged {
+				a.keyboardActivity('A', 0, tc.window)
+			}
+			a.updateRequest(3, tc.window, tc.active, func() {
 				t.Fatal("an invalid request was displayed")
 			})
 			if ctx.Err() != context.Canceled || a.running {

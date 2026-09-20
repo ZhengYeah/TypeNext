@@ -70,7 +70,6 @@ type app struct {
 	overlayBrush, overlayBorderBrush, overlayAccentBrush uintptr
 	statusBrush                                          uintptr
 	icon, smallIcon                                      uintptr
-	keyboard, mouse                                      uintptr
 	cfg                                                  core.Config
 	configPath                                           string
 	controls                                             map[int]uintptr
@@ -82,7 +81,6 @@ type app struct {
 	worker                                               *uiaWorker
 	client                                               *core.Client
 	revision                                             atomic.Uint64
-	requestID                                            uint64
 	cancel                                               context.CancelFunc
 	snapshot                                             *core.TextContext
 	suggestion                                           string
@@ -178,16 +176,16 @@ func Run() error {
 	// A registration conflict is nonfatal.
 	// Shortcuts can be changed even when all configured global keys are unavailable.
 	a.applyHotkeys()
-	a.keyboard, _, e = pSetWindowsHookEx.Call(13, syscall.NewCallback(keyboardProc), inst, 0)
-	if a.keyboard == 0 {
+	keyboard, _, e := pSetWindowsHookEx.Call(13, syscall.NewCallback(keyboardProc), inst, 0)
+	if keyboard == 0 {
 		return fmt.Errorf("cannot install keyboard activity hook: %v", e)
 	}
-	defer pUnhookWindowsHookEx.Call(a.keyboard)
-	a.mouse, _, e = pSetWindowsHookEx.Call(14, syscall.NewCallback(mouseProc), inst, 0)
-	if a.mouse == 0 {
+	defer pUnhookWindowsHookEx.Call(keyboard)
+	mouse, _, e := pSetWindowsHookEx.Call(14, syscall.NewCallback(mouseProc), inst, 0)
+	if mouse == 0 {
 		return fmt.Errorf("cannot install mouse activity hook: %v", e)
 	}
-	defer pUnhookWindowsHookEx.Call(a.mouse)
+	defer pUnhookWindowsHookEx.Call(mouse)
 	pSetTimer.Call(a.window, 1, 150, 0)
 	defer pKillTimer.Call(a.window, 1)
 	a.setStatus("Ready. Test model uses a fixed sample. " + a.connectionSummary())
@@ -214,13 +212,13 @@ func Run() error {
 			dialog = a.window
 		}
 		if a.hotkeyWindow != 0 {
-			child, _, _ := user32.NewProc("IsChild").Call(a.hotkeyWindow, m.Window)
+			child, _, _ := pIsChild.Call(a.hotkeyWindow, m.Window)
 			if m.Window == a.hotkeyWindow || child != 0 {
 				dialog = a.hotkeyWindow
 			}
 		}
 		if a.apiWindow != 0 {
-			child, _, _ := user32.NewProc("IsChild").Call(a.apiWindow, m.Window)
+			child, _, _ := pIsChild.Call(a.apiWindow, m.Window)
 			if m.Window == a.apiWindow || child != 0 {
 				dialog = a.apiWindow
 			}
@@ -244,7 +242,7 @@ func (a *app) makeFont(size, weight int) uintptr {
 	return f
 }
 func (a *app) isSettingsChild(w uintptr) bool {
-	ok, _, _ := user32.NewProc("IsChild").Call(a.window, w)
+	ok, _, _ := pIsChild.Call(a.window, w)
 	return ok != 0
 }
 
@@ -406,15 +404,17 @@ func (a *app) post(f func()) {
 // Every stage of a request passes through the same UI-thread guard. In
 // particular, a completed capture must not briefly show an old-window preview
 // while waiting for the foreground timer to notice that focus changed.
-func (a *app) postRequest(id, revision uint64, window uintptr, update func()) {
-	a.post(func() { a.updateRequest(id, revision, window, foreground(), update) })
+func (a *app) postRequest(revision uint64, window uintptr, update func()) {
+	a.post(func() { a.updateRequest(revision, window, foreground(), update) })
 }
 
-func (a *app) updateRequest(id, revision uint64, window, activeWindow uintptr, update func()) {
-	if a.requestID != id {
+func (a *app) updateRequest(revision uint64, window, activeWindow uintptr, update func()) {
+	// Every invalidation advances the revision. Ignore superseded callbacks
+	// before checking focus so they cannot cancel a newer request.
+	if a.revision.Load() != revision {
 		return
 	}
-	if a.revision.Load() != revision || window == 0 || activeWindow != window {
+	if window == 0 || activeWindow != window {
 		a.invalidate(false)
 		return
 	}
@@ -423,7 +423,6 @@ func (a *app) updateRequest(id, revision uint64, window, activeWindow uintptr, u
 
 func (a *app) invalidate(arm bool) {
 	a.revision.Add(1)
-	a.requestID++
 	if a.cancel != nil {
 		a.cancel()
 		a.cancel = nil
@@ -462,7 +461,6 @@ func (a *app) request(manual bool) {
 		return
 	}
 	a.lastForeground = window
-	id := a.requestID
 	rev := a.revision.Load()
 	cfg := a.cfg
 	pad := a.pad
@@ -478,7 +476,7 @@ func (a *app) request(manual bool) {
 		snapshot, e := a.worker.CaptureInitial(readCtx, cfg, pad)
 		readCancel()
 		if e != nil {
-			a.postRequest(id, rev, window, func() {
+			a.postRequest(rev, window, func() {
 				a.running = false
 				a.setStatus(e.Error())
 				if manual {
@@ -491,17 +489,17 @@ func (a *app) request(manual bool) {
 		// before the UI timer or a queued hook callback has invalidated this request.
 		// Never send context from that new window to the model.
 		if ctx.Err() != nil || a.revision.Load() != rev || uintptr(snapshot.Window) != window || foreground() != window {
-			a.postRequest(id, rev, window, func() { a.invalidate(false) })
+			a.postRequest(rev, window, func() { a.invalidate(false) })
 			return
 		}
 		if strings.TrimSpace(snapshot.Prefix) == "" {
-			a.postRequest(id, rev, window, func() {
+			a.postRequest(rev, window, func() {
 				a.running = false
 				a.setStatus("Type a few words before requesting a continuation.")
 			})
 			return
 		}
-		a.postRequest(id, rev, window, func() {
+		a.postRequest(rev, window, func() {
 			a.snapshot = &snapshot
 			title, detail := "Generating locally…", "The first request may need to load the model."
 			if cfg.IsRemote() {
@@ -516,12 +514,12 @@ func (a *app) request(manual bool) {
 				return
 			}
 			last = time.Now()
-			a.postRequest(id, rev, window, func() {
+			a.postRequest(rev, window, func() {
 				a.showOverlay(snapshot, cfg.Model, partial, "Wait for completion · Esc to dismiss")
 			})
 		})
 		if e != nil {
-			a.postRequest(id, rev, window, func() {
+			a.postRequest(rev, window, func() {
 				if errors.Is(e, context.Canceled) {
 					a.invalidate(false)
 					return
@@ -531,7 +529,7 @@ func (a *app) request(manual bool) {
 			return
 		}
 		// A second read catches edits/focus changes that did not generate a key event.
-		a.postRequest(id, rev, window, func() {
+		a.postRequest(rev, window, func() {
 			a.showOverlay(snapshot, cfg.Model, result, "Checking textbox · Esc to dismiss")
 		})
 		checkCtx, checkCancel := context.WithTimeout(ctx, 3*time.Second)
@@ -539,7 +537,7 @@ func (a *app) request(manual bool) {
 			return a.worker.Capture(ctx, cfg, pad)
 		})
 		checkCancel()
-		a.postRequest(id, rev, window, func() {
+		a.postRequest(rev, window, func() {
 			a.running = false
 			if e != nil {
 				a.failSuggestion(snapshot, cfg.Model, "Could not verify the suggestion: "+e.Error())
@@ -565,7 +563,6 @@ func (a *app) accept() {
 		return
 	}
 	rev := a.revision.Load()
-	id := a.requestID
 	a.candidateReady = false
 	a.hideOverlay()
 	a.running = true
@@ -578,7 +575,7 @@ func (a *app) accept() {
 		defer cancel()
 		e := a.worker.Insert(ctx, cfg, pad, snapshot, text, &a.revision, rev, acceptVK)
 		a.post(func() {
-			if a.requestID == id {
+			if a.revision.Load() == rev {
 				a.invalidate(false)
 				if e != nil {
 					a.setStatus(e.Error())
@@ -606,7 +603,7 @@ func (a *app) tick() {
 		a.inspectAt = time.Time{}
 		a.inspect()
 	}
-	if a.automaticDue(time.Now(), modifiersDown()) {
+	if a.automaticDue(time.Now(), false) && !modifiersDown() {
 		_, process, e := processOf(fg)
 		if e == nil && (fg == a.pad || a.cfg.Allows(process)) {
 			// Pausing during composition must not consume the only automatic attempt.
@@ -883,9 +880,10 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 		if k.Flags&0x10 == 0 { // Ignore injected events; key contents are never stored.
 			v := k.VK
 			modifier := v == 0x10 || v == 0x11 || v == 0x12 || (v >= 0xa0 && v <= 0xa5) || v == 0x5b || v == 0x5c
-			ownShortcut := a.hotkeys != nil && a.hotkeys.Matches(v, currentModifiers())
+			modifiers := currentModifiers()
+			ownShortcut := a.hotkeys != nil && a.hotkeys.Matches(v, modifiers)
 			if !modifier && !ownShortcut {
-				if v == 0x09 && a.cfg.AcceptTab && a.candidateReady && a.snapshot != nil && !modifiersDown() && foreground() == uintptr(a.snapshot.Window) {
+				if v == 0x09 && a.cfg.AcceptTab && a.candidateReady && a.snapshot != nil && modifiers == 0 && foreground() == uintptr(a.snapshot.Window) {
 					// The callback must stay fast; validation and insertion run asynchronously.
 					a.tabAcceptHeld = true
 					pPostMessage.Call(a.window, 0x312, 2, 0)
@@ -894,7 +892,7 @@ func keyboardProc(code int32, wp uintptr, k *keyboardHook) uintptr {
 				if v == 0x1b && a.dismissSuggestion() {
 					return 1
 				}
-				a.keyboardActivity(v, currentModifiers(), foreground())
+				a.keyboardActivity(v, modifiers, foreground())
 			}
 		}
 	}
@@ -974,7 +972,7 @@ func (a *app) trayMenu() {
 }
 
 func (a *app) hideOverlay() {
-	if a.overlay != 0 {
+	if a.overlay != 0 && (a.overlayModel != "" || a.overlayText != "" || a.overlayFooter != "") {
 		pShowWindow.Call(a.overlay, 0)
 	}
 	a.overlayModel = ""
@@ -990,12 +988,12 @@ func (a *app) showOverlay(s core.TextContext, model, text, footer string) {
 	}
 	width := a.s(560)
 	// Measure actual wrapped text in the same font used for painting.
-	dc, _, _ := user32.NewProc("GetDC").Call(a.overlay)
+	dc, _, _ := pGetDC.Call(a.overlay)
 	old, _, _ := pSelectObject.Call(dc, a.font)
 	r := rect{0, 0, int32(width - a.s(36)), 0}
 	pDrawText.Call(dc, uintptr(unsafe.Pointer(u16(text))), ^uintptr(0), uintptr(unsafe.Pointer(&r)), 0x400|0x10|0x800)
 	pSelectObject.Call(dc, old)
-	user32.NewProc("ReleaseDC").Call(a.overlay, dc)
+	pReleaseDC.Call(a.overlay, dc)
 	height := int(r.Bottom) + a.s(56)
 	if height < a.s(80) {
 		height = a.s(80)
