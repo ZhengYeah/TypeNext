@@ -40,6 +40,11 @@ func (a *app) separatorIn(parent uintptr, x, y, w int) {
 	a.controlIn(parent, "STATIC", "", 0, x, y, w, 2, 0x10)
 }
 
+func (a *app) sectionLabel(parent uintptr, text string, x, y, w, h int) {
+	label := a.controlIn(parent, "STATIC", text, 0, x, y, w, h, 0)
+	pSendMessage.Call(label, 0x30, a.boldFont, 1)
+}
+
 // Keep native accessible static text while giving each status surface padding.
 // The marker belongs to the HWND, so destroying a dialog cannot leave
 // stale handle entries that accidentally color controls in a later dialog.

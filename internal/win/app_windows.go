@@ -67,7 +67,7 @@ type app struct {
 	testRunning       bool
 
 	window, overlay, pad, padEdit                        uintptr
-	instance, font, heading, smallFont, brush            uintptr
+	instance, font, heading, smallFont, boldFont, brush  uintptr
 	overlayBrush, overlayBorderBrush, overlayAccentBrush uintptr
 	statusBrush                                          uintptr
 	icon, smallIcon                                      uintptr
@@ -128,6 +128,7 @@ func Run() error {
 		}
 	}
 	a.font = a.makeFont(16, 400)
+	a.boldFont = a.makeFont(16, 700)
 	a.heading = a.makeFont(25, 600)
 	a.smallFont = a.makeFont(13, 400)
 	a.brush, _, _ = pCreateSolidBrush.Call(windowBackground)
@@ -136,6 +137,7 @@ func Run() error {
 	a.overlayAccentBrush, _, _ = pCreateSolidBrush.Call(overlayAccent)
 	a.statusBrush, _, _ = pCreateSolidBrush.Call(statusBackground)
 	defer pDeleteObject.Call(a.font)
+	defer pDeleteObject.Call(a.boldFont)
 	defer pDeleteObject.Call(a.heading)
 	defer pDeleteObject.Call(a.smallFont)
 	defer pDeleteObject.Call(a.brush)
@@ -289,7 +291,7 @@ func (a *app) buildSettings() {
 	a.refreshPauseUI()
 	a.label("Writing completion  /  Local model or API  /  "+core.Version, 24, 64, 704, 22)
 	a.separator(24, 96, 704)
-	a.label("1  Connect a model", 24, 118, 704, 24)
+	a.sectionLabel(a.window, "1  Connect a model", 24, 118, 704, 24)
 	a.label("Saved model", 24, 156, 100, 24)
 	a.control("COMBOBOX", "", ctrlSavedModel, 132, 152, 296, 240, 0x10003)
 	a.button("Remove model", idModelRemove, 444, 150, 128)
@@ -300,7 +302,7 @@ func (a *app) buildSettings() {
 	a.modelDetailsLabel = a.control("STATIC", "", 0, 132, 196, 596, 20, 0x4080) // SS_ENDELLIPSIS | SS_NOPREFIX
 	a.endpointLabel = a.control("STATIC", "", 0, 132, 220, 596, 20, 0x4080)
 	a.connectionLabel = a.statusText(a.window, "", 0, 24, 248, 704, 44)
-	a.label("2  Choose the interaction", 24, 308, 704, 24)
+	a.sectionLabel(a.window, "2  Choose the interaction", 24, 308, 704, 24)
 	a.checkbox("Automatic suggestions after a typing pause", ctrlAuto, 24, 340, 704, a.cfg.Auto)
 	a.checkbox("Tab accepts a finished suggestion (recommended)", ctrlTab, 24, 372, 704, a.cfg.AcceptTab)
 	// Three equal 224-pixel groups, separated by 16-pixel gutters.
@@ -310,7 +312,7 @@ func (a *app) buildSettings() {
 	a.control("EDIT", strconv.Itoa(a.cfg.PrefixChars), ctrlPrefix, 372, 416, 116, 28, 0x12000)
 	a.label("After caret", 504, 420, 100, 24)
 	a.control("EDIT", strconv.Itoa(a.cfg.SuffixChars), ctrlSuffix, 612, 416, 116, 28, 0x12000)
-	a.label("3  Approve applications", 24, 464, 368, 24)
+	a.sectionLabel(a.window, "3  Approve applications", 24, 464, 368, 24)
 	h = a.control("STATIC", "One executable name per line", 0, 408, 468, 320, 20, 2) // SS_RIGHT
 	pSendMessage.Call(h, 0x30, a.smallFont, 1)
 	a.control("EDIT", strings.Join(a.cfg.AllowedApps, "\r\n"), ctrlAllowed, 24, 496, 704, 80, 0x211044)
