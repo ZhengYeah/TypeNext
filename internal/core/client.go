@@ -86,6 +86,12 @@ func (c *Client) Complete(ctx context.Context, cfg Config, t TextContext, onPart
 		if cfg.ReasoningEffort != "" {
 			body["reasoning_effort"] = cfg.ReasoningEffort
 		}
+		if cfg.DisableThinking && !cfg.IsRemote() {
+			// llama.cpp and Qwen chat templates need an explicit thinking flag.
+			// The non-thinking toggle takes precedence over the effort selector.
+			body["chat_template_kwargs"] = map[string]bool{"enable_thinking": false}
+			body["reasoning_effort"] = "none"
+		}
 		if base.Hostname() == "api.deepseek.com" && cfg.DisableThinking {
 			body["thinking"] = map[string]string{"type": "disabled"}
 		}
