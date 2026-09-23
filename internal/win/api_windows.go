@@ -62,7 +62,9 @@ func (a *app) openAPI() {
 	a.inspectAt = time.Time{}
 	a.invalidate(false)
 	a.closeShortcuts()
-	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, 880, 784, a.window)
+	const clientWidth = 800
+	const contentWidth = clientWidth - 48
+	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, clientWidth, 784, a.window)
 	if a.apiWindow == 0 {
 		a.setStatus(fmt.Sprintf("Cannot open API settings: %v", err))
 		return
@@ -81,49 +83,49 @@ func (a *app) openAPI() {
 		}
 		selectCombo(h, index)
 	}
-	h := control("STATIC", "API connection", 0, 24, 24, 832, 32, 0)
+	h := control("STATIC", "API connection", 0, 24, 24, contentWidth, 32, 0)
 	pSendMessage.Call(h, 0x30, a.heading, 1)
-	label("Connect a local model or HTTPS API. Choose saved models on the main page.", 24, 64, 832, 22)
-	a.separatorIn(a.apiWindow, 24, 96, 832)
+	label("Connect a local model or HTTPS API. Choose saved models on the main page.", 24, 64, contentWidth, 22)
+	a.separatorIn(a.apiWindow, 24, 96, contentWidth)
 
-	label("1  Connection", 24, 118, 832, 24)
+	a.sectionLabel(a.apiWindow, "1  Connection", 24, 118, contentWidth, 24)
 	label("Saved name", 24, 156, 120, 24)
-	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, 156, 152, 556, 28, 0x10080)
+	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, 156, 152, 476, 28, 0x10080)
 	pSendMessage.Call(nameBox, 0xc5, 80, 0) // EM_SETLIMITTEXT
-	control("BUTTON", "New model", idAPINew, 728, 150, 128, 32, 0x10000)
+	control("BUTTON", "New model", idAPINew, 648, 150, 128, 32, 0x10000)
 	label("Protocol", 24, 196, 120, 24)
 	idx := 0
 	if c.Provider == "openai-compatible" {
 		idx = 1
 	}
-	combo(ctrlAPIProvider, 156, 192, 236, []string{"ollama", "openai-compatible"}, idx)
-	label("Model ID", 416, 196, 96, 24)
-	control("EDIT", c.Model, ctrlAPIModel, 524, 192, 332, 28, 0x10080)
+	combo(ctrlAPIProvider, 156, 192, 220, []string{"ollama", "openai-compatible"}, idx)
+	label("Model ID", 392, 196, 80, 24)
+	control("EDIT", c.Model, ctrlAPIModel, 484, 192, 292, 28, 0x10080)
 	label("API URL", 24, 236, 120, 24)
-	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 156, 232, 700, 28, 0x10080)
+	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 156, 232, 620, 28, 0x10080)
 
-	label("2  Authentication", 24, 276, 832, 24)
+	a.sectionLabel(a.apiWindow, "2  Authentication", 24, 276, contentWidth, 24)
 	label("API key", 24, 312, 120, 24)
-	keyBox := control("EDIT", "", ctrlAPIKey, 156, 308, 700, 28, 0x100a0) // ES_PASSWORD
+	keyBox := control("EDIT", "", ctrlAPIKey, 156, 308, 620, 28, 0x100a0) // ES_PASSWORD
 	pSendMessage.Call(keyBox, 0xc5, 8192, 0)                              // EM_SETLIMITTEXT
-	a.statusText(a.apiWindow, "", ctrlAPIKeyStatus, 156, 348, 700, 44)
+	a.statusText(a.apiWindow, "", ctrlAPIKeyStatus, 156, 348, 620, 48)
 	label("Key environment", 24, 412, 120, 24)
-	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 408, 364, 28, 0x10080)
-	check("Remove this endpoint's key", ctrlAPIClear, 544, 408, 312, false)
+	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 408, 300, 28, 0x10080)
+	check("Remove this endpoint's key", ctrlAPIClear, 480, 408, 296, false)
 
 	// Keep request fields on one row and their toggles below, leaving a
 	// full-width section for remote access within the existing window height.
-	label("3  Request options", 24, 464, 832, 24)
+	a.sectionLabel(a.apiWindow, "3  Request options", 24, 464, contentWidth, 24)
 	label("Output tokens", 24, 504, 100, 24)
 	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 132, 500, 64, 28, 0x12000)
 	idx = 0
 	if c.TokenParameter == "max_completion_tokens" {
 		idx = 1
 	}
-	combo(ctrlAPITokenParam, 208, 500, 220, []string{"max_tokens", "max_completion_tokens"}, idx)
-	label("Timeout (s)", 452, 504, 88, 24)
-	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 548, 500, 64, 28, 0x12000)
-	label("Reasoning", 636, 504, 84, 24)
+	combo(ctrlAPITokenParam, 208, 500, 196, []string{"max_tokens", "max_completion_tokens"}, idx)
+	label("Timeout (s)", 420, 504, 80, 24)
+	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 508, 500, 56, 28, 0x12000)
+	label("Reasoning", 580, 504, 76, 24)
 	efforts := []string{"(default)", "none", "minimal", "low", "medium", "high"}
 	idx = 0
 	for i, v := range efforts {
@@ -131,22 +133,22 @@ func (a *app) openAPI() {
 			idx = i
 		}
 	}
-	combo(ctrlAPIReasoning, 728, 500, 128, efforts, idx)
+	combo(ctrlAPIReasoning, 664, 500, 112, efforts, idx)
 	// Checkbox bounds include the blank area after the label. Leave a gap
 	// before the next checkbox so painting and mouse hits cannot overlap.
 	const checkboxGap, temperatureX, autoRemoteX = 12, 350, 310
 	check("Non-thinking mode (eager completion)", ctrlAPIThinking, 24, 540, temperatureX-24-checkboxGap, c.DisableThinking)
 	check("Send temperature = 0.2", ctrlAPITemperature, temperatureX, 540, 312, c.SendTemperature)
 
-	label("4  Remote access", 24, 584, 832, 24)
+	a.sectionLabel(a.apiWindow, "4  Remote access", 24, 584, contentWidth, 24)
 	check("Allow remote HTTPS API requests", ctrlAPIRemote, 24, 620, autoRemoteX-24-checkboxGap, c.AllowRemote)
 	check("Allow automatic remote requests", ctrlAPIAutoRemote, autoRemoteX, 620, 400, c.AllowRemoteAuto)
 
-	a.separatorIn(a.apiWindow, 24, 656, 832)
+	a.separatorIn(a.apiWindow, 24, 656, contentWidth)
 	control("BUTTON", "Save model", idAPIApply, 24, 672, 176, 32, 0x10000)
 	control("BUTTON", "Test API (sample)", idAPITest, 212, 672, 184, 32, 0x10000)
-	control("BUTTON", "Close", idAPIClose, 736, 672, 120, 32, 0x10000)
-	a.statusText(a.apiWindow, "A new saved name adds a model; an existing name updates it. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 716, 832, 44)
+	control("BUTTON", "Close", idAPIClose, 656, 672, 120, 32, 0x10000)
+	a.statusText(a.apiWindow, "A new saved name adds a model; an existing name updates it. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 716, contentWidth, 48)
 	user32.NewProc("EnableWindow").Call(a.window, 0)
 	a.updateAPIKeyStatus()
 	if !c.HasModelConnection() {

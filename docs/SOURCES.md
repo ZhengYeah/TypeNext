@@ -26,6 +26,7 @@ The UI Automation implementation and its tests are in [internal/win/uia](../inte
 - Microsoft, EM_SETTEXTMODE (plain text, set before adding content): https://learn.microsoft.com/en-us/windows/win32/controls/em-settextmode
 - Ollama chat API (streaming, thinking, and keep-alive parameters): https://docs.ollama.com/api/chat
 - Ollama Qwen3 4B example model: https://ollama.com/library/qwen3:4b
+- llama.cpp chat API (`chat_template_kwargs.enable_thinking` and `reasoning_effort`): https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md
 
 No external source code from these projects is bundled as a TypeNext dependency. The Go runtime/standard library is statically linked into the executable; its license is provided separately. The Windows API bindings are implemented in this source tree.
 
