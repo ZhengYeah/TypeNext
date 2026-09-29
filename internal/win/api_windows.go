@@ -21,8 +21,7 @@ const (
 	ctrlAPIEndpoint    = 302
 	ctrlAPIModel       = 303
 	ctrlAPIKey         = 304
-	ctrlAPIEnv         = 305
-	ctrlAPIClear       = 306
+	ctrlAPIKeyFile     = 305
 	ctrlAPITokens      = 307
 	ctrlAPITokenParam  = 308
 	ctrlAPITimeout     = 309
@@ -109,9 +108,8 @@ func (a *app) openAPI() {
 	keyBox := control("EDIT", "", ctrlAPIKey, 156, 308, 620, 28, 0x100a0) // ES_PASSWORD
 	pSendMessage.Call(keyBox, 0xc5, 8192, 0)                              // EM_SETLIMITTEXT
 	a.statusText(a.apiWindow, "", ctrlAPIKeyStatus, 156, 348, 620, 48)
-	label("Key environment", 24, 412, 120, 24)
-	control("EDIT", c.APIKeyEnv, ctrlAPIEnv, 156, 408, 300, 28, 0x10080)
-	check("Remove this endpoint's key", ctrlAPIClear, 480, 408, 296, false)
+	label("Key storage file", 24, 412, 120, 24)
+	control("EDIT", a.configPath, ctrlAPIKeyFile, 156, 408, 620, 28, 0x10880) // ES_READONLY | ES_AUTOHSCROLL | WS_TABSTOP
 
 	// Keep request fields on one row and their toggles below, leaving a
 	// full-width section for remote access within the existing window height.
@@ -193,11 +191,11 @@ func (a *app) updateAPIKeyStatus() {
 	}
 	c := a.apiConnectionFields()
 	c.AllowRemote = true // Only normalization for an on-screen status. Never a send.
-	text := "No saved key for this endpoint. Enter one, or use the environment variable below."
+	text := "No saved key for this endpoint. Enter one to save it in the file below."
 	if u, err := c.RequestURL(); err == nil && c.EncryptedAPIKeys[u.String()] != "" {
 		text = "A key is saved for this endpoint. Leave blank to keep it, or enter a replacement."
 	}
-	text += "\r\nSaved keys are encrypted for your Windows account and take priority over the environment variable."
+	text += "\r\nSaved keys are encrypted for your Windows account. Quit TypeNext before editing the file."
 	setControlText(a.controls[ctrlAPIKeyStatus], text)
 }
 func (a *app) newAPIModel() {
@@ -208,13 +206,12 @@ func (a *app) newAPIModel() {
 	// Only connection fields are reset. Pending main-window preferences and
 	// encrypted endpoint keys remain in the draft until the model is saved.
 	a.apiDraft.RemoteConsent = ""
+	a.apiDraft.APIKeyEnv = c.APIKeyEnv
 	setControlText(a.controls[ctrlAPIProfileName], "")
 	selectCombo(a.controls[ctrlAPIProvider], 0)
 	setControlText(a.controls[ctrlAPIEndpoint], "")
 	setControlText(a.controls[ctrlAPIModel], "")
-	setControlText(a.controls[ctrlAPIEnv], c.APIKeyEnv)
 	setControlText(a.controls[ctrlAPIKey], "")
-	setCheck(a.controls[ctrlAPIClear], false)
 	setControlText(a.controls[ctrlAPITokens], strconv.Itoa(c.MaxTokens))
 	setControlText(a.controls[ctrlAPITimeout], strconv.Itoa(c.TimeoutSeconds))
 	selectCombo(a.controls[ctrlAPITokenParam], 0)
@@ -265,7 +262,6 @@ func (a *app) saveAPI() bool {
 		return false
 	}
 	c := a.apiConnectionFields()
-	c.APIKeyEnv = strings.TrimSpace(windowText(a.controls[ctrlAPIEnv]))
 	c.DisableThinking = checked(a.controls[ctrlAPIThinking])
 	c.SendTemperature = checked(a.controls[ctrlAPITemperature])
 	c.TokenParameter = "max_tokens"
@@ -294,14 +290,6 @@ func (a *app) saveAPI() bool {
 	}
 	u, _ := c.RequestURL()
 	key := strings.TrimSpace(windowText(a.controls[ctrlAPIKey]))
-	remove := checked(a.controls[ctrlAPIClear])
-	if key != "" && remove {
-		a.apiMessage("Either enter a replacement key OR remove the saved key, not both.")
-		return false
-	}
-	if remove {
-		delete(c.EncryptedAPIKeys, u.String())
-	}
 	if key != "" {
 		cipher, err := protectAPIKey(key, u.String())
 		if err != nil {
@@ -330,7 +318,6 @@ func (a *app) saveAPI() bool {
 	a.apiDraft = c.Clone()
 	setControlText(a.controls[ctrlAPIProfileName], c.ActiveModelProfile)
 	setControlText(a.controls[ctrlAPIKey], "")
-	setCheck(a.controls[ctrlAPIClear], false)
 	a.applyHotkeys()
 	a.updateAPIKeyStatus()
 	a.refreshModelProfiles()
