@@ -79,7 +79,7 @@ func (c *Client) Complete(ctx context.Context, cfg Config, t TextContext, onPart
 		body["keep_alive"] = "10m"
 		body["options"] = map[string]any{"temperature": 0.2, "num_predict": cfg.MaxTokens}
 	} else {
-		body[cfg.TokenParameter] = cfg.MaxTokens
+		body["max_completion_tokens"] = cfg.MaxTokens
 		if cfg.SendTemperature {
 			body["temperature"] = 0.2
 		}

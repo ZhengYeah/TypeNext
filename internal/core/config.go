@@ -22,7 +22,6 @@ type Config struct {
 	AllowRemoteAuto  bool              `json:"allow_automatic_remote_requests"`
 	RemoteConsent    string            `json:"approved_remote_endpoint,omitempty"`
 	EncryptedAPIKeys map[string]string `json:"encrypted_api_keys,omitempty"`
-	TokenParameter   string            `json:"token_parameter"`
 	SendTemperature  bool              `json:"send_temperature"`
 	ReasoningEffort  string            `json:"reasoning_effort,omitempty"`
 
@@ -47,8 +46,8 @@ type Config struct {
 
 func DefaultConfig() Config {
 	return Config{SuggestHotkey: "Ctrl+Space", AcceptHotkey: "Ctrl+Shift+F10", PauseHotkey: "Ctrl+Shift+F11",
-		TokenParameter: "max_tokens", SendTemperature: true,
-		Provider: "ollama", Endpoint: "http://127.0.0.1:11434", Model: "qwen3:4b",
+		SendTemperature: true,
+		Provider:        "ollama", Endpoint: "http://127.0.0.1:11434", Model: "qwen3:4b",
 		AcceptTab: true, DisableThinking: true, DebounceMS: 1000, PrefixChars: 1000, SuffixChars: 200,
 		MaxTokens: 64, MaxSuggestionChars: 320, TimeoutSeconds: 45,
 		AllowedApps: []string{"chrome.exe", "msedge.exe", "notepad.exe", "typora.exe", "winword.exe", "powerpnt.exe"},

@@ -44,7 +44,7 @@ func TestRemoveActiveModelProfileRestoresSavedConnection(t *testing.T) {
 			c := remoteConfig("https://api.example.com/v1")
 			c.Auto, c.AllowRemoteAuto = true, true
 			c.APIKeyEnv = "REMOTE_KEY"
-			c.TokenParameter, c.ReasoningEffort = "max_completion_tokens", "high"
+			c.ReasoningEffort = "high"
 			c.SendTemperature, c.DisableThinking = false, false
 			c.MaxTokens, c.TimeoutSeconds = 256, 90
 			c.EncryptedAPIKeys = map[string]string{c.RemoteConsent: "dpapi:shared-key"}
@@ -88,7 +88,6 @@ func TestRemoveLastModelProfilePersistsEmptyState(t *testing.T) {
 	c := remoteConfig("https://api.example.com/v1")
 	c.AllowRemoteAuto, c.Auto = true, true
 	c.APIKeyEnv, c.ReasoningEffort = "REMOTE_KEY", "high"
-	c.TokenParameter = "max_completion_tokens"
 	c.SendTemperature, c.DisableThinking = false, false
 	c.MaxTokens, c.TimeoutSeconds = 512, 100
 	c.DebounceMS, c.PrefixChars, c.SuffixChars = 1500, 1200, 250
@@ -212,7 +211,6 @@ func TestModelProfileMigration(t *testing.T) {
 	legacy := remoteConfig("https://api.example.com/v1")
 	legacy.Model = "existing-model"
 	legacy.AllowRemoteAuto = true
-	legacy.TokenParameter = "max_completion_tokens"
 	legacy.ReasoningEffort = "low"
 	legacy.SendTemperature = false
 	legacy.APIKeyEnv = "EXISTING_API_KEY"
@@ -255,7 +253,6 @@ func TestModelProfilesSwitchConnectionsOnly(t *testing.T) {
 	remote.Model = "remote-model"
 	remote.APIKeyEnv = "REMOTE_KEY"
 	remote.AllowRemoteAuto = true
-	remote.TokenParameter = "max_completion_tokens"
 	remote.SendTemperature = false
 	remote.ReasoningEffort = "high"
 	remote.DisableThinking = false

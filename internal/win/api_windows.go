@@ -23,7 +23,6 @@ const (
 	ctrlAPIKey         = 304
 	ctrlAPIKeyFile     = 305
 	ctrlAPITokens      = 307
-	ctrlAPITokenParam  = 308
 	ctrlAPITimeout     = 309
 	ctrlAPIReasoning   = 310
 	ctrlAPITemperature = 311
@@ -111,19 +110,14 @@ func (a *app) openAPI() {
 	label("Key storage file", 24, 412, 120, 24)
 	control("EDIT", a.configPath, ctrlAPIKeyFile, 156, 408, 620, 28, 0x10880) // ES_READONLY | ES_AUTOHSCROLL | WS_TABSTOP
 
-	// Keep request fields on one row and their toggles below, leaving a
-	// full-width section for remote access within the existing window height.
+	// Keep the request options together as label/value pairs on one row.
 	a.sectionLabel(a.apiWindow, "3  Request options", 24, 464, contentWidth, 24)
-	label("Output tokens", 24, 504, 100, 24)
+	label("Output limit", 24, 504, 96, 24)
 	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 132, 500, 64, 28, 0x12000)
-	idx = 0
-	if c.TokenParameter == "max_completion_tokens" {
-		idx = 1
-	}
-	combo(ctrlAPITokenParam, 208, 500, 196, []string{"max_tokens", "max_completion_tokens"}, idx)
-	label("Timeout (s)", 420, 504, 80, 24)
-	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 508, 500, 56, 28, 0x12000)
-	label("Reasoning", 580, 504, 76, 24)
+	label("tokens", 208, 504, 56, 24)
+	label("Timeout (s)", 304, 504, 84, 24)
+	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 400, 500, 64, 28, 0x12000)
+	label("Reasoning", 488, 504, 76, 24)
 	efforts := []string{"(default)", "none", "minimal", "low", "medium", "high"}
 	idx = 0
 	for i, v := range efforts {
@@ -131,7 +125,7 @@ func (a *app) openAPI() {
 			idx = i
 		}
 	}
-	combo(ctrlAPIReasoning, 664, 500, 112, efforts, idx)
+	combo(ctrlAPIReasoning, 576, 500, 200, efforts, idx)
 	// Checkbox bounds include the blank area after the label. Leave a gap
 	// before the next checkbox so painting and mouse hits cannot overlap.
 	const checkboxGap, temperatureX, autoRemoteX = 12, 350, 310
@@ -198,6 +192,7 @@ func (a *app) updateAPIKeyStatus() {
 	text += "\r\nSaved keys are encrypted for your Windows account. Quit TypeNext before editing the file."
 	setControlText(a.controls[ctrlAPIKeyStatus], text)
 }
+
 func (a *app) newAPIModel() {
 	if a.apiWindow == 0 {
 		return
@@ -214,7 +209,6 @@ func (a *app) newAPIModel() {
 	setControlText(a.controls[ctrlAPIKey], "")
 	setControlText(a.controls[ctrlAPITokens], strconv.Itoa(c.MaxTokens))
 	setControlText(a.controls[ctrlAPITimeout], strconv.Itoa(c.TimeoutSeconds))
-	selectCombo(a.controls[ctrlAPITokenParam], 0)
 	selectCombo(a.controls[ctrlAPIReasoning], 0)
 	setCheck(a.controls[ctrlAPITemperature], c.SendTemperature)
 	setCheck(a.controls[ctrlAPIThinking], c.DisableThinking)
@@ -264,10 +258,6 @@ func (a *app) saveAPI() bool {
 	c := a.apiConnectionFields()
 	c.DisableThinking = checked(a.controls[ctrlAPIThinking])
 	c.SendTemperature = checked(a.controls[ctrlAPITemperature])
-	c.TokenParameter = "max_tokens"
-	if comboIndex(a.controls[ctrlAPITokenParam]) == 1 {
-		c.TokenParameter = "max_completion_tokens"
-	}
 	efforts := []string{"", "none", "minimal", "low", "medium", "high"}
 	i := comboIndex(a.controls[ctrlAPIReasoning])
 	if i >= 0 && i < len(efforts) {

@@ -25,7 +25,6 @@
   "pause_hotkey": "Ctrl+Shift+F11",
   "allow_remote_api": false,
   "allow_automatic_remote_requests": false,
-  "token_parameter": "max_tokens",
   "send_temperature": true,
   "reasoning_effort": ""
 }
