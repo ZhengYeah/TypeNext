@@ -215,7 +215,6 @@ func TestRemoteHTTPSStreamingAndAuthentication(t *testing.T) {
 		fmt.Fprint(w, sampleSSE)
 	})
 	cfg.APIKeyEnv = "TYPENEXT_REMOTE_TEST_KEY"
-	cfg.TokenParameter = "max_completion_tokens"
 	cfg.SendTemperature = false
 	cfg.ReasoningEffort = "none"
 	cfg.PrefixChars = 32
@@ -368,7 +367,6 @@ func TestRequestOptionsByProvider(t *testing.T) {
 		t.Run(host, func(t *testing.T) {
 			cfg := remoteConfig("https://" + host + "/v1")
 			cfg.SendTemperature = false
-			cfg.TokenParameter = "max_completion_tokens"
 			client := NewClient()
 			client.HTTP.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
 				var body map[string]any
@@ -409,7 +407,7 @@ func TestAPIConfigDefaultsAndPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.AllowRemote || cfg.AllowRemoteAuto || cfg.TokenParameter != "max_tokens" || !cfg.SendTemperature || cfg.SuggestHotkey != "Ctrl+Alt+N" || !cfg.Auto {
+	if cfg.AllowRemote || cfg.AllowRemoteAuto || !cfg.SendTemperature || cfg.SuggestHotkey != "Ctrl+Alt+N" || !cfg.Auto {
 		t.Fatal("unsafe defaults for partial configuration")
 	}
 	cfg.Endpoint = "https://api.example.com/v1"
@@ -429,6 +427,56 @@ func TestAPIConfigDefaultsAndPersistence(t *testing.T) {
 	clone.AllowedApps[0] = "other.exe"
 	if got.EncryptedAPIKeys[u.String()] == "" || got.AllowedApps[0] == "other.exe" {
 		t.Fatal("clone shares mutable state")
+	}
+}
+
+func TestLegacyTokenParameterUsesFixedCompletionLimit(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	legacy := `{
+		"provider": "openai-compatible", "endpoint": "http://localhost:1234/v1", "model": "existing-model",
+		"api_key_environment_variable": "", "max_tokens": 128, "timeout_seconds": 45,
+		"token_parameter": "max_tokens", "active_model_profile": "Existing",
+		"model_profiles": [{
+			"name": "Existing", "provider": "openai-compatible", "endpoint": "http://localhost:1234/v1",
+			"model": "existing-model", "max_tokens": 128, "timeout_seconds": 45, "token_parameter": "max_tokens"
+		}]
+	}`
+	if err := os.WriteFile(path, []byte(legacy), 0600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := LoadConfig(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.UseModelProfile("Existing"); err != nil {
+		t.Fatal(err)
+	}
+	if cfg.MaxTokens != 128 || cfg.TimeoutSeconds != 45 || cfg.Model != "existing-model" {
+		t.Fatal("loading the legacy model changed its connection or request limits")
+	}
+	client := NewClient()
+	client.HTTP.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		var body map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatal(err)
+		}
+		if body["max_completion_tokens"] != float64(128) || body["max_tokens"] != nil {
+			t.Errorf("legacy selection changed the completion limit: %v", body)
+		}
+		return response("text/event-stream", sampleSSE), nil
+	})
+	if _, err := client.Complete(context.Background(), cfg, TextContext{}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := SaveConfig(path, cfg); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), `"token_parameter"`) {
+		t.Fatal("saving retained the obsolete token parameter selector")
 	}
 }
 
@@ -470,7 +518,6 @@ func TestAPIKeyValidationAndConfigBounds(t *testing.T) {
 		}
 	}
 	for _, mutate := range []func(*Config){
-		func(c *Config) { c.TokenParameter = "arbitrary_field" },
 		func(c *Config) { c.ReasoningEffort = "invalid" },
 		func(c *Config) { c.APIKeyEnv = "API\nKEY" },
 		func(c *Config) { c.MaxTokens = 4097 },

@@ -21,7 +21,6 @@ type ModelProfile struct {
 	AllowRemote     bool   `json:"allow_remote_api"`
 	AllowRemoteAuto bool   `json:"allow_automatic_remote_requests"`
 	RemoteConsent   string `json:"approved_remote_endpoint,omitempty"`
-	TokenParameter  string `json:"token_parameter"`
 	SendTemperature bool   `json:"send_temperature"`
 	ReasoningEffort string `json:"reasoning_effort,omitempty"`
 	DisableThinking bool   `json:"disable_thinking"`
@@ -33,7 +32,7 @@ func (c Config) currentModelProfile(name string) ModelProfile {
 	return ModelProfile{
 		Name: name, Provider: c.Provider, Endpoint: c.Endpoint, Model: c.Model,
 		APIKeyEnv: c.APIKeyEnv, AllowRemote: c.AllowRemote, AllowRemoteAuto: c.AllowRemoteAuto,
-		RemoteConsent: c.RemoteConsent, TokenParameter: c.TokenParameter,
+		RemoteConsent:   c.RemoteConsent,
 		SendTemperature: c.SendTemperature, ReasoningEffort: c.ReasoningEffort,
 		DisableThinking: c.DisableThinking, MaxTokens: c.MaxTokens, TimeoutSeconds: c.TimeoutSeconds,
 	}
@@ -42,7 +41,7 @@ func (c Config) currentModelProfile(name string) ModelProfile {
 func (p ModelProfile) apply(c *Config) {
 	c.Provider, c.Endpoint, c.Model = p.Provider, p.Endpoint, p.Model
 	c.APIKeyEnv, c.AllowRemote, c.AllowRemoteAuto = p.APIKeyEnv, p.AllowRemote, p.AllowRemoteAuto
-	c.RemoteConsent, c.TokenParameter = p.RemoteConsent, p.TokenParameter
+	c.RemoteConsent = p.RemoteConsent
 	c.SendTemperature, c.ReasoningEffort = p.SendTemperature, p.ReasoningEffort
 	c.DisableThinking, c.MaxTokens, c.TimeoutSeconds = p.DisableThinking, p.MaxTokens, p.TimeoutSeconds
 }
@@ -215,9 +214,6 @@ func (c Config) validateModelConnection() error {
 	}
 	if c.TimeoutSeconds < 5 || c.TimeoutSeconds > 180 {
 		return errors.New("timeout_seconds must be 5–180")
-	}
-	if c.TokenParameter != "max_tokens" && c.TokenParameter != "max_completion_tokens" {
-		return errors.New("token_parameter must be max_tokens or max_completion_tokens")
 	}
 	switch c.ReasoningEffort {
 	case "", "none", "minimal", "low", "medium", "high":

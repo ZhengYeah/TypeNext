@@ -772,8 +772,12 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 				a.newAPIModel()
 			case idAPIClose, 2:
 				a.closeAPI()
-			case ctrlAPIEndpoint, ctrlAPIProvider:
-				if notice == 0x300 || notice == 1 {
+			case ctrlAPIEndpoint:
+				if notice == 0x300 {
+					a.updateAPIKeyStatus()
+				}
+			case ctrlAPIProvider:
+				if notice == 1 {
 					a.updateAPIKeyStatus()
 				}
 			}
