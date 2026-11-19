@@ -39,7 +39,7 @@ func setCheck(w uintptr, on bool) {
 func comboIndex(w uintptr) int     { v, _, _ := pSendMessage.Call(w, 0x147, 0, 0); return int(int32(v)) }
 func selectCombo(w uintptr, i int) { pSendMessage.Call(w, 0x14e, uintptr(i), 0) }
 
-func (a *app) openAPI() {
+func (a *app) openAPI(newModel bool) {
 	a.showSettings()
 	if a.apiWindow != 0 {
 		pSetForegroundWindow.Call(a.apiWindow)
@@ -59,7 +59,7 @@ func (a *app) openAPI() {
 		contentWidth = contentRight - 24
 		fieldX       = 156
 		fieldWidth   = contentRight - fieldX
-		newModelX    = contentRight - 128
+		removeModelX = contentRight - 128
 	)
 	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, 664, a.window)
 	if a.apiWindow == 0 {
@@ -87,9 +87,9 @@ func (a *app) openAPI() {
 
 	a.sectionLabel(a.apiWindow, "1  Connection", 24, 118, contentWidth, 24)
 	label("Saved name", 24, 156, 120, 24)
-	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, fieldX, 152, newModelX-16-fieldX, 28, 0x10080)
+	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, fieldX, 152, removeModelX-16-fieldX, 28, 0x10080)
 	pSendMessage.Call(nameBox, 0xc5, 80, 0) // EM_SETLIMITTEXT
-	control("BUTTON", "New model", idAPINew, newModelX, 150, 128, 32, 0x10000)
+	control("BUTTON", "Remove model", idModelRemove, removeModelX, 150, 128, 32, 0x10000)
 	label("Protocol", 24, 196, 120, 24)
 	idx := 0
 	if c.Provider == "openai-compatible" {
@@ -122,9 +122,10 @@ func (a *app) openAPI() {
 	control("BUTTON", "Close", idAPIClose, contentRight-120, 552, 120, 32, 0x10000)
 	a.statusText(a.apiWindow, "A new saved name adds a model; an existing name updates it. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 596, contentWidth, 48)
 	user32.NewProc("EnableWindow").Call(a.window, 0)
-	a.updateAPIKeyStatus()
-	if !c.HasModelConnection() {
+	if newModel || !c.HasModelConnection() {
 		a.newAPIModel()
+	} else {
+		a.updateAPIKeyStatus()
 	}
 	pShowWindow.Call(a.apiWindow, 5)
 	pSetForegroundWindow.Call(a.apiWindow)
@@ -182,6 +183,7 @@ func (a *app) newAPIModel() {
 	// encrypted endpoint keys remain in the draft until the model is saved.
 	a.apiDraft.RemoteConsent = ""
 	a.apiDraft.APIKeyEnv = c.APIKeyEnv
+	user32.NewProc("EnableWindow").Call(a.controls[idModelRemove], 0)
 	setControlText(a.controls[ctrlAPIProfileName], "")
 	selectCombo(a.controls[ctrlAPIProvider], 0)
 	setControlText(a.controls[ctrlAPIEndpoint], "")
@@ -267,6 +269,7 @@ func (a *app) saveAPI() bool {
 	a.invalidate(false)
 	a.cfg = c
 	a.apiDraft = c.Clone()
+	user32.NewProc("EnableWindow").Call(a.controls[idModelRemove], 1)
 	setControlText(a.controls[ctrlAPIProfileName], c.ActiveModelProfile)
 	setControlText(a.controls[ctrlAPIKey], "")
 	a.applyHotkeys()
@@ -279,7 +282,7 @@ func (a *app) saveAPI() bool {
 
 func (a *app) connectionSummary() string {
 	if !a.cfg.HasModelConnection() {
-		return "No saved model. Open API settings to add a model."
+		return "No saved model. Click New model to add a connection."
 	}
 	if reason := automaticBlockReason(a.cfg); reason != "" {
 		return reason

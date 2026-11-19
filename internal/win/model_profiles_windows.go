@@ -11,7 +11,7 @@ import (
 
 func (a *app) refreshModelProfiles() {
 	hasModels := len(a.cfg.ModelProfiles) > 0
-	for _, id := range []int{ctrlSavedModel, idModelRemove, idTest} {
+	for _, id := range []int{ctrlSavedModel, idTest} {
 		if control := a.controls[id]; control != 0 {
 			enabled := uintptr(0)
 			if hasModels {
@@ -93,47 +93,26 @@ func (a *app) selectModelProfile() {
 }
 
 func (a *app) removeModelProfile() {
+	if enabled, _, _ := user32.NewProc("IsWindowEnabled").Call(a.controls[idModelRemove]); enabled == 0 {
+		return
+	}
 	profiles := a.cfg.ModelProfiles
-	if len(profiles) == 0 {
+	i := comboIndex(a.controls[ctrlSavedModel])
+	if i < 0 || i >= len(profiles) {
 		return
 	}
-	// A separate chooser lets inactive models be removed without first
-	// activating them or approving their remote endpoint.
-	menu, _, _ := pCreatePopupMenu.Call()
-	if menu == 0 {
-		a.setStatus("Could not open the saved model removal menu.")
-		return
-	}
-	defer pDestroyMenu.Call(menu)
-	for i, profile := range profiles {
-		label := strings.ReplaceAll(profile.Name, "&", "&&")
-		if ok, _, _ := pAppendMenu.Call(menu, 0, uintptr(i+1), uintptr(unsafe.Pointer(u16(label)))); ok == 0 {
-			a.setStatus("Could not open the saved model removal menu.")
-			return
-		}
-	}
-	var bounds rect
-	if ok, _, _ := user32.NewProc("GetWindowRect").Call(a.controls[idModelRemove], uintptr(unsafe.Pointer(&bounds))); ok == 0 {
-		a.setStatus("Could not position the saved model removal menu.")
-		return
-	}
-	choice, _, _ := pTrackPopupMenu.Call(menu, 0x100, uintptr(bounds.Left), uintptr(bounds.Bottom), 0, a.window, 0) // TPM_RETURNCMD
-	if choice == 0 || choice > uintptr(len(profiles)) {
-		return
-	}
-	i := int(choice) - 1
 	name := profiles[i].Name
 	message := fmt.Sprintf("Remove saved model %q from TypeNext?", name)
 	if len(profiles) == 1 {
-		message += "\n\nSuggestions will stop until you add another model in API settings."
-	} else if strings.EqualFold(name, a.cfg.ActiveModelProfile) {
+		message += "\n\nSuggestions will stop until you add another connection with New model."
+	} else {
 		next := 0
 		if i == 0 {
 			next = 1
 		}
 		message += fmt.Sprintf("\n\n%q will become the selected model.", profiles[next].Name)
 	}
-	reply, _, _ := pMessageBox.Call(a.window, uintptr(unsafe.Pointer(u16(message))), uintptr(unsafe.Pointer(u16("TypeNext — remove saved model"))), 0x124) // Yes/No, default No.
+	reply, _, _ := pMessageBox.Call(a.apiWindow, uintptr(unsafe.Pointer(u16(message))), uintptr(unsafe.Pointer(u16("TypeNext — remove saved model"))), 0x124) // Yes/No, default No.
 	if reply == 6 {
 		a.removeSavedModel(name)
 	}
@@ -143,18 +122,21 @@ func (a *app) removeModelProfile() {
 // connection and suggestion intact. Pending main-window edits stay in controls.
 func (a *app) removeSavedModel(name string) {
 	c := a.cfg.Clone()
-	if err := c.RemoveModelProfile(name); err != nil {
-		a.setStatus(err.Error())
-		return
+	err := c.RemoveModelProfile(name)
+	if err == nil {
+		err = core.SaveConfig(a.configPath, c)
 	}
-	if err := core.SaveConfig(a.configPath, c); err != nil {
-		a.setStatus("Could not remove saved model: " + err.Error())
+	if err != nil {
+		message := "Could not remove saved model: " + err.Error()
+		a.apiMessage(message)
+		a.setStatus(message)
 		return
 	}
 	if !strings.EqualFold(c.ActiveModelProfile, a.cfg.ActiveModelProfile) {
 		a.invalidate(false)
 	}
 	a.cfg = c
+	a.closeAPI()
 	a.refreshModelProfiles()
 	a.setStatus("Removed " + name + ". " + a.connectionSummary())
 }

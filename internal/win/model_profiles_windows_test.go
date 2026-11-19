@@ -51,7 +51,7 @@ func newModelProfileTestApp(t *testing.T) *app {
 	}
 	a.buildSettings()
 	a.refreshModelProfiles()
-	for _, id := range []int{ctrlSavedModel, ctrlPause, ctrlPrefix, ctrlSuffix, ctrlAuto, ctrlTab, ctrlAllowed, idAPI, idPause, idModelRemove, idTest} {
+	for _, id := range []int{ctrlSavedModel, ctrlPause, ctrlPrefix, ctrlSuffix, ctrlAuto, ctrlTab, ctrlAllowed, idAPI, idPause, idAPINew, idTest} {
 		if a.controls[id] == 0 {
 			t.Fatalf("settings control %d was not created", id)
 		}
@@ -353,10 +353,13 @@ func TestLastSavedModelRemovalLeavesEmptyConnectionAndAllowsSettingsSave(t *test
 	if count != 0 || comboIndex(a.controls[ctrlSavedModel]) != -1 {
 		t.Fatal("last removal left a saved-model selector entry")
 	}
-	for _, id := range []int{ctrlSavedModel, idModelRemove, idTest} {
+	for _, id := range []int{ctrlSavedModel, idTest} {
 		if enabled, _, _ := user32.NewProc("IsWindowEnabled").Call(a.controls[id]); enabled != 0 {
 			t.Errorf("control %d should be disabled without a saved model", id)
 		}
+	}
+	if enabled, _, _ := user32.NewProc("IsWindowEnabled").Call(a.controls[idAPINew]); enabled == 0 {
+		t.Fatal("New model must be available after removing the last saved model")
 	}
 	if summary := strings.ToLower(a.connectionSummary()); !strings.Contains(summary, "no saved model") {
 		t.Fatalf("missing empty connection summary: %q", summary)
@@ -388,7 +391,7 @@ func TestLastSavedModelRemovalLeavesEmptyConnectionAndAllowsSettingsSave(t *test
 		t.Fatal(err)
 	}
 	a.refreshModelProfiles()
-	for _, id := range []int{ctrlSavedModel, idModelRemove, idTest} {
+	for _, id := range []int{ctrlSavedModel, idTest} {
 		if enabled, _, _ := user32.NewProc("IsWindowEnabled").Call(a.controls[id]); enabled == 0 {
 			t.Errorf("control %d was not reenabled after saving a new model", id)
 		}
@@ -412,16 +415,22 @@ func TestModelConnectionControlsDoNotOverlap(t *testing.T) {
 		}
 		return r
 	}
-	title, button, selector, remove := bounds(heading), bounds(a.controls[idAPI]), bounds(a.controls[ctrlSavedModel]), bounds(a.controls[idModelRemove])
-	if button.Top < title.Bottom || selector.Top < title.Bottom || remove.Top < title.Bottom {
-		t.Fatalf("model connection controls must sit below the connection heading: heading=%+v button=%+v selector=%+v remove=%+v", title, button, selector, remove)
+	if got := windowText(a.controls[idAPINew]); got != "New model" {
+		t.Fatalf("main window model action = %q, want New model", got)
 	}
-	if remove.Left <= selector.Right || button.Left <= remove.Right {
-		t.Fatalf("remove model must have gaps between the selector and API settings: button=%+v selector=%+v remove=%+v", button, selector, remove)
+	if a.controls[idModelRemove] != 0 {
+		t.Fatal("Remove model is on the main window")
+	}
+	title, button, selector, newModel := bounds(heading), bounds(a.controls[idAPI]), bounds(a.controls[ctrlSavedModel]), bounds(a.controls[idAPINew])
+	if button.Top < title.Bottom || selector.Top < title.Bottom || newModel.Top < title.Bottom {
+		t.Fatalf("model connection controls must sit below the connection heading: heading=%+v button=%+v selector=%+v newModel=%+v", title, button, selector, newModel)
+	}
+	if newModel.Left <= selector.Right || button.Left <= newModel.Right {
+		t.Fatalf("New model must have gaps between the selector and API settings: button=%+v selector=%+v newModel=%+v", button, selector, newModel)
 	}
 	// Native combo boxes and buttons have slightly different rendered heights.
 	tolerance := int32(a.s(4))
-	for _, b := range []rect{button, remove} {
+	for _, b := range []rect{button, newModel} {
 		centerOffset := (b.Top+b.Bottom)/2 - (selector.Top+selector.Bottom)/2
 		if b.Top >= selector.Bottom || b.Bottom <= selector.Top || centerOffset < -tolerance || centerOffset > tolerance {
 			t.Fatalf("model connection buttons must align with the saved model selector's row: button=%+v selector=%+v", b, selector)
