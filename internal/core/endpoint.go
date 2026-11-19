@@ -136,7 +136,7 @@ func (c Config) IsRemote() bool {
 
 func (c Config) CheckConsent() error {
 	if !c.HasModelConnection() {
-		return errors.New("no saved model is configured; open API settings and save a model")
+		return errors.New("no saved model is configured. Click New model to add a connection")
 	}
 	u, err := c.RequestURL()
 	if err != nil {

@@ -23,7 +23,7 @@ https://github.com/user-attachments/assets/a534bd1d-bcf1-404d-9f40-c05f516756ee
 ## Start with an API
 
 1. Run `TypeNext.exe` on Windows x64. TypeNext itself needs no Python, Node, Go, or .NET runtime installation.
-2. Open **API settings…** in **1 Connect a model**. Enter a **Saved name**, select the **Protocol**, and enter your provider's **API URL**, **Model ID**, and **API key**. Then enable **Allow remote HTTPS API requests**.
+2. Click **New model** in **1 Connect a model**. Enter a **Saved name**, select the **Protocol**, and enter your provider's **API URL**, **Model ID**, and **API key**. Then enable **Allow remote HTTPS API requests**.
 3. Click **Test API (sample)** and approve the exact endpoint. The test sends a fixed sample, not application text. API usage can still be charged.
 4. Close API settings, open the test pad, and request a continuation with **Ctrl+Space**. Accept the completed preview with **Ctrl+Shift+F10**.
 
@@ -39,13 +39,11 @@ Install and start Ollama separately. For the existing example configuration, run
 ollama pull qwen3:4b
 ```
 
-Open **API settings…** in **1 Connect a model**. Enter a **Saved name** you like, set Protocol to `ollama`, Model ID to `qwen3:4b` (or another installed model), and API URL to `http://127.0.0.1:11434`, then click **Save model**. Close API settings and click **Test model**. It sends a fixed sample. TypeNext does not download or start models for you. A local server must also be configured not to forward prompts to cloud services.
+Click **New model** in **1 Connect a model**. Enter a **Saved name** you like, set Protocol to `ollama`, Model ID to `qwen3:4b` (or another installed model), and API URL to `http://127.0.0.1:11434`, then click **Save model**. Close API settings and click **Test model**. It sends a fixed sample. TypeNext does not download or start models for you. A local server must also be configured not to forward prompts to cloud services.
 
 For an OpenAI-compatible local server, select `openai-compatible`, enter its base URL (for example `http://127.0.0.1:1234/v1`), and use its exact loaded model ID. API settings also accepts a full `/chat/completions` endpoint. Local servers needing authentication can use the same saved-key or environment-key settings.
 
-Choose a **Saved model** on the main page to switch connections immediately; the selection is saved for the next launch. Your existing connection is added to this list automatically. In **API settings…**, edit the selected model and click **Save model** to update it, or click **New model** to start with an empty name, API URL, model ID, and API key. Select the protocol and fill in your connection details manually. Saving under a different name keeps the previous configuration. Each saved model remembers its remote permissions and uses the default request options; API keys remain tied to their endpoint. Typing behavior, shortcuts, and approved applications are shared across models, and **Save settings** applies changes to the main page's controls.
-
-To delete a saved connection, click **Remove model** on the main page, choose the model, and confirm. You can remove an inactive model without switching to it. Removing the active model selects the first remaining model; removing the last one stops suggestions until you add another in **API settings…**. Removal is saved immediately. Endpoint API keys are kept because other models may share them.
+Choose a **Saved model** on the main page to switch connections immediately. TypeNext remembers your selection for the next launch and includes your existing connection in the list. Click **API settings…** to edit the selected model, or **New model** to open a form with an empty name, API URL, model ID, and API key. Click **Save model** to save the connection. Saving under a different name keeps the previous configuration. Each saved model remembers its remote permissions and uses the default request options. Typing behavior, shortcuts, and approved applications are shared across models, and **Save settings** applies changes to the main page's controls.
 
 The read-only **Key storage file** row in API settings shows the full path to `config.json`, which stores encrypted keys along with your settings. Copy the path to open the file manually. To remove a saved key, exit TypeNext, delete its endpoint entry from `encrypted_api_keys`, save the file, and restart TypeNext. Deleting the whole file resets all saved settings and models as well as keys. Environment-variable keys remain supported through `api_key_environment_variable` in the configuration.
 

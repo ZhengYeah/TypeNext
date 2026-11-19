@@ -294,7 +294,7 @@ func (a *app) buildSettings() {
 	a.sectionLabel(a.window, "1  Connect a model", 24, 118, 704, 24)
 	a.label("Saved model", 24, 156, 100, 24)
 	a.control("COMBOBOX", "", ctrlSavedModel, 132, 152, 296, 240, 0x10003)
-	a.button("Remove model", idModelRemove, 444, 150, 128)
+	a.button("New model", idAPINew, 444, 150, 128)
 	a.button("API settings…", idAPI, 588, 150, 140)
 	a.label("Connection", 24, 196, 100, 24)
 	// Separate single-line labels keep native ellipsis from collapsing the URL
@@ -773,8 +773,8 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 				if !a.testRunning && a.saveAPI() {
 					a.startModelTest()
 				}
-			case idAPINew:
-				a.newAPIModel()
+			case idModelRemove:
+				a.removeModelProfile()
 			case idAPIClose, 2:
 				a.closeAPI()
 			case ctrlAPIEndpoint:
@@ -859,10 +859,8 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 				if int((wp>>16)&0xffff) == 1 { // CBN_SELCHANGE
 					a.selectModelProfile()
 				}
-			case idAPI:
-				a.openAPI()
-			case idModelRemove:
-				a.removeModelProfile()
+			case idAPI, idAPINew:
+				a.openAPI(id == idAPINew)
 			case idHotkeys:
 				a.openShortcuts()
 			case idSave:
