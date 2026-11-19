@@ -162,7 +162,7 @@ func Run() error {
 	if v, _, err := pRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc))); v == 0 {
 		return fmt.Errorf("register window: %v", err)
 	}
-	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 752, 784, 0)
+	a.window, e = a.createSettingsWindow("TypeNext — writing completion", 100, 70, 784, 0)
 	if a.window == 0 {
 		return fmt.Errorf("create settings window: %v", e)
 	}
@@ -698,14 +698,19 @@ func (a *app) openPad() {
 		pSetFocus.Call(a.padEdit)
 		return
 	}
-	var err error
-	a.pad, _, err = pCreateWindowEx.Call(0, uintptr(unsafe.Pointer(u16("TypeNextWindow"))), uintptr(unsafe.Pointer(u16("TypeNext test pad — suggest: "+a.hotkeyLabel(core.HotkeySuggest)))), 0x00CF0000, 150, 100, uintptr(a.s(800)), uintptr(a.s(460)), 0, 0, a.instance, 0)
+	const style = 0x00CF0000
+	bounds, err := a.framedWindowBounds(style, 0, 0)
+	if err != nil {
+		a.setStatus(fmt.Sprintf("Cannot size test pad: %v", err))
+		return
+	}
+	a.pad, _, err = pCreateWindowEx.Call(0, uintptr(unsafe.Pointer(u16("TypeNextWindow"))), uintptr(unsafe.Pointer(u16("TypeNext test pad — suggest: "+a.hotkeyLabel(core.HotkeySuggest)))), style, 150, 100, uintptr(bounds.Right-bounds.Left), uintptr(a.s(460)), 0, 0, a.instance, 0)
 	if a.pad == 0 {
 		a.setStatus(fmt.Sprintf("Cannot open test pad: %v", err))
 		return
 	}
 	sample := "This is existing text in the editor. TypeNext should read it even though it was not typed through TypeNext.\r\n\r\nDifferential privacy provides a mathematical definition of privacy. One important consideration is "
-	a.padEdit, err = createPadEdit(a.pad, a.instance, a.s(754), a.s(375), sample)
+	a.padEdit, err = createPadEdit(a.pad, a.instance, a.s(10), sample)
 	if err != nil {
 		pDestroyWindow.Call(a.pad)
 		a.pad = 0
@@ -811,9 +816,7 @@ func windowProc(w uintptr, m uint32, wp, lp uintptr) uintptr {
 			return 0
 		}
 		if m == 5 && a.padEdit != 0 {
-			var r rect
-			pGetClientRect.Call(w, uintptr(unsafe.Pointer(&r)))
-			pMoveWindow.Call(a.padEdit, 10, 10, uintptr(r.Right-20), uintptr(r.Bottom-20), 1)
+			resizePadEdit(w, a.padEdit, a.s(10))
 			return 0
 		}
 	}

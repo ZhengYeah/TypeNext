@@ -4,7 +4,6 @@ package win
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 	"typenext/internal/core"
@@ -22,11 +21,6 @@ const (
 	ctrlAPIModel       = 303
 	ctrlAPIKey         = 304
 	ctrlAPIKeyFile     = 305
-	ctrlAPITokens      = 307
-	ctrlAPITimeout     = 309
-	ctrlAPIReasoning   = 310
-	ctrlAPITemperature = 311
-	ctrlAPIThinking    = 312
 	ctrlAPIRemote      = 313
 	ctrlAPIAutoRemote  = 314
 	ctrlAPIMessage     = 315
@@ -60,9 +54,14 @@ func (a *app) openAPI() {
 	a.inspectAt = time.Time{}
 	a.invalidate(false)
 	a.closeShortcuts()
-	const clientWidth = 800
-	const contentWidth = clientWidth - 48
-	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, clientWidth, 784, a.window)
+	const (
+		contentRight = settingsClientWidth - 24
+		contentWidth = contentRight - 24
+		fieldX       = 156
+		fieldWidth   = contentRight - fieldX
+		newModelX    = contentRight - 128
+	)
+	a.apiWindow, err = a.createSettingsWindow("TypeNext — API settings", 120, 70, 664, a.window)
 	if a.apiWindow == 0 {
 		a.setStatus(fmt.Sprintf("Cannot open API settings: %v", err))
 		return
@@ -88,59 +87,40 @@ func (a *app) openAPI() {
 
 	a.sectionLabel(a.apiWindow, "1  Connection", 24, 118, contentWidth, 24)
 	label("Saved name", 24, 156, 120, 24)
-	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, 156, 152, 476, 28, 0x10080)
+	nameBox := control("EDIT", c.ActiveModelProfile, ctrlAPIProfileName, fieldX, 152, newModelX-16-fieldX, 28, 0x10080)
 	pSendMessage.Call(nameBox, 0xc5, 80, 0) // EM_SETLIMITTEXT
-	control("BUTTON", "New model", idAPINew, 648, 150, 128, 32, 0x10000)
+	control("BUTTON", "New model", idAPINew, newModelX, 150, 128, 32, 0x10000)
 	label("Protocol", 24, 196, 120, 24)
 	idx := 0
 	if c.Provider == "openai-compatible" {
 		idx = 1
 	}
-	combo(ctrlAPIProvider, 156, 192, 220, []string{"ollama", "openai-compatible"}, idx)
+	combo(ctrlAPIProvider, fieldX, 192, 220, []string{"ollama", "openai-compatible"}, idx)
 	label("Model ID", 392, 196, 80, 24)
-	control("EDIT", c.Model, ctrlAPIModel, 484, 192, 292, 28, 0x10080)
+	control("EDIT", c.Model, ctrlAPIModel, 484, 192, contentRight-484, 28, 0x10080)
 	label("API URL", 24, 236, 120, 24)
-	control("EDIT", c.Endpoint, ctrlAPIEndpoint, 156, 232, 620, 28, 0x10080)
+	control("EDIT", c.Endpoint, ctrlAPIEndpoint, fieldX, 232, fieldWidth, 28, 0x10080)
 
 	a.sectionLabel(a.apiWindow, "2  Authentication", 24, 276, contentWidth, 24)
 	label("API key", 24, 312, 120, 24)
-	keyBox := control("EDIT", "", ctrlAPIKey, 156, 308, 620, 28, 0x100a0) // ES_PASSWORD
-	pSendMessage.Call(keyBox, 0xc5, 8192, 0)                              // EM_SETLIMITTEXT
-	a.statusText(a.apiWindow, "", ctrlAPIKeyStatus, 156, 348, 620, 48)
+	keyBox := control("EDIT", "", ctrlAPIKey, fieldX, 308, fieldWidth, 28, 0x100a0) // ES_PASSWORD
+	pSendMessage.Call(keyBox, 0xc5, 8192, 0)                                        // EM_SETLIMITTEXT
+	a.statusText(a.apiWindow, "", ctrlAPIKeyStatus, fieldX, 348, fieldWidth, 48)
 	label("Key storage file", 24, 412, 120, 24)
-	control("EDIT", a.configPath, ctrlAPIKeyFile, 156, 408, 620, 28, 0x10880) // ES_READONLY | ES_AUTOHSCROLL | WS_TABSTOP
+	control("EDIT", a.configPath, ctrlAPIKeyFile, fieldX, 408, fieldWidth, 28, 0x10880) // ES_READONLY | ES_AUTOHSCROLL | WS_TABSTOP
 
-	// Keep the request options together as label/value pairs on one row.
-	a.sectionLabel(a.apiWindow, "3  Request options", 24, 464, contentWidth, 24)
-	label("Output limit", 24, 504, 96, 24)
-	control("EDIT", strconv.Itoa(c.MaxTokens), ctrlAPITokens, 132, 500, 64, 28, 0x12000)
-	label("tokens", 208, 504, 56, 24)
-	label("Timeout (s)", 304, 504, 84, 24)
-	control("EDIT", strconv.Itoa(c.TimeoutSeconds), ctrlAPITimeout, 400, 500, 64, 28, 0x12000)
-	label("Reasoning", 488, 504, 76, 24)
-	efforts := []string{"(default)", "none", "minimal", "low", "medium", "high"}
-	idx = 0
-	for i, v := range efforts {
-		if v == c.ReasoningEffort {
-			idx = i
-		}
-	}
-	combo(ctrlAPIReasoning, 576, 500, 200, efforts, idx)
 	// Checkbox bounds include the blank area after the label. Leave a gap
 	// before the next checkbox so painting and mouse hits cannot overlap.
-	const checkboxGap, temperatureX, autoRemoteX = 12, 350, 310
-	check("Non-thinking mode (eager completion)", ctrlAPIThinking, 24, 540, temperatureX-24-checkboxGap, c.DisableThinking)
-	check("Send temperature = 0.2", ctrlAPITemperature, temperatureX, 540, 312, c.SendTemperature)
+	const checkboxGap, autoRemoteX = 12, 310
+	a.sectionLabel(a.apiWindow, "3  Remote access", 24, 464, contentWidth, 24)
+	check("Allow remote HTTPS API requests", ctrlAPIRemote, 24, 500, autoRemoteX-24-checkboxGap, c.AllowRemote)
+	check("Allow automatic remote requests", ctrlAPIAutoRemote, autoRemoteX, 500, 400, c.AllowRemoteAuto)
 
-	a.sectionLabel(a.apiWindow, "4  Remote access", 24, 584, contentWidth, 24)
-	check("Allow remote HTTPS API requests", ctrlAPIRemote, 24, 620, autoRemoteX-24-checkboxGap, c.AllowRemote)
-	check("Allow automatic remote requests", ctrlAPIAutoRemote, autoRemoteX, 620, 400, c.AllowRemoteAuto)
-
-	a.separatorIn(a.apiWindow, 24, 656, contentWidth)
-	control("BUTTON", "Save model", idAPIApply, 24, 672, 176, 32, 0x10000)
-	control("BUTTON", "Test API (sample)", idAPITest, 212, 672, 184, 32, 0x10000)
-	control("BUTTON", "Close", idAPIClose, 656, 672, 120, 32, 0x10000)
-	a.statusText(a.apiWindow, "A new saved name adds a model; an existing name updates it. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 716, contentWidth, 48)
+	a.separatorIn(a.apiWindow, 24, 536, contentWidth)
+	control("BUTTON", "Save model", idAPIApply, 24, 552, 176, 32, 0x10000)
+	control("BUTTON", "Test API (sample)", idAPITest, 212, 552, 184, 32, 0x10000)
+	control("BUTTON", "Close", idAPIClose, contentRight-120, 552, 120, 32, 0x10000)
+	a.statusText(a.apiWindow, "A new saved name adds a model; an existing name updates it. Native Anthropic and Responses-only APIs are not supported.", ctrlAPIMessage, 24, 596, contentWidth, 48)
 	user32.NewProc("EnableWindow").Call(a.window, 0)
 	a.updateAPIKeyStatus()
 	if !c.HasModelConnection() {
@@ -207,11 +187,6 @@ func (a *app) newAPIModel() {
 	setControlText(a.controls[ctrlAPIEndpoint], "")
 	setControlText(a.controls[ctrlAPIModel], "")
 	setControlText(a.controls[ctrlAPIKey], "")
-	setControlText(a.controls[ctrlAPITokens], strconv.Itoa(c.MaxTokens))
-	setControlText(a.controls[ctrlAPITimeout], strconv.Itoa(c.TimeoutSeconds))
-	selectCombo(a.controls[ctrlAPIReasoning], 0)
-	setCheck(a.controls[ctrlAPITemperature], c.SendTemperature)
-	setCheck(a.controls[ctrlAPIThinking], c.DisableThinking)
 	setCheck(a.controls[ctrlAPIRemote], false)
 	setCheck(a.controls[ctrlAPIAutoRemote], false)
 	a.updateAPIKeyStatus()
@@ -256,24 +231,10 @@ func (a *app) saveAPI() bool {
 		return false
 	}
 	c := a.apiConnectionFields()
-	c.DisableThinking = checked(a.controls[ctrlAPIThinking])
-	c.SendTemperature = checked(a.controls[ctrlAPITemperature])
-	efforts := []string{"", "none", "minimal", "low", "medium", "high"}
-	i := comboIndex(a.controls[ctrlAPIReasoning])
-	if i >= 0 && i < len(efforts) {
-		c.ReasoningEffort = efforts[i]
-	}
-	for _, f := range []struct {
-		id  int
-		dst *int
-	}{{ctrlAPITokens, &c.MaxTokens}, {ctrlAPITimeout, &c.TimeoutSeconds}} {
-		n, err := strconv.Atoi(strings.TrimSpace(windowText(a.controls[f.id])))
-		if err != nil {
-			a.apiMessage("Token budget and timeout must be whole numbers.")
-			return false
-		}
-		*f.dst = n
-	}
+	// Request options are not shown in API settings; every saved model uses the defaults.
+	d := core.DefaultConfig()
+	c.DisableThinking, c.SendTemperature, c.ReasoningEffort = d.DisableThinking, d.SendTemperature, d.ReasoningEffort
+	c.MaxTokens, c.TimeoutSeconds = d.MaxTokens, d.TimeoutSeconds
 	if err := c.Validate(); err != nil {
 		a.apiMessage(err.Error())
 		return false
@@ -338,7 +299,7 @@ func (a *app) refreshConnectionUI() {
 	if a.connectionLabel == 0 {
 		return
 	}
-	text := "Local endpoint. API settings adds keys, HTTPS providers, and request options."
+	text := "Local endpoint. API settings adds keys and HTTPS providers."
 	if a.cfg.IsRemote() {
 		text = "REMOTE API active: textbox context leaves this PC. Use API settings to change access."
 	}

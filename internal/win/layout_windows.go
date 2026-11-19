@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	statusBackground = 0xECE9E6 // RGB #E6E9EC
-	statusForeground = 0x62554C // RGB #4C5562
-	statusSurfaceTag = 0x544E5354
-	windowUserData   = ^uintptr(20) // GWLP_USERDATA (-21)
+	settingsClientWidth = 752
+	statusBackground    = 0xECE9E6 // RGB #E6E9EC
+	statusForeground    = 0x62554C // RGB #4C5562
+	statusSurfaceTag    = 0x544E5354
+	windowUserData      = ^uintptr(20) // GWLP_USERDATA (-21)
 )
 
 var (
@@ -20,13 +21,20 @@ var (
 	pGetWindowLongPtr   = user32.NewProc("GetWindowLongPtrW")
 )
 
-// Layout dimensions describe the client area;
-// caption and borders are added separately so bottom padding does not depend on the Windows frame metrics.
-func (a *app) createSettingsWindow(title string, x, y, clientW, clientH int, owner uintptr) (uintptr, error) {
-	const style, extended = 0x00CA0000, 0x00010000
-	bounds := rect{Right: int32(a.s(clientW)), Bottom: int32(a.s(clientH))}
+// All framed windows share a client width. Windows supplies the caption and border sizes.
+func (a *app) framedWindowBounds(style, extended uintptr, clientHeight int) (rect, error) {
+	bounds := rect{Right: int32(a.s(settingsClientWidth)), Bottom: int32(a.s(clientHeight))}
 	if ok, _, err := pAdjustWindowRectEx.Call(uintptr(unsafe.Pointer(&bounds)), style, 0, extended); ok == 0 {
-		return 0, fmt.Errorf("size settings window: %v", err)
+		return rect{}, fmt.Errorf("size window: %v", err)
+	}
+	return bounds, nil
+}
+
+func (a *app) createSettingsWindow(title string, x, y, clientHeight int, owner uintptr) (uintptr, error) {
+	const style, extended = 0x00CA0000, 0x00010000
+	bounds, err := a.framedWindowBounds(style, extended, clientHeight)
+	if err != nil {
+		return 0, err
 	}
 	w, _, err := pCreateWindowEx.Call(extended, uintptr(unsafe.Pointer(u16("TypeNextWindow"))), uintptr(unsafe.Pointer(u16(title))), style,
 		uintptr(x), uintptr(y), uintptr(bounds.Right-bounds.Left), uintptr(bounds.Bottom-bounds.Top), owner, 0, a.instance, 0)
