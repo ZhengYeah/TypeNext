@@ -10,11 +10,11 @@ import (
 
 var padRichEdit = syscall.NewLazyDLL("msftedit.dll")
 
-func createPadEdit(parent, instance uintptr, width, height int, text string) (uintptr, error) {
+func createPadEdit(parent, instance uintptr, inset int, text string) (uintptr, error) {
 	if err := padRichEdit.Load(); err != nil {
 		return 0, fmt.Errorf("load test pad editor: %w", err)
 	}
-	edit, _, err := pCreateWindowEx.Call(0x200, uintptr(unsafe.Pointer(u16("RICHEDIT50W"))), 0, 0x503110c4, 12, 12, uintptr(width), uintptr(height), parent, 600, instance, 0)
+	edit, _, err := pCreateWindowEx.Call(0x200, uintptr(unsafe.Pointer(u16("RICHEDIT50W"))), 0, 0x503110c4, 0, 0, 0, 0, parent, 600, instance, 0)
 	if edit == 0 {
 		return 0, fmt.Errorf("create test pad editor: %w", err)
 	}
@@ -28,5 +28,15 @@ func createPadEdit(parent, instance uintptr, width, height int, text string) (ui
 		pDestroyWindow.Call(edit)
 		return 0, fmt.Errorf("set test pad text: %w", err)
 	}
+	resizePadEdit(parent, edit, inset)
 	return edit, nil
+}
+
+func resizePadEdit(parent, edit uintptr, inset int) {
+	var client rect
+	if ok, _, _ := pGetClientRect.Call(parent, uintptr(unsafe.Pointer(&client))); ok != 0 {
+		width := max(0, int(client.Right)-2*inset)
+		height := max(0, int(client.Bottom)-2*inset)
+		pMoveWindow.Call(edit, uintptr(inset), uintptr(inset), uintptr(width), uintptr(height), 1)
+	}
 }

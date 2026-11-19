@@ -151,7 +151,7 @@ func (a *app) openShortcuts() {
 		return
 	}
 	var err error
-	a.hotkeyWindow, err = a.createSettingsWindow("TypeNext — Shortcuts", 130, 90, 704, 580, a.window)
+	a.hotkeyWindow, err = a.createSettingsWindow("TypeNext — Shortcuts", 130, 90, 580, a.window)
 	if a.hotkeyWindow == 0 {
 		a.setStatus(fmt.Sprintf("Could not open shortcuts: %v", err))
 		return
@@ -159,24 +159,30 @@ func (a *app) openShortcuts() {
 	control := func(class, text string, id, x, y, w, h int, style uintptr) uintptr {
 		return a.controlIn(a.hotkeyWindow, class, text, id, x, y, w, h, style)
 	}
-	heading := control("STATIC", "Keyboard shortcuts", 0, 24, 20, 656, 34, 0)
+	const (
+		contentRight = settingsClientWidth - 24
+		contentWidth = contentRight - 24
+		fieldX       = 176
+		fieldWidth   = contentRight - fieldX
+	)
+	heading := control("STATIC", "Keyboard shortcuts", 0, 24, 20, contentWidth, 34, 0)
 	pSendMessage.Call(heading, 0x30, a.heading, 1)
-	control("STATIC", "Type a shortcut such as Ctrl+Space, or None to disable it.\r\nTab accepts suggestions by default; the extra accept key is optional.", 0, 24, 62, 656, 40, 0)
-	a.separatorIn(a.hotkeyWindow, 24, 116, 656)
+	control("STATIC", "Type a shortcut such as Ctrl+Space, or None to disable it.\r\nTab accepts suggestions by default; the extra accept key is optional.", 0, 24, 62, contentWidth, 40, 0)
+	a.separatorIn(a.hotkeyWindow, 24, 116, contentWidth)
 	for i, field := range []struct{ label, value string }{
 		{"Suggest", a.cfg.SuggestHotkey}, {"Extra accept key", a.cfg.AcceptHotkey}, {"Pause / resume", a.cfg.PauseHotkey},
 	} {
 		y := 136 + i*84
 		control("STATIC", field.label, 0, 24, y+4, 136, 24, 0)
-		control("EDIT", field.value, ctrlHotkeySuggest+i, 176, y, 504, 28, 0x10080)
-		a.statusText(a.hotkeyWindow, "", ctrlHotkeyStatus1+i, 176, y+34, 504, 44)
+		control("EDIT", field.value, ctrlHotkeySuggest+i, fieldX, y, fieldWidth, 28, 0x10080)
+		a.statusText(a.hotkeyWindow, "", ctrlHotkeyStatus1+i, fieldX, y+34, fieldWidth, 44)
 	}
-	control("STATIC", "Extra shortcuts must include Ctrl or Alt. Change Tab acceptance in the main window.\r\nClick Apply to save and activate your choices.", 0, 24, 394, 656, 40, 0)
-	a.separatorIn(a.hotkeyWindow, 24, 448, 656)
+	control("STATIC", "Extra shortcuts must include Ctrl or Alt. Change Tab acceptance in the main window.\r\nClick Apply to save and activate your choices.", 0, 24, 394, contentWidth, 40, 0)
+	a.separatorIn(a.hotkeyWindow, 24, 448, contentWidth)
 	control("BUTTON", "Apply shortcuts", idHotkeyApply, 24, 464, 152, 32, 0x10000)
 	control("BUTTON", "Reset fields to defaults", idHotkeyDefaults, 188, 464, 226, 32, 0x10000)
-	control("BUTTON", "Close", idHotkeyClose, 576, 464, 104, 32, 0x10000)
-	a.statusText(a.hotkeyWindow, "Your other settings are preserved.", ctrlHotkeyMessage, 24, 510, 656, 44)
+	control("BUTTON", "Close", idHotkeyClose, contentRight-104, 464, 104, 32, 0x10000)
+	a.statusText(a.hotkeyWindow, "Your other settings are preserved.", ctrlHotkeyMessage, 24, 510, contentWidth, 44)
 	a.refreshHotkeyUI()
 	pShowWindow.Call(a.hotkeyWindow, 5)
 	pSetForegroundWindow.Call(a.hotkeyWindow)
